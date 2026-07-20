@@ -473,6 +473,11 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; }
 .kernel-intro strong { display: block; margin: 10px 0 7px; font-family: var(--serif); font-size: 17px; }
 .kernel-intro p { color: var(--muted); font-size: 9px; line-height: 1.6; }
 .python-lab { border: 1px solid var(--line); background: white; }
+.inline-python { margin: 22px 0; border-top: 3px solid var(--accent); }
+.inline-python .python-head { min-height: 68px; }
+.inline-python .python-workspace { min-height: 410px; }
+.inline-python .editor-pane textarea { min-height: 320px; }
+.inline-python .kernel-note { background: #f0f5f2; }
 .python-head { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 17px 21px; border-bottom: 1px solid var(--line); }
 .python-head span { display: block; margin-bottom: 4px; color: var(--accent); font-size: 9px; font-weight: 800; }
 .python-head h3 { margin: 0; font-family: var(--serif); font-size: 20px; }
