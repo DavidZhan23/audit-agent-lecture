@@ -1,0 +1,7 @@
+﻿case_id,case_name,primary_claim_ids,expected_outcome,severity,evidence_files,evidence_summary,first_effective_stage
+A,重复发票,BX-41610|BX-41902,需重点核查,高,expense_claims.csv|invoice_registry.csv,两笔报销附件名不同，但发票号、金额、销方相同。,规则
+B,超标住宿合理例外,BX-41002,排除误报,无,expense_claims.csv|approvals.csv|special_event_notice.md,720元超过常规600元标准，但有事前审批，且会展通知将上限提高至800元。,大模型
+C,拆分报销,BX-41881|BX-41882|BX-41883|BX-41884,需重点核查,高,expense_claims.csv|expense_policy.md,"同一员工、同一商户、两天内四笔近似金额均低于2,000元审批阈值，合计7,880元。",机器学习
+D,票据金额修改,BX-42306,需重点核查,高,expense_claims.csv|invoice_registry.csv|receipt_ocr.csv,报销和可见字样为286元，二维码解析和发票平台金额为86元，图像完整性风险高。,神经网络
+E,个人消费伪装客户招待,BX-42519,需重点核查,中高,expense_claims.csv|receipt_ocr.csv|customer_visits.csv|employee_calendar.csv,周日报销客户招待，小票含儿童套餐和生日蛋糕，CRM无拜访，日历为家人生日。,大模型
+F,行程与业务目的矛盾,BX-42017,需重点核查,高,expense_claims.csv|flight_records.csv|hotel_records.csv|customer_visits.csv|invoice_registry.csv,报销称上海机场至苏州，航班、酒店和日历均指向南京，苏州无拜访，发票又存在外部重复引用。,智能体

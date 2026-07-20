@@ -1,0 +1,8 @@
+﻿ocr_record_id,claim_id,receipt_file,document_type,ocr_text,printed_amount_cny,qr_amount_cny,image_integrity_score,extracted_items
+OCR-41002,BX-41002,receipt_BX-41002.pdf,酒店发票,上海浦东会展酒店 住宿费 720元,720,720,0.04,住宿费
+OCR-41610,BX-41610,scan_41610.pdf,增值税普通发票,北京星辉办公 研发耗材 1280元,1280,1280,0.02,打印耗材|移动硬盘
+OCR-41902,BX-41902,office_may_copy.pdf,增值税普通发票,北京星辉办公 运营耗材 1280元,1280,1280,0.02,打印耗材|移动硬盘
+OCR-42017,BX-42017,receipt_BX-42017.pdf,出租车电子发票,长三角商务出行 运输服务 468元,468,468,0.01,运输服务
+OCR-42306,BX-42306,receipt_BX-42306.png,出租车票,成都快行出租 金额286元,286,86,0.96,出租车费；印刷数字2的字体与其他数字不一致
+OCR-42519,BX-42519,receipt_BX-42519.pdf,餐饮小票,上海欢乐时光餐厅 小计988元,988,988,0.03,儿童套餐x2|生日蛋糕x1|家庭分享餐x1
+OCR-42702,BX-42702,receipt_BX-42702.pdf,航空运输电子客票行程单,CA932 法兰克福至北京 5480元,5480,5480,0.01,经济舱机票

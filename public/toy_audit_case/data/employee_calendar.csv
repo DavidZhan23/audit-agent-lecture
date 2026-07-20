@@ -1,0 +1,5 @@
+﻿calendar_record_id,employee_id,event_date,start_time,end_time,event_type,event_title,location,business_related
+CAL-1001,E1001,2026-05-07,10:00,12:00,客户会议,华东零售方案沟通,杭州,true
+CAL-2017,E1004,2026-05-18,14:00,16:00,内部会议,南京区域销售复盘,南京,true
+CAL-2025,E1001,2026-05-24,17:30,20:30,个人日程,家人生日聚餐,上海,false
+CAL-2026,E1003,2026-05-25,09:00,16:30,供应商审查,苏州精工质量审查,苏州,true

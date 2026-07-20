@@ -135,9 +135,36 @@ const triageClaims = [
   { id: "BX-42017", date: "05-18", type: "出租车", amount: "¥468", description: "上海机场至苏州客户", issue: true, truth: "金额并不显眼，但航班和酒店显示员工当天在南京。" },
   { id: "BX-41881", date: "05-21", type: "材料费", amount: "¥1,960", description: "项目资料整理", issue: true, truth: "单笔低于2,000元，但两天内同商户还有三笔近似金额。" },
   { id: "BX-42306", date: "05-23", type: "出租车", amount: "¥286", description: "市内交通", issue: true, truth: "报销表看不出问题；票据二维码解析金额其实是86元。" },
-  { id: "BX-42519", date: "05-26", type: "客户招待", amount: "¥988", description: "客户沟通", issue: true, truth: "周日小票含儿童套餐和生日蛋糕，客户系统无拜访记录。" },
-  { id: "BX-42702", date: "05-28", type: "机票", amount: "¥5,480", description: "北京项目返程", issue: false, truth: "金额较高，但行程、项目日程和审批均一致。" },
+  { id: "BX-42519", date: "05-24", type: "客户招待", amount: "¥988", description: "客户沟通", issue: true, truth: "周日小票含儿童套餐和生日蛋糕，客户系统无拜访记录。" },
+  { id: "BX-42702", date: "05-27", type: "机票", amount: "¥5,480", description: "海外会议转国内返程", issue: false, truth: "金额较高，但行程、项目日程和审批均一致。" },
 ] as const;
+
+const toyDataFiles = [
+  { file: "expense_claims.csv", label: "报销明细", count: "26笔", key: "claim_id", role: "整个案例的核心事实表，记录金额、商户、说明、行程号、发票号和审批号。", columns: ["claim_id", "date", "type", "amount", "description"], rows: [["BX-41002", "05-14", "住宿", "720", "参加工业博览会"], ["BX-42017", "05-18", "出租车", "468", "上海机场至苏州客户"], ["BX-42306", "05-23", "出租车", "286", "市内交通"]] },
+  { file: "employees.csv", label: "员工主数据", count: "8人", key: "employee_id", role: "提供员工、部门、常驻城市和管理者关系。", columns: ["employee_id", "name", "department", "home_city"], rows: [["E1001", "张伟", "销售一部", "上海"], ["E1004", "陈宇", "销售二部", "北京"], ["E1007", "孙杰", "运营部", "成都"]] },
+  { file: "invoice_registry.csv", label: "发票查验库", count: "26条", key: "invoice_no", role: "提供发票平台金额、真伪状态和内外部重复使用线索。", columns: ["claim_id", "invoice_no", "amount", "duplicate_scope"], rows: [["BX-41610", "INV-O-77821", "1280", "本公司跨报销单"], ["BX-41902", "INV-O-77821", "1280", "本公司跨报销单"], ["BX-42017", "INV-T-42017", "468", "第三方发票平台"]] },
+  { file: "approvals.csv", label: "审批记录", count: "10条", key: "approval_id", role: "用于区分真正超标与已获得事前审批的合理例外。", columns: ["approval_id", "claim_id", "type", "limit"], rows: [["AP-SPECIAL-017", "BX-41002", "会展期住宿例外", "800"], ["AP-42017", "BX-42017", "差旅申请", "600"], ["AP-42519", "BX-42519", "客户招待", "1200"]] },
+  { file: "flight_records.csv", label: "航班行程", count: "6条", key: "trip_id", role: "提供员工真实出发地和抵达地，用于核对报销行程。", columns: ["trip_id", "employee", "date", "origin", "destination"], rows: [["T1002", "E1003", "05-13", "北京", "上海"], ["T2017", "E1004", "05-18", "北京", "南京"], ["T2027", "E1008", "05-27", "法兰克福", "北京"]] },
+  { file: "hotel_records.csv", label: "酒店入住", count: "6条", key: "trip_id", role: "提供员工入住城市、日期和房价，可与航班和报销交叉验证。", columns: ["trip_id", "employee", "city", "check_in", "rate"], rows: [["T1002", "E1003", "上海", "05-13", "720"], ["T2017", "E1004", "南京", "05-18", "560"], ["T2026", "E1003", "苏州", "05-24", "560"]] },
+  { file: "customer_visits.csv", label: "客户拜访CRM", count: "6条", key: "trip_id", role: "用于验证声称的客户、商务目的和联系人状态。", columns: ["trip_id", "employee", "city", "visit_status", "contact"], rows: [["T1004", "E1001", "杭州", "已完成", "在岗"], ["T2017", "E1004", "苏州", "无登记", "休假"], ["T2025", "E1001", "上海", "无登记", "休假"]] },
+  { file: "receipt_ocr.csv", label: "票据OCR与图像检查", count: "7条", key: "claim_id", role: "表示从票据图片中提取的文字、金额、二维码结果、明细和图像完整性分数。", columns: ["claim_id", "printed", "QR", "integrity", "items"], rows: [["BX-42306", "286", "86", "96%", "数字2字体异常"], ["BX-42519", "988", "988", "3%", "儿童套餐|生日蛋糕"], ["BX-42017", "468", "468", "1%", "运输服务"]] },
+  { file: "employee_calendar.csv", label: "员工日历", count: "4条", key: "employee_id + date", role: "用于核对当天是否存在业务日程，以及员工当时所在地点。", columns: ["employee", "date", "event_type", "event", "location"], rows: [["E1004", "05-18", "内部会议", "南京区域销售复盘", "南京"], ["E1001", "05-24", "个人日程", "家人生日聚餐", "上海"], ["E1003", "05-25", "供应商审查", "苏州精工质量审查", "苏州"]] },
+] as const;
+
+function ToyDatasetExplorer() {
+  const [selected, setSelected] = useState(0);
+  const item = toyDataFiles[selected];
+  return (
+    <div className="dataset-explorer">
+      <div className="dataset-head"><div><span>本课程的统一Toy Data Pack</span><h3>9张可关联的数据表 + 2份制度文档</h3><p>整堂课不再临时发明数字；后面每种技术都回到这组报销号和证据链。</p></div><div><a href="/toy_audit_case/toy_audit_case.xlsx" download>下载Excel工作簿</a><a className="primary" href="/toy_audit_case_download.zip" download>下载完整数据包</a></div></div>
+      <div className="dataset-layout"><div className="dataset-files">{toyDataFiles.map((file, index) => <button key={file.file} className={selected === index ? "active" : ""} onClick={() => setSelected(index)}><span>{String(index + 1).padStart(2, "0")}</span><p><strong>{file.label}</strong><small>{file.file}</small></p><b>{file.count}</b></button>)}</div><div className="dataset-preview"><div className="dataset-file-meta"><span>当前文件</span><h4>{item.file}</h4><p>{item.role}</p><small>主要关联键：<code>{item.key}</code></small></div><div className="mini-data-table"><div>{item.columns.map(column => <strong key={column}>{column}</strong>)}</div>{item.rows.map((row, rowIndex) => <div key={rowIndex}>{row.map((cell, cellIndex) => <span key={cellIndex}>{cell}</span>)}</div>)}</div><div className="policy-files"><span>同时提供的非结构化资料</span><code>expense_policy.md</code><code>special_event_notice.md</code><p>一份常规制度，一份会展期补充通知。</p></div></div></div>
+    </div>
+  );
+}
+
+function DatasetAnchor({ caseId, claimIds, files, task }: { caseId: string; claimIds: string; files: string[]; task: string }) {
+  return <div className="dataset-anchor"><span>本章回到贯穿数据</span><strong>情形 {caseId} · {claimIds}</strong><p>{task}</p><div>{files.map(file => <code key={file}>{file}</code>)}</div></div>;
+}
 
 function ManualTriageChallenge() {
   const [picked, setPicked] = useState<Set<string>>(new Set());
@@ -195,10 +222,11 @@ function ProblemSection() {
     <>
       <div className="audit-brief">
         <div className="brief-title"><span>模拟审计任务书</span><h3>A集团差旅及招待费专项审计</h3><p>费用同比增长38%，但出差人次只增长9%。管理层希望知道：费用是否真实、合规，以及是否存在拆分、重复或个人消费伪装。</p></div>
-        <div className="brief-stats"><div><strong>42,000</strong><span>笔报销</span></div><div><strong>4</strong><span>名审计人员</span></div><div><strong>10</strong><span>个工作日</span></div><div><strong>7</strong><span>类数据源</span></div></div>
+        <div className="brief-stats"><div><strong>42,000</strong><span>笔报销</span></div><div><strong>4</strong><span>名审计人员</span></div><div><strong>10</strong><span>个工作日</span></div><div><strong>9+2</strong><span>张数据表 + 制度文档</span></div></div>
         <div className="brief-deliverable"><span>必须交付</span><strong>不是一万条“可能异常”的报警</strong><p>而是一份按风险排序的疑点清单：每项包含事实、适用标准、原始证据、不确定性和下一步核查建议。</p></div>
       </div>
 
+      <ToyDatasetExplorer />
       <ManualTriageChallenge />
       <EvidenceTrail />
 
@@ -450,7 +478,7 @@ const kernelExamples = {
     code: `# 真实运行：用历史案例训练一个简单分类模型
 import math
 
-# X的三个特征：接近审批阈值、短期交易频率、是否同一商户
+# 特征对应expense_claims.csv：接近2,000元阈值、短期交易频率、是否同一商户
 # y是审计人员历史确认的结果：0=普通，1=需要重点核查
 data = [
     ([0.10, 0.17, 0], 0),
@@ -494,10 +522,12 @@ for epoch in range(1201):
 print("\\n模型学到的权重：", [round(w, 3) for w in weights])
 print("模型学到的偏置：", round(bias, 3))
 
-# 对一组从未参与训练的新报销做预测
-new_claim = [0.90, 0.75, 1]
+# 对Toy Data里情形C的四笔报销组合做预测
+new_claim_id = "BX-41881—BX-41884（组合）"
+new_claim = [0.98, 0.67, 1]  # 接近阈值、2天4笔、同一商户V301
 risk = sigmoid(sum(w*x for w, x in zip(weights, new_claim)) + bias)
-print("新报销特征：", new_claim)
+print("待评估记录：", new_claim_id)
+print("特征：", new_claim)
 print("预测的重点核查概率：", f"{risk:.1%}")
 print("注意：这是风险预测，不是违规结论。")`,
   },
@@ -507,8 +537,14 @@ print("注意：这是风险预测，不是违规结论。")`,
 import math, random
 random.seed(7)
 
-# 两个特征：接近审批阈值、同一商户；标签：是否需要重点核查
-data = [([0, 0], 0), ([0, 1], 0), ([1, 0], 0), ([1, 1], 1)]
+# 两个图像特征：金额是否矛盾、数字字体是否异常
+# 最后一行对应receipt_ocr.csv里的BX-42306
+data = [
+    ("OCR-41002", [0, 0], 0),
+    ("OCR-41610", [0, 0], 0),
+    ("OCR-42519", [0, 1], 0),
+    ("OCR-42306", [1, 1], 1),
+]
 
 def sigmoid(x):
     return 1 / (1 + math.exp(-x))
@@ -527,7 +563,7 @@ for epoch in range(2001):
     gb2 = 0.0
     loss = 0.0
 
-    for x, y in data:
+    for record_id, x, y in data:
         h = [sigmoid(x[0]*W1[0][j] + x[1]*W1[1][j] + b1[j]) for j in range(2)]
         pred = sigmoid(h[0]*W2[0] + h[1]*W2[1] + b2)
         loss += (pred - y) ** 2
@@ -559,10 +595,10 @@ print("output.weight =", [round(v, 3) for v in W2])
 print("output.bias   =", round(b2, 3))
 
 print("\\n四种输入的预测：")
-for x, y in data:
+for record_id, x, y in data:
     h = [sigmoid(x[0]*W1[0][j] + x[1]*W1[1][j] + b1[j]) for j in range(2)]
     pred = sigmoid(h[0]*W2[0] + h[1]*W2[1] + b2)
-    print(x, "真实标签=", y, "预测概率=", round(pred, 3))`,
+    print(record_id, x, "真实标签=", y, "预测概率=", round(pred, 3))`,
   },
   language: {
     label: "训练极小语言模型",
@@ -571,7 +607,7 @@ for x, y in data:
 import random
 random.seed(3)
 
-corpus = "审计需要证据。审计需要核验。智能体需要工具。结论需要复核。"
+corpus = "住宿常规上限六百元。会展期经事前审批上限八百元。儿童套餐和生日蛋糕需要复核。审计结论需要证据。"
 tokens = sorted(set(corpus))
 token_to_id = {token: i for i, token in enumerate(tokens)}
 
@@ -611,14 +647,15 @@ print("\\n真实LLM用多层Transformer张量替代这张简单概率表。")`,
     code: `# 真实运行：一个最小智能体循环
 evidence = []
 tools = {
-    "航班查询": "员工当天航班落地南京",
-    "酒店查询": "员工当晚入住南京酒店",
-    "客户查询": "当天没有苏州客户拜访记录",
-    "发票查验": "发票已在另一家公司出现",
+    "flight_records.csv": "T2017：E1004当天从北京飞往南京",
+    "hotel_records.csv": "T2017：E1004当晚入住南京江宁商务酒店",
+    "customer_visits.csv": "T2017：苏州无拜访登记，客户联系人休假",
+    "employee_calendar.csv": "E1004当天参加南京区域销售复盘",
+    "invoice_registry.csv": "INV-T-42017存在重复引用EXT-COMPANY-7781",
 }
 
-plan = ["航班查询", "酒店查询", "客户查询", "发票查验"]
-goal = "核实上海机场至苏州的出租车费"
+plan = list(tools)
+goal = "核实BX-42017：上海机场至苏州的468元出租车费"
 print("目标：", goal)
 
 for step, tool_name in enumerate(plan, 1):
@@ -628,24 +665,30 @@ for step, tool_name in enumerate(plan, 1):
     print("观察结果：", observation)
     print("当前证据数：", len(evidence))
 
-print("\\n停止条件：已取得四类独立证据")
+print("\\n停止条件：已取得五类独立证据")
 print("系统动作：提交审计人员复核，不自动认定违规。")`,
   },
   rule: {
     label: "运行普通规则",
-    code: `# 真实运行：普通代码规则
+    code: `# 真实运行：对Toy Data里的BX-41002执行普通规则
+claim = {"claim_id": "BX-41002", "amount": 720, "city": "上海", "date": "2026-05-14"}
 standard = 600
-amount = 720
-special_approval = False
 
-if amount > standard and not special_approval:
-    result = "标记为待核查"
-else:
-    result = "通过规则检查"
+# 规则1只看expense_claims.csv：它会产生误报
+naive_result = "待核查" if claim["amount"] > standard else "通过"
 
-print("住宿标准：", standard)
-print("报销金额：", amount)
-print("程序结果：", result)`,
+# 规则2又读取approvals.csv和special_event_notice.md
+approval = {"status": "已批准", "approved_limit": 800, "basis": "POLICY-NOTICE-2026-05"}
+enriched_result = (
+    "通过：有效会展例外"
+    if approval["status"] == "已批准" and claim["amount"] <= approval["approved_limit"]
+    else "待核查"
+)
+
+print("报销记录：", claim)
+print("只看报销表：", naive_result)
+print("加入审批和补充制度：", enriched_result)
+print("结论：代码只能使用人明确提供给它的数据和条件。")`,
   },
 } as const;
 
@@ -776,12 +819,13 @@ function InlinePythonLab({ example, guide }: { example: keyof typeof kernelExamp
 
 const agentTraceSteps = [
   ["目标", "核实BX-42017机场出租车费是否与真实行程一致。"],
-  ["读取报销工具", "报销称“上海机场至苏州客户公司”，金额468元。"],
-  ["模型判断", "缺少实际抵达城市、住宿地点、客户拜访和发票状态。"],
-  ["航班工具", "员工当天航班实际降落南京。"],
-  ["酒店工具", "员工当晚在南京办理入住。"],
-  ["客户系统", "当天无苏州客户拜访登记，联系人处于休假。"],
-  ["发票查验", "发票真实，但已在另一家公司出现。"],
+  ["读取expense_claims.csv", "employee_id=E1004，trip_id=T2017，报销称“上海机场至苏州客户”，金额468元。"],
+  ["模型判断", "缺少真实抵达城市、入住地点、客户拜访、当天日历和发票重复状态。"],
+  ["读取flight_records.csv", "T2017：E1004当天航班是北京→南京，09:51抵达。"],
+  ["读取hotel_records.csv", "T2017：E1004当晚入住南京江宁商务酒店。"],
+  ["读取customer_visits.csv", "T2017：苏州无拜访登记，对应联系人处于休假。"],
+  ["读取employee_calendar.csv", "E1004当天14:00在南京参加区域销售复盘。"],
+  ["读取invoice_registry.csv", "INV-T-42017为真发票，但在第三方平台存在重复引用EXT-COMPANY-7781。"],
   ["控制规则", "证据达到升级阈值；不能自行定性，提交审计人员复核。"],
 ] as const;
 
@@ -893,7 +937,7 @@ export default function Home() {
           <p>面向审计人员的2小时人工智能基础课</p>
           <h1>42,000笔报销，4名审计人员，10个工作日。<br />怎样找到真正值得核查的问题？</h1>
           <div className="hero-lead">我们先不谈AI、模型或智能体。先把审计目标、数据、时间限制和应交付的证据说清楚，再一步步引入技术。</div>
-          <div className="hero-scenario"><div><span>数据规模</span><strong>42,000笔</strong><small>差旅及招待费报销</small></div><div><span>人力限制</span><strong>4人 × 10天</strong><small>不可能靠人工逐笔深查</small></div><div><span>证据分布</span><strong>7类数据源</strong><small>表格、图片、制度与业务系统</small></div><div><span>最终交付</span><strong>可复核疑点</strong><small>不是笼统的“AI风险分”</small></div></div>
+          <div className="hero-scenario"><div><span>数据规模</span><strong>42,000笔</strong><small>差旅及招待费报销</small></div><div><span>人力限制</span><strong>4人 × 10天</strong><small>不可能靠人工逐笔深查</small></div><div><span>证据分布</span><strong>9张表 + 2文档</strong><small>通过报销号、行程号和发票号关联</small></div><div><span>最终交付</span><strong>可复核疑点</strong><small>不是笼统的“AI风险分”</small></div></div>
           <a className="hero-start" href="#problem">先进入这个审计任务 <span>↓</span></a>
         </section>
 
@@ -906,9 +950,10 @@ export default function Home() {
         <section id="code" className="lesson">
           <SectionTitle no="02" time="16分钟" title="第一步：普通代码和规则系统是什么" intro="在谈AI之前，先理解最传统的计算机程序：人把步骤和条件写清楚，计算机机械、快速、准确地执行。" />
           <Definition term="计算机程序" simple="一组明确的指令，告诉计算机先做什么、后做什么，以及遇到不同条件时怎么办。" precise="程序由变量、条件、循环、函数等结构组成；同样的输入和同样的代码，通常得到同样的输出。" />
+          <DatasetAnchor caseId="A / B" claimIds="BX-41610、BX-41902 / BX-41002" files={["expense_claims.csv", "invoice_registry.csv", "approvals.csv", "special_event_notice.md"]} task="先用确定性规则查出相同发票号；再观察“住宿费 > 600”为什么会把有月度通知和事前审批的BX-41002误报。" />
           <div className="concept-grid four"><div><span>变量</span><strong>保存数据</strong><p>例如金额、日期、审批状态。</p></div><div><span>条件</span><strong>进行判断</strong><p>如果金额超标，就进入下一步。</p></div><div><span>循环</span><strong>重复处理</strong><p>对42,000笔报销逐笔执行。</p></div><div><span>函数</span><strong>封装步骤</strong><p>把“检查住宿标准”写成可复用模块。</p></div></div>
           <CodeLab />
-          <InlinePythonLab example="rule" guide="先看人写好的 standard、amount 和 special_approval，再看 if / else 怎样产生确定结果。尝试改动金额或审批状态，输出只会按人事先写好的条件变化。" />
+          <InlinePythonLab example="rule" guide="代码先只读expense_claims.csv中BX-41002的720元，因超过600元而报警；加入approvals.csv和会展通知后，再按明确条件排除误报。" />
           <div className="content-block"><h3>规则系统的本质</h3><p>规则系统把业务人员已经知道的判断逻辑写成代码。审计人员先定义“什么情况值得检查”，程序再批量执行。它是自动化，但不一定属于机器学习。</p><div className="two-col"><div><strong>它非常擅长</strong><ul><li>金额、日期和数量的精确比较</li><li>发票号码完全重复</li><li>审批缺失、字段为空</li><li>确定性强、必须一致执行的制度条件</li></ul></div><div><strong>它无法自己做到</strong><ul><li>从历史案例中总结新的规律</li><li>理解图片和自然语言</li><li>发现没有预先写出的组合模式</li><li>自动理解制度中的复杂例外</li></ul></div></div></div>
           <div className="important"><strong>必须记住</strong><p>代码不是AI的反义词。机器学习、大模型和智能体最终也都由代码运行；区别在于，一部分判断逻辑不再由程序员逐条写出，而是由模型从数据中学习得到。</p></div>
           <Bridge from="规则系统的瓶颈" problem="四笔费用分别是1,960、1,980、1,950、1,990元，全部低于2,000元审批阈值。单笔规则全部放过，但组合起来很可疑。" to="机器学习" />
@@ -918,6 +963,7 @@ export default function Home() {
         <section id="ml" className="lesson">
           <SectionTitle no="03" time="16分钟" title="第二步：什么是机器学习" intro="当人很难把所有模式写成规则时，可以给机器历史案例，让模型从数据中学习输入和结果之间的统计关系。" />
           <Definition term="机器学习（Machine Learning）" simple="不给计算机写出每一条判断规则，而是给它许多案例，让它自己总结哪些输入通常对应哪些结果。" precise="机器学习使用数据和算法估计模型参数，使模型能够对训练时没有见过的新数据进行预测、分类或排序。" />
+          <DatasetAnchor caseId="C" claimIds="BX-41881 — BX-41884" files={["expense_claims.csv", "expense_policy.md"]} task="四笔报销分别是1,960、1,980、1,950和1,990元，同员工、同商户、两天内合计7,880元。单笔均没有越过2,000元阈值，但组合模式明显异常。" />
           <div className="notation"><div><span>输入 X</span><strong>特征</strong><p>金额、时间、商户、频率、说明相似度……</p></div><i>→</i><div><span>模型 f</span><strong>学习关系</strong><p>训练得到的内部参数，不是人逐条写出的规则。</p></div><i>→</i><div><span>输出 ŷ</span><strong>预测</strong><p>正常/异常，或0—100的风险概率。</p></div><div className="label"><span>训练时还需要</span><strong>标签 y</strong><p>历史上经过确认的真实结果。</p></div></div>
           <TrainingProcess />
           <MachineLearningLab />
@@ -931,6 +977,7 @@ export default function Home() {
         <section id="nn" className="lesson">
           <SectionTitle no="04" time="22分钟" title="第三步：什么是神经网络和深度学习" intro="神经网络仍然属于机器学习。变化在于，它可以从原始数据中逐层学习特征，不必完全依赖人先把特征整理好。" />
           <Definition term="人工神经网络" simple="许多简单计算单元连接成层，输入经过一层层加权和变换，最后产生预测结果。" precise="神经网络是可微分的参数化函数；训练通过损失函数衡量错误，再用反向传播和优化算法调整大量权重。" />
+          <DatasetAnchor caseId="D" claimIds="BX-42306" files={["expense_claims.csv", "invoice_registry.csv", "receipt_ocr.csv"]} task="报销金额和图上可见字样都是286元，但二维码与发票平台都是86元，图像完整性分数为96%。问题来自原始图像而不是表格字段。" />
           <div className="equation"><span>一个神经元做的事</span><strong>输入 × 权重，全部相加，再经过一个非线性函数</strong><code>output = activation(w₁x₁ + w₂x₂ + … + bias)</code><p>不要求学员计算公式，只要理解：权重表示影响大小；训练就是不断调整这些权重。</p></div>
           <NeuralNetworkLab />
           <NeuralCheckpointExplorer />
@@ -945,6 +992,7 @@ export default function Home() {
         <section id="llm" className="lesson">
           <SectionTitle no="05" time="24分钟" title="第四步：大模型到底是什么" intro="大语言模型不是另一个完全不同的技术。它本质上是规模很大的深度神经网络，通常采用Transformer架构，在海量文本上训练。" />
           <Definition term="大语言模型（LLM）" simple="一个读过海量文字、能够根据上下文继续生成文字的神经网络。" precise="大语言模型通过预训练学习Token序列的概率分布，并在指令微调、偏好对齐等阶段形成更适合问答和任务执行的行为。" />
+          <DatasetAnchor caseId="B / E" claimIds="BX-41002 / BX-42519" files={["expense_policy.md", "special_event_notice.md", "receipt_ocr.csv", "customer_visits.csv", "employee_calendar.csv"]} task="大模型需要理解制度例外，也需要综合“周日、儿童套餐、生日蛋糕、CRM无拜访、家人生日”这组语义证据。" />
           <TokenLab />
           <LlmPipeline />
           <LlmCheckpointExplorer />
@@ -961,10 +1009,11 @@ export default function Home() {
         <section id="agent" className="lesson">
           <SectionTitle no="06" time="14分钟" title="第五步：大模型怎样变成智能体" intro="大模型是负责理解和生成的模型；智能体是围绕目标运行的系统。关键变化不是回答更长，而是能够使用工具并形成行动闭环。" />
           <Definition term="智能体（Agent）" simple="让大模型不只回答问题，还能为了完成目标，判断下一步、调用工具、读取结果并继续行动。" precise="智能体是能够感知环境状态、根据目标选择行动、通过工具影响或查询环境，并依据反馈更新状态的受控软件系统。" />
+          <DatasetAnchor caseId="F" claimIds="BX-42017" files={["expense_claims.csv", "flight_records.csv", "hotel_records.csv", "customer_visits.csv", "employee_calendar.csv", "invoice_registry.csv"]} task="从报销表出发，利用trip_id=T2017和employee_id=E1004主动调用多个数据工具，逐步证明上海→苏州的声称与南京行程相互矛盾。" />
           <div className="model-system"><div><span>大模型</span><strong>一个模型</strong><p>输入上下文，输出文字或结构化指令。</p><small>擅长：理解、归纳、生成、规划建议</small></div><i>≠</i><div><span>智能体</span><strong>一个运行系统</strong><p>模型 + 目标 + 工具 + 状态 + 控制机制。</p><small>擅长：围绕目标持续完成多步骤任务</small></div></div>
           <div className="agent-loop"><span>智能体的基本循环</span>{["接收目标", "观察现状", "判断缺口", "选择工具", "执行行动", "读取反馈", "继续或停止"].map((x, i) => <div key={x}><b>{i + 1}</b><p>{x}</p></div>)}</div>
           <AgentTrace />
-          <InlinePythonLab example="agent" guide="代码先接收目标，再按计划调用四个工具，每次把观察结果放入 evidence，最后达到停止条件。重点是“目标—行动—反馈—继续”的循环，以及最终仍交由审计人员复核。" />
+          <InlinePythonLab example="agent" guide="代码围绕BX-42017，按计划调用航班、酒店、CRM、日历和发票五个数据工具，把每次观察放入evidence，达到停止条件后交由审计人员复核。" />
           <div className="chat-agent"><div><span>只进行一次输入与输出</span><strong>聊天应用</strong><p>用户提问 → 模型回答 → 结束。</p></div><div><span>形成目标—行动—反馈闭环</span><strong>具备智能体能力</strong><p>模型选择工具 → 读取结果 → 决定下一步。</p></div><p>因此，网页版大模型是否是智能体，不取决于它有没有网页，而取决于它能否围绕目标自主调用工具，并根据结果继续行动。</p></div>
           <div className="autonomy"><h3>审计场景不追求“越自主越好”</h3><div><span>可以自动</span><p>读取、检索、计算、比对、整理、提出疑点。</p></div><div><span>需要审批</span><p>扩大数据范围、写入系统、对外发送、形成正式底稿。</p></div><div><span>必须由人判断</span><p>证据评价、重大定性、舞弊判断、沟通与审计意见。</p></div></div>
           <TeacherNote>把智能体定义落到“循环”。纯工作流是预先写死每一步；智能体在受控范围内根据中间结果选择下一步。两者可以混合，实际生产系统通常也应该混合。</TeacherNote>
