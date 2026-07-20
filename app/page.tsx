@@ -294,33 +294,55 @@ function LlmPipeline() {
   );
 }
 
+const agentTraceSteps = [
+  ["目标", "核实BX-42017机场出租车费是否与真实行程一致。"],
+  ["读取报销工具", "报销称“上海机场至苏州客户公司”，金额468元。"],
+  ["模型判断", "缺少实际抵达城市、住宿地点、客户拜访和发票状态。"],
+  ["航班工具", "员工当天航班实际降落南京。"],
+  ["酒店工具", "员工当晚在南京办理入住。"],
+  ["客户系统", "当天无苏州客户拜访登记，联系人处于休假。"],
+  ["发票查验", "发票真实，但已在另一家公司出现。"],
+  ["控制规则", "证据达到升级阈值；不能自行定性，提交审计人员复核。"],
+] as const;
+
 function AgentTrace() {
   const [visible, setVisible] = useState(0);
   const [auto, setAuto] = useState(false);
   const box = useRef<HTMLDivElement>(null);
-  const trace = [
-    ["目标", "核实BX-42017机场出租车费是否与真实行程一致。"],
-    ["读取报销工具", "报销称“上海机场至苏州客户公司”，金额468元。"],
-    ["模型判断", "缺少实际抵达城市、住宿地点、客户拜访和发票状态。"],
-    ["航班工具", "员工当天航班实际降落南京。"],
-    ["酒店工具", "员工当晚在南京办理入住。"],
-    ["客户系统", "当天无苏州客户拜访登记，联系人处于休假。"],
-    ["发票查验", "发票真实，但已在另一家公司出现。"],
-    ["控制规则", "证据达到升级阈值；不能自行定性，提交审计人员复核。"],
-  ];
+
   useEffect(() => {
-    if (!auto || visible >= trace.length) { if (visible >= trace.length) setAuto(false); return; }
-    const id = setTimeout(() => setVisible(v => v + 1), 850); return () => clearTimeout(id);
-  }, [auto, visible, trace.length]);
-  useEffect(() => box.current?.scrollTo({ top: box.current.scrollHeight, behavior: "smooth" }), [visible]);
+    if (!auto) return;
+    if (visible >= agentTraceSteps.length) {
+      setAuto(false);
+      return;
+    }
+    const id = window.setTimeout(() => setVisible(v => v + 1), 850);
+    return () => window.clearTimeout(id);
+  }, [auto, visible]);
+
+  useEffect(() => {
+    const log = box.current;
+    if (!log) return;
+    log.scrollTop = log.scrollHeight;
+  }, [visible]);
+
+  const toggleAutoRun = () => {
+    if (auto) {
+      setAuto(false);
+      return;
+    }
+    if (visible >= agentTraceSteps.length) setVisible(0);
+    setAuto(true);
+  };
+
   return (
     <div className="interactive agent-trace">
-      <div className="interactive-head"><div><span>互动 05</span><h3>看智能体如何根据结果决定下一步</h3></div><div><button onClick={() => { setVisible(0); setAuto(false); }}>重置</button><button className="primary" onClick={() => setAuto(!auto)}>{auto ? "暂停" : "自动运行"}</button></div></div>
+      <div className="interactive-head"><div><span>互动 05</span><h3>看智能体如何根据结果决定下一步</h3></div><div><button onClick={() => { setVisible(0); setAuto(false); }}>重置</button><button className="primary" onClick={toggleAutoRun}>{auto ? "暂停" : visible >= agentTraceSteps.length ? "重新运行" : "自动运行"}</button></div></div>
       <div className="trace-layout">
         <div className="agent-anatomy"><span>智能体的组成</span>{[["目标", "完成什么"], ["大模型", "理解与决策"], ["工具", "查询与执行"], ["状态", "记住进展"], ["控制", "权限与停止"]].map(x => <div key={x[0]}><strong>{x[0]}</strong><small>{x[1]}</small></div>)}</div>
-        <div className="trace-log" ref={box}>{visible === 0 && <p className="trace-empty">点击“自动运行”，逐步观察工具调用和反馈。</p>}{trace.slice(0, visible).map((x, i) => <div key={x[0]} className={i === visible - 1 ? "latest" : ""}><span>{String(i + 1).padStart(2, "0")}</span><p><strong>{x[0]}</strong><small>{x[1]}</small></p></div>)}</div>
+        <div className="trace-log" ref={box}>{visible === 0 && <p className="trace-empty">点击“自动运行”，逐步观察工具调用和反馈。</p>}{agentTraceSteps.slice(0, visible).map((x, i) => <div key={x[0]} className={i === visible - 1 ? "latest" : ""}><span>{String(i + 1).padStart(2, "0")}</span><p><strong>{x[0]}</strong><small>{x[1]}</small></p></div>)}</div>
       </div>
-      <div className="trace-footer"><button disabled={visible >= trace.length} onClick={() => setVisible(Math.min(trace.length, visible + 1))}>单步执行</button><p>{visible >= trace.length ? "当前状态：等待人工复核。异常不是错误，风险不是舞弊。" : "智能体没有把所有步骤预先写死，而是读取上一步结果后决定下一步。"}</p></div>
+      <div className="trace-footer"><button disabled={visible >= agentTraceSteps.length} onClick={() => setVisible(Math.min(agentTraceSteps.length, visible + 1))}>单步执行</button><p>{visible >= agentTraceSteps.length ? "当前状态：等待人工复核。异常不是错误，风险不是舞弊。" : "智能体没有把所有步骤预先写死，而是读取上一步结果后决定下一步。"}</p></div>
     </div>
   );
 }
