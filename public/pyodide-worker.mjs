@@ -11,6 +11,9 @@ const ready = (async () => {
     const trainingResponse = await fetch("/toy_audit_case/classroom_training/ml_training_examples.csv");
     if (!trainingResponse.ok) throw new Error("历史训练集加载失败");
     runtime.FS.writeFile("/data/ml_training_examples.csv", await trainingResponse.text(), { encoding: "utf8" });
+    const digitsResponse = await fetch("/simple_audit_demo/digits_8x8_subset.csv");
+    if (!digitsResponse.ok) throw new Error("手写数字数据集加载失败");
+    runtime.FS.writeFile("/data/digits_8x8_subset.csv", await digitsResponse.text(), { encoding: "utf8" });
     self.postMessage({ type: "ready" });
   } catch (error) {
     self.postMessage({
@@ -31,6 +34,7 @@ self.onmessage = async (event) => {
   runtime.setStderr({ batched: (text) => stderr.push(text) });
 
   try {
+    await runtime.loadPackagesFromImports(event.data.code);
     const result = await runtime.runPythonAsync(event.data.code);
     let value = "";
     if (result !== undefined && result !== null) {

@@ -29,6 +29,28 @@
 .known-unknown blockquote { margin: 0; padding: 16px 22px; border-top: 1px solid #d8c7b8; background: #f8f2ec; color: #705b47; font-size: 11px; line-height: 1.7; }
 
 .fitting-lab, .confusion-lab, .neuron-continuity, .shift-lab, .attention-lab, .agent-branch { margin-top: 24px; }
+.digits-lab { margin-top: 24px; }
+.digit-controls { display: flex; gap: 7px; flex-wrap: wrap; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.digit-controls button { padding: 9px 11px; border: 1px solid var(--line); color: var(--muted); background: white; font-size: 9px; }
+.digit-controls button:last-child { margin-left: auto; }
+.digit-controls button.active { color: white; border-color: var(--accent); background: var(--accent); }
+.digit-layout { display: grid; grid-template-columns: 210px 1fr 210px; gap: 24px; align-items: center; padding: 22px; }
+.digit-caption { display: block; margin-bottom: 8px; color: var(--accent); font-size: 9px; font-weight: 800; }
+.digit-grid { display: grid; grid-template-columns: repeat(8, 1fr); aspect-ratio: 1; background: var(--dark); }
+.digit-grid i { position: relative; display: block; background: white; }
+.digit-grid i span { position: absolute; inset: 0; display: grid; place-items: center; color: transparent; font: 6px ui-monospace, monospace; }
+.digit-layout small { display: block; margin-top: 9px; color: var(--muted); font-size: 8px; line-height: 1.6; }
+.digit-flow { display: flex; align-items: center; justify-content: center; gap: 9px; }
+.digit-flow > div { min-width: 100px; padding: 14px 9px; border: 1px solid var(--line); text-align: center; }
+.digit-flow span { display: block; color: var(--muted); font-size: 8px; }
+.digit-flow strong { display: block; margin: 4px 0; color: var(--accent); font: 25px var(--serif); }
+.digit-flow p { margin: 0; color: var(--muted); font-size: 8px; line-height: 1.5; }
+.digit-flow i { color: var(--muted); font-size: 8px; font-style: normal; }
+.digit-result { padding: 17px; border-left: 4px solid var(--warm); background: #f8f1eb; }
+.digit-result.trained { border-color: var(--accent); background: var(--accent-soft); }
+.digit-result > span { color: var(--muted); font-size: 8px; }
+.digit-result > strong { display: block; margin-top: 5px; font-family: var(--serif); font-size: 20px; }
+.digit-result > p { margin: 7px 0 0; font-size: 9px; }
 .fit-controls, .phase-tabs, .attention-tabs, .scenario-tabs { display: flex; gap: 7px; flex-wrap: wrap; padding: 14px 18px; border-bottom: 1px solid var(--line); }
 .fit-controls button, .phase-tabs button, .attention-tabs button, .scenario-tabs button { padding: 9px 11px; border: 1px solid var(--line); background: white; color: var(--muted); text-align: left; font-size: 9px; }
 .fit-controls button strong, .phase-tabs button strong { display: block; font-size: 10px; }
@@ -54,6 +76,7 @@
 .fit-formula i { color: var(--muted); font-style: normal; }
 .fit-formula strong { color: var(--accent); }
 .lab-disclaimer { margin: 0; padding: 12px 20px 17px; color: var(--muted); font-size: 9px; line-height: 1.7; }
+.lab-disclaimer a { margin: 0 3px; color: var(--accent); font-weight: 700; }
 
 .training-lifecycle { display: grid; grid-template-columns: 260px 1fr; margin-top: 24px; border: 1px solid var(--line); background: white; }
 .training-lifecycle > div { display: grid; padding: 10px; border-right: 1px solid var(--line); background: #f1f4f2; }
@@ -159,7 +182,7 @@
 .agent-canvas section button { align-self: flex-start; padding: 9px 12px; border: 1px solid var(--accent); color: white; background: var(--accent); font-size: 9px; }
 
 @media (max-width: 760px) {
-  .known-unknown > div:nth-child(2), .evaluation-grid, .training-lifecycle, .neuron-layout, .agent-canvas { grid-template-columns: 1fr; }
+  .known-unknown > div:nth-child(2), .evaluation-grid, .training-lifecycle, .neuron-layout, .agent-canvas, .digit-layout { grid-template-columns: 1fr; }
   .known-unknown section { border-right: 0; border-bottom: 1px solid var(--line); }
   .training-lifecycle > div, .neuron-inputs, .canvas-list { border-right: 0; border-bottom: 1px solid var(--line); }
   .record-grid { grid-template-columns: repeat(4, 1fr); border-right: 0; border-bottom: 1px solid var(--line); }
@@ -172,6 +195,8 @@
   .fit-live { align-items: flex-start; flex-direction: column; }
   .fit-chart { min-width: 700px; }
   .fitting-lab { overflow-x: auto; }
+  .digit-controls button:last-child { margin-left: 0; }
+  .digit-flow { flex-wrap: wrap; }
 }
 
 @media (prefers-reduced-motion: reduce) {

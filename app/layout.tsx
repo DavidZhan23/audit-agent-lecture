@@ -3,23 +3,23 @@ import "./globals.css";
 import "./course-interactives.css";
 
 export const metadata: Metadata = {
-  title: "42,000笔报销，怎样找到真正值得核查的问题？｜审计智能体基础课",
-  description: "先完整面对一个审计任务，再逐步用普通代码、机器学习、神经网络、大模型和智能体增加解决问题的能力。",
+  title: "从一笔286元报销，讲清人工智能｜审计智能体基础课",
+  description: "用同一笔出租车费，一步步讲清规则、机器学习、神经网络、大模型和智能体各自能做什么、不能做什么。",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
   },
   openGraph: {
-    title: "从审计问题出发，一步步理解智能体",
-    description: "42,000笔报销、4名审计人员、10个工作日：技术究竟能帮我们解决什么？",
+    title: "从一笔286元报销，讲清人工智能",
+    description: "规则 → 机器学习 → 神经网络 → 大模型 → 智能体。",
     type: "website",
-    images: ["/og-v2.png"],
+    images: ["/og-v3.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "从审计问题出发，一步步理解智能体",
-    description: "42,000笔报销、4名审计人员、10个工作日：技术究竟能帮我们解决什么？",
-    images: ["/og-v2.png"],
+    title: "从一笔286元报销，讲清人工智能",
+    description: "规则 → 机器学习 → 神经网络 → 大模型 → 智能体。",
+    images: ["/og-v3.png"],
   },
 };
 

@@ -18,8 +18,10 @@ test("server-renders the complete audit AI course", async () => {
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   const html = await response.text();
-  assert.match(html, /42,000笔报销/);
+  assert.match(html, /今天只审一笔报销/);
+  assert.match(html, /BX-42306/);
   assert.match(html, /机器学习：把“学习”还原成函数拟合/);
+  assert.match(html, /64个像素/);
   assert.match(html, /大语言模型：用神经网络学习Token序列/);
   assert.match(html, /目标—行动—反馈循环/);
   assert.doesNotMatch(html, /Your site is taking shape|codex-preview/);
@@ -37,4 +39,13 @@ test("ships the independent training data and downloadable workbook", async () =
   assert.equal(rows.length, 301);
   assert.equal(rows.filter((row) => row.includes(",train,")).length, 240);
   assert.equal(rows.filter((row) => row.includes(",validation,")).length, 60);
+});
+
+test("ships the classic handwritten digits teaching subset", async () => {
+  const csvUrl = new URL("../public/simple_audit_demo/digits_8x8_subset.csv", import.meta.url);
+  const rows = (await readFile(csvUrl, "utf8")).trim().split(/\r?\n/);
+  assert.equal(rows.length, 1301);
+  assert.equal(rows.filter((row) => row.includes(",train,")).length, 1000);
+  assert.equal(rows.filter((row) => row.includes(",test,")).length, 300);
+  assert.match(rows[0], /pixel_00.*pixel_63/);
 });
