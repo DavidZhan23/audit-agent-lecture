@@ -21,14 +21,14 @@ const stages: Array<{
 ];
 
 const nav = [
-  ["problem", "先把问题说清楚", "8′"],
-  ["code", "普通代码与规则", "17′"],
-  ["ml", "机器学习", "17′"],
-  ["nn", "神经网络", "23′"],
-  ["llm", "大模型", "25′"],
-  ["agent", "智能体", "16′"],
+  ["problem", "先把问题说清楚", "15′"],
+  ["code", "普通代码与规则", "16′"],
+  ["ml", "机器学习", "16′"],
+  ["nn", "神经网络", "22′"],
+  ["llm", "大模型", "24′"],
+  ["agent", "智能体", "14′"],
   ["case", "完整案例", "5′"],
-  ["build", "审计智能体怎么做", "5′"],
+  ["build", "审计智能体怎么做", "4′"],
   ["summary", "总结", "4′"],
 ];
 
@@ -117,7 +117,7 @@ function Header({ notes, setNotes }: { notes: boolean; setNotes: (v: boolean) =>
   return (
     <>
       <header className="topbar">
-        <a href="#top" className="brand">审计智能体入门课</a>
+        <a href="#top" className="brand">从审计问题到智能体</a>
         <div className="top-progress"><i style={{ width: `${progress}%` }} /></div>
         <div className="top-actions">
           <button className={notes ? "on" : ""} onClick={() => setNotes(!notes)}>{notes ? "隐藏讲师备注" : "显示讲师备注"}</button>
@@ -130,30 +130,88 @@ function Header({ notes, setNotes }: { notes: boolean; setNotes: (v: boolean) =>
   );
 }
 
+const triageClaims = [
+  { id: "BX-41002", date: "05-14", type: "住宿", amount: "¥720", description: "上海参展", issue: false, truth: "看似超过600元标准，但有事前特殊审批和会展补充制度。" },
+  { id: "BX-42017", date: "05-18", type: "出租车", amount: "¥468", description: "上海机场至苏州客户", issue: true, truth: "金额并不显眼，但航班和酒店显示员工当天在南京。" },
+  { id: "BX-41881", date: "05-21", type: "材料费", amount: "¥1,960", description: "项目资料整理", issue: true, truth: "单笔低于2,000元，但两天内同商户还有三笔近似金额。" },
+  { id: "BX-42306", date: "05-23", type: "出租车", amount: "¥286", description: "市内交通", issue: true, truth: "报销表看不出问题；票据二维码解析金额其实是86元。" },
+  { id: "BX-42519", date: "05-26", type: "客户招待", amount: "¥988", description: "客户沟通", issue: true, truth: "周日小票含儿童套餐和生日蛋糕，客户系统无拜访记录。" },
+  { id: "BX-42702", date: "05-28", type: "机票", amount: "¥5,480", description: "北京项目返程", issue: false, truth: "金额较高，但行程、项目日程和审批均一致。" },
+] as const;
+
+function ManualTriageChallenge() {
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [revealed, setRevealed] = useState(false);
+  const toggle = (id: string) => setPicked(current => {
+    const next = new Set(current);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  const correct = triageClaims.filter(claim => claim.issue && picked.has(claim.id)).length;
+  const falsePositives = triageClaims.filter(claim => !claim.issue && picked.has(claim.id)).length;
+  const missed = triageClaims.filter(claim => claim.issue && !picked.has(claim.id)).length;
+
+  return (
+    <div className="triage-challenge">
+      <div className="challenge-head"><div><span>课堂挑战</span><h3>你只有60秒：仅看报销表，选出最值得核查的记录</h3></div><p>真实任务有42,000笔，这里只截取6笔。</p></div>
+      <div className="claim-table">
+        <div className="claim-row claim-header"><span>选择</span><span>报销号</span><span>日期</span><span>类型</span><span>金额</span><span>报销说明</span></div>
+        {triageClaims.map(claim => <button key={claim.id} disabled={revealed} className={`claim-row ${picked.has(claim.id) ? "picked" : ""} ${revealed ? claim.issue ? "is-issue" : "is-normal" : ""}`} onClick={() => toggle(claim.id)}><span><i>{picked.has(claim.id) ? "✓" : ""}</i></span><strong>{claim.id}</strong><span>{claim.date}</span><span>{claim.type}</span><b>{claim.amount}</b><span>{claim.description}</span>{revealed && <small>{claim.issue ? "需重点核查" : "合理例外"}：{claim.truth}</small>}</button>)}
+      </div>
+      <div className="challenge-actions"><div><strong>已选 {picked.size} 笔</strong><p>{revealed ? `找到 ${correct}/4 个真实疑点；误报 ${falsePositives} 个；遗漏 ${missed} 个。` : "不要追求猜对：先体验你现在缺少哪些信息。"}</p></div><div><button onClick={() => { setPicked(new Set()); setRevealed(false); }}>重置</button><button className="primary" onClick={() => setRevealed(true)}>揭示完整证据</button></div></div>
+      {revealed && <div className="challenge-lesson"><strong>这不是“眼力比赛”。</strong><p>高金额可能是合理例外，低金额也可能隐藏真实疑点。问题不是审计人员不会判断，而是一张报销表根本没有提供足够证据。</p></div>}
+    </div>
+  );
+}
+
+function EvidenceTrail() {
+  const [selected, setSelected] = useState(0);
+  const sources = [
+    { name: "报销系统", fact: "BX-42017：上海机场→苏州客户，出租车费468元。", meaning: "单看这条记录，金额不超标，说明也算合理。" },
+    { name: "航班数据", fact: "员工当天的航班从北京降落南京，不是上海。", meaning: "报销起点与实际行程出现第一个矛盾。" },
+    { name: "酒店记录", fact: "员工当晚在南京酒店办理入住。", meaning: "第二个独立数据源继续指向南京。" },
+    { name: "客户CRM", fact: "当天没有苏州客户拜访登记，对应联系人正在休假。", meaning: "声称的业务目的缺少业务记录支持。" },
+    { name: "发票查验", fact: "发票本身为真，但已被另一家公司的报销记录使用。", meaning: "“真发票”不等于“本人本次业务真实发生”。" },
+  ];
+  const source = sources[selected];
+  return (
+    <div className="evidence-demo">
+      <div className="evidence-head"><span>把一笔“看起来正常”的报销查到底</span><h3>真正的问题不在一张表里，而在多个系统之间</h3></div>
+      <div className="evidence-layout"><div className="evidence-sources">{sources.map((item, index) => <button key={item.name} className={selected === index ? "active" : ""} onClick={() => setSelected(index)}><b>{String(index + 1).padStart(2, "0")}</b><span>{item.name}</span><i>→</i></button>)}</div><div className="evidence-detail"><span>当前打开：{source.name}</span><strong>{source.fact}</strong><p>{source.meaning}</p></div></div>
+      <div className="evidence-conclusion"><div><span>只看报销表</span><strong>金额未超标，可能直接通过</strong></div><i>→</i><div><span>串联五类证据</span><strong>行程、业务目的和票据使用相互矛盾</strong></div><i>→</i><div><span>正确系统输出</span><strong>形成可追溯疑点，交审计人员复核</strong></div></div>
+    </div>
+  );
+}
+
 function ProblemSection() {
   const [selected, setSelected] = useState(0);
   const questions = [
     ["真实性", "这笔费用真的发生了吗？是否属于本人、本次业务？"],
-    ["合规性", "金额、类型、审批是否符合制度？有没有合理例外？"],
-    ["完整性", "是否存在未记录、拆分记录或跨系统不一致？"],
-    ["证据性", "每个疑点能否追溯到原始数据、制度和核验结果？"],
+    ["合规性", "金额、类型、审批是否符合制度？有没有有效例外？"],
+    ["完整性", "是否存在拆分、重复、遗漏或跨系统不一致？"],
+    ["证据性", "每个疑点能否回到原始数据、制度依据和核验过程？"],
   ];
   return (
     <>
-      <div className="problem-statement">
-        <div className="case-number"><span>42,000</span><small>笔差旅及招待费报销</small></div>
-        <div className="problem-copy"><p>费用同比增长38%，出差人次只增长9%。审计部门只有有限时间，不能只靠人工逐笔翻阅。</p><h3>我们真正要解决的，不是“让AI看报销”，而是：</h3><ol><li>从大量记录中筛出值得核查的事项；</li><li>尽量不漏掉隐蔽问题，同时减少误报；</li><li>把每个疑点变成有依据、可追溯、可复核的审计线索。</li></ol></div>
+      <div className="audit-brief">
+        <div className="brief-title"><span>模拟审计任务书</span><h3>A集团差旅及招待费专项审计</h3><p>费用同比增长38%，但出差人次只增长9%。管理层希望知道：费用是否真实、合规，以及是否存在拆分、重复或个人消费伪装。</p></div>
+        <div className="brief-stats"><div><strong>42,000</strong><span>笔报销</span></div><div><strong>4</strong><span>名审计人员</span></div><div><strong>10</strong><span>个工作日</span></div><div><strong>7</strong><span>类数据源</span></div></div>
+        <div className="brief-deliverable"><span>必须交付</span><strong>不是一万条“可能异常”的报警</strong><p>而是一份按风险排序的疑点清单：每项包含事实、适用标准、原始证据、不确定性和下一步核查建议。</p></div>
       </div>
+
+      <ManualTriageChallenge />
+      <EvidenceTrail />
+
+      <div className="problem-anatomy"><div><span>01 · 规模</span><strong>人看不完</strong><p>平均每笔只看30秒，42,000笔也需350小时。</p></div><div><span>02 · 模式</span><strong>问题不一定在单笔</strong><p>拆分、频率和关联异常只有组合起来才看得见。</p></div><div><span>03 · 形式</span><strong>证据不只是数字</strong><p>票据图片、报销说明和制度文件都需要处理。</p></div><div><span>04 · 语境</span><strong>异常不等于错误</strong><p>展会期间、特殊审批和制度例外可能排除误报。</p></div><div><span>05 · 行动</span><strong>发现后还要核验</strong><p>需要进入不同系统取数、比对、留痕并交由人复核。</p></div></div>
+
       <div className="audit-questions">
         {questions.map((q, i) => <button key={q[0]} className={selected === i ? "active" : ""} onClick={() => setSelected(i)}><span>0{i + 1}</span><strong>{q[0]}</strong></button>)}
         <div><strong>{questions[selected][0]}问题</strong><p>{questions[selected][1]}</p></div>
       </div>
-      <div className="inputs-outputs">
-        <div><span>我们手里有什么</span><p>报销明细、票据图片、审批记录、制度文件、航班酒店、客户拜访、供应商资料。</p></div>
-        <i>→</i>
-        <div><span>我们希望得到什么</span><p>按风险排序的疑点清单，每项带事实、标准、证据、不确定性和下一步核查建议。</p></div>
-      </div>
-      <div className="course-promise"><strong>这堂课只回答一条主线</strong><p>为了完成这个审计任务，普通代码能做到哪里？为什么需要机器学习？为什么需要神经网络和大模型？最后，大模型怎样才变成真正能协助审计的智能体？</p></div>
+
+      <div className="success-definition"><span>什么叫“解决了问题”</span><div><strong>找得到</strong><p>尽量不漏掉真实疑点</p></div><div><strong>报得准</strong><p>减少合理例外造成的误报</p></div><div><strong>说得清</strong><p>说明事实、标准和推理过程</p></div><div><strong>查得回</strong><p>能追溯原始证据并由人复核</p></div></div>
+
+      <div className="course-promise"><strong>接下来，我们不会突然跳到“智能体”</strong><p>我们先用最普通的代码解决确定性问题，再一步步增加从数据学习、处理图片、理解语言和调用工具的能力。每引入一种技术，只回答两个问题：它新解决了什么？它还解决不了什么？</p></div>
     </>
   );
 }
@@ -832,21 +890,21 @@ export default function Home() {
       <aside className="sidenav"><div><span>2小时课程</span><strong>从规则到智能体</strong></div><nav>{nav.map((x, i) => <a href={`#${x[0]}`} key={x[0]}><span>{String(i + 1).padStart(2, "0")}</span><b>{x[1]}</b><small>{x[2]}</small></a>)}</nav></aside>
       <div className="page">
         <section className="hero">
-          <p>面向审计人员的人工智能基础课</p>
-          <h1>先理解机器怎样工作，<br />再谈怎样做审计智能体。</h1>
-          <div className="hero-lead">从一段普通的 <code>if / else</code> 代码开始，逐步理解机器学习、神经网络、大模型和智能体。</div>
-          <div className="hero-path">{stages.map((s, i) => <a href={`#${s.key === "nn" ? "nn" : s.key}`} key={s.key}><span>0{i + 1}</span><strong>{s.name}</strong><small>{s.ability}</small></a>)}</div>
-          <div className="hero-foot"><span>一个审计问题</span><i>→</i><span>五种解决方式</span><i>→</i><span>逐步增加能力</span></div>
+          <p>面向审计人员的2小时人工智能基础课</p>
+          <h1>42,000笔报销，4名审计人员，10个工作日。<br />怎样找到真正值得核查的问题？</h1>
+          <div className="hero-lead">我们先不谈AI、模型或智能体。先把审计目标、数据、时间限制和应交付的证据说清楚，再一步步引入技术。</div>
+          <div className="hero-scenario"><div><span>数据规模</span><strong>42,000笔</strong><small>差旅及招待费报销</small></div><div><span>人力限制</span><strong>4人 × 10天</strong><small>不可能靠人工逐笔深查</small></div><div><span>证据分布</span><strong>7类数据源</strong><small>表格、图片、制度与业务系统</small></div><div><span>最终交付</span><strong>可复核疑点</strong><small>不是笼统的“AI风险分”</small></div></div>
+          <a className="hero-start" href="#problem">先进入这个审计任务 <span>↓</span></a>
         </section>
 
         <section id="problem" className="lesson">
-          <SectionTitle no="01" time="8分钟" title="开始之前，先把要解决的问题说清楚" intro="技术不是起点。起点是审计目标、手里的资料、时间约束，以及最终需要什么样的证据。" />
+          <SectionTitle no="01" time="15分钟" title="开始之前，完整面对我们要解决的问题" intro="技术不是起点。先亲手做一次筛查，再看一笔报销的证据如何散落在不同系统中，最后定义什么才算把问题解决。" />
           <ProblemSection />
-          <TeacherNote>先花足时间讲业务问题。问学员：“如果系统报出一万条预警，但九千条都是正常例外，它有价值吗？”让大家理解准确、完整、可追溯同样重要。</TeacherNote>
+          <TeacherNote>先不讲任何技术名称。给学员1分钟完成筛查挑战，让大家为自己的选择说理由；揭示证据后追问：“你是判断错了，还是当时根本没有足够信息？”再逐一打开BX-42017的五类数据，把“筛查—取证—复核”的完整任务讲清楚。</TeacherNote>
         </section>
 
         <section id="code" className="lesson">
-          <SectionTitle no="02" time="17分钟" title="第一步：普通代码和规则系统是什么" intro="在谈AI之前，先理解最传统的计算机程序：人把步骤和条件写清楚，计算机机械、快速、准确地执行。" />
+          <SectionTitle no="02" time="16分钟" title="第一步：普通代码和规则系统是什么" intro="在谈AI之前，先理解最传统的计算机程序：人把步骤和条件写清楚，计算机机械、快速、准确地执行。" />
           <Definition term="计算机程序" simple="一组明确的指令，告诉计算机先做什么、后做什么，以及遇到不同条件时怎么办。" precise="程序由变量、条件、循环、函数等结构组成；同样的输入和同样的代码，通常得到同样的输出。" />
           <div className="concept-grid four"><div><span>变量</span><strong>保存数据</strong><p>例如金额、日期、审批状态。</p></div><div><span>条件</span><strong>进行判断</strong><p>如果金额超标，就进入下一步。</p></div><div><span>循环</span><strong>重复处理</strong><p>对42,000笔报销逐笔执行。</p></div><div><span>函数</span><strong>封装步骤</strong><p>把“检查住宿标准”写成可复用模块。</p></div></div>
           <CodeLab />
@@ -858,7 +916,7 @@ export default function Home() {
         </section>
 
         <section id="ml" className="lesson">
-          <SectionTitle no="03" time="17分钟" title="第二步：什么是机器学习" intro="当人很难把所有模式写成规则时，可以给机器历史案例，让模型从数据中学习输入和结果之间的统计关系。" />
+          <SectionTitle no="03" time="16分钟" title="第二步：什么是机器学习" intro="当人很难把所有模式写成规则时，可以给机器历史案例，让模型从数据中学习输入和结果之间的统计关系。" />
           <Definition term="机器学习（Machine Learning）" simple="不给计算机写出每一条判断规则，而是给它许多案例，让它自己总结哪些输入通常对应哪些结果。" precise="机器学习使用数据和算法估计模型参数，使模型能够对训练时没有见过的新数据进行预测、分类或排序。" />
           <div className="notation"><div><span>输入 X</span><strong>特征</strong><p>金额、时间、商户、频率、说明相似度……</p></div><i>→</i><div><span>模型 f</span><strong>学习关系</strong><p>训练得到的内部参数，不是人逐条写出的规则。</p></div><i>→</i><div><span>输出 ŷ</span><strong>预测</strong><p>正常/异常，或0—100的风险概率。</p></div><div className="label"><span>训练时还需要</span><strong>标签 y</strong><p>历史上经过确认的真实结果。</p></div></div>
           <TrainingProcess />
@@ -871,7 +929,7 @@ export default function Home() {
         </section>
 
         <section id="nn" className="lesson">
-          <SectionTitle no="04" time="23分钟" title="第三步：什么是神经网络和深度学习" intro="神经网络仍然属于机器学习。变化在于，它可以从原始数据中逐层学习特征，不必完全依赖人先把特征整理好。" />
+          <SectionTitle no="04" time="22分钟" title="第三步：什么是神经网络和深度学习" intro="神经网络仍然属于机器学习。变化在于，它可以从原始数据中逐层学习特征，不必完全依赖人先把特征整理好。" />
           <Definition term="人工神经网络" simple="许多简单计算单元连接成层，输入经过一层层加权和变换，最后产生预测结果。" precise="神经网络是可微分的参数化函数；训练通过损失函数衡量错误，再用反向传播和优化算法调整大量权重。" />
           <div className="equation"><span>一个神经元做的事</span><strong>输入 × 权重，全部相加，再经过一个非线性函数</strong><code>output = activation(w₁x₁ + w₂x₂ + … + bias)</code><p>不要求学员计算公式，只要理解：权重表示影响大小；训练就是不断调整这些权重。</p></div>
           <NeuralNetworkLab />
@@ -885,7 +943,7 @@ export default function Home() {
         </section>
 
         <section id="llm" className="lesson">
-          <SectionTitle no="05" time="25分钟" title="第四步：大模型到底是什么" intro="大语言模型不是另一个完全不同的技术。它本质上是规模很大的深度神经网络，通常采用Transformer架构，在海量文本上训练。" />
+          <SectionTitle no="05" time="24分钟" title="第四步：大模型到底是什么" intro="大语言模型不是另一个完全不同的技术。它本质上是规模很大的深度神经网络，通常采用Transformer架构，在海量文本上训练。" />
           <Definition term="大语言模型（LLM）" simple="一个读过海量文字、能够根据上下文继续生成文字的神经网络。" precise="大语言模型通过预训练学习Token序列的概率分布，并在指令微调、偏好对齐等阶段形成更适合问答和任务执行的行为。" />
           <TokenLab />
           <LlmPipeline />
@@ -901,7 +959,7 @@ export default function Home() {
         </section>
 
         <section id="agent" className="lesson">
-          <SectionTitle no="06" time="16分钟" title="第五步：大模型怎样变成智能体" intro="大模型是负责理解和生成的模型；智能体是围绕目标运行的系统。关键变化不是回答更长，而是能够使用工具并形成行动闭环。" />
+          <SectionTitle no="06" time="14分钟" title="第五步：大模型怎样变成智能体" intro="大模型是负责理解和生成的模型；智能体是围绕目标运行的系统。关键变化不是回答更长，而是能够使用工具并形成行动闭环。" />
           <Definition term="智能体（Agent）" simple="让大模型不只回答问题，还能为了完成目标，判断下一步、调用工具、读取结果并继续行动。" precise="智能体是能够感知环境状态、根据目标选择行动、通过工具影响或查询环境，并依据反馈更新状态的受控软件系统。" />
           <div className="model-system"><div><span>大模型</span><strong>一个模型</strong><p>输入上下文，输出文字或结构化指令。</p><small>擅长：理解、归纳、生成、规划建议</small></div><i>≠</i><div><span>智能体</span><strong>一个运行系统</strong><p>模型 + 目标 + 工具 + 状态 + 控制机制。</p><small>擅长：围绕目标持续完成多步骤任务</small></div></div>
           <div className="agent-loop"><span>智能体的基本循环</span>{["接收目标", "观察现状", "判断缺口", "选择工具", "执行行动", "读取反馈", "继续或停止"].map((x, i) => <div key={x}><b>{i + 1}</b><p>{x}</p></div>)}</div>
@@ -920,7 +978,7 @@ export default function Home() {
         </section>
 
         <section id="build" className="lesson">
-          <SectionTitle no="08" time="5分钟" title="最后落地：我们自己的审计智能体怎么做" intro="从一个窄而清楚的场景起步，先把证据、权限和人工节点设计好，再讨论模型和平台。" />
+          <SectionTitle no="08" time="4分钟" title="最后落地：我们自己的审计智能体怎么做" intro="从一个窄而清楚的场景起步，先把证据、权限和人工节点设计好，再讨论模型和平台。" />
           <DesignSteps />
           <div className="control-lines"><h3>上线前必须回答的六个问题</h3><ol><li><strong>依据对吗？</strong><span>使用的是哪个版本的法规和制度？</span></li><li><strong>数据能用吗？</strong><span>是否授权、完整、准确、符合保密要求？</span></li><li><strong>工具可控吗？</strong><span>能读什么、能写什么、失败时怎么办？</span></li><li><strong>证据可追溯吗？</strong><span>能否回到原始记录、原文和计算过程？</span></li><li><strong>人在回路吗？</strong><span>关键结论和高风险操作由谁审批？</span></li><li><strong>效果可衡量吗？</strong><span>召回、误报、稳定性和时间节省是多少？</span></li></ol></div>
           <TeacherNote>如果时间有限，这一章只让学员记住：先选场景，再定输入和工具，最后设人工关口。不要一开始追求跨全业务、全自主、多智能体。</TeacherNote>
