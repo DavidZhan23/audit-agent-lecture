@@ -439,13 +439,13 @@ for epoch in range(2001):
     if epoch in (0, 10, 100, 500, 2000):
         print(f"epoch={epoch:4d}  loss={loss/len(data):.5f}")
 
-print("\n训练后的 state_dict：")
+print("\\n训练后的 state_dict：")
 print("layer1.weight =", [[round(v, 3) for v in row] for row in W1])
 print("layer1.bias   =", [round(v, 3) for v in b1])
 print("output.weight =", [round(v, 3) for v in W2])
 print("output.bias   =", round(b2, 3))
 
-print("\n四种输入的预测：")
+print("\\n四种输入的预测：")
 for x, y in data:
     h = [sigmoid(x[0]*W1[0][j] + x[1]*W1[1][j] + b1[j]) for j in range(2)]
     pred = sigmoid(h[0]*W2[0] + h[1]*W2[1] + b2)
@@ -490,8 +490,8 @@ for _ in range(18):
     row = weights[token_to_id[text[-1]]]
     next_token = random.choices(tokens, weights=row, k=1)[0]
     text += next_token
-print("\n生成结果：", text)
-print("\n真实LLM用多层Transformer张量替代这张简单概率表。")`,
+print("\\n生成结果：", text)
+print("\\n真实LLM用多层Transformer张量替代这张简单概率表。")`,
   },
   agent: {
     label: "运行智能体循环",
@@ -509,13 +509,13 @@ goal = "核实上海机场至苏州的出租车费"
 print("目标：", goal)
 
 for step, tool_name in enumerate(plan, 1):
-    print(f"\n第{step}步：调用{tool_name}")
+    print(f"\\n第{step}步：调用{tool_name}")
     observation = tools[tool_name]
     evidence.append(observation)
     print("观察结果：", observation)
     print("当前证据数：", len(evidence))
 
-print("\n停止条件：已取得四类独立证据")
+print("\\n停止条件：已取得四类独立证据")
 print("系统动作：提交审计人员复核，不自动认定违规。")`,
   },
   rule: {
