@@ -21,15 +21,16 @@ const stages: Array<{
 ];
 
 const nav = [
-  ["problem", "先把问题说清楚", "10′"],
-  ["code", "普通代码与规则", "18′"],
-  ["ml", "机器学习", "18′"],
-  ["nn", "神经网络", "18′"],
+  ["problem", "先把问题说清楚", "8′"],
+  ["code", "普通代码与规则", "14′"],
+  ["ml", "机器学习", "14′"],
+  ["nn", "神经网络", "20′"],
   ["llm", "大模型", "22′"],
-  ["agent", "智能体", "20′"],
-  ["case", "完整案例", "9′"],
-  ["build", "审计智能体怎么做", "8′"],
-  ["summary", "总结", "5′"],
+  ["kernel", "Python模型实验室", "14′"],
+  ["agent", "智能体", "14′"],
+  ["case", "完整案例", "5′"],
+  ["build", "审计智能体怎么做", "5′"],
+  ["summary", "总结", "4′"],
 ];
 
 const auditCases: Array<{
@@ -294,6 +295,322 @@ function LlmPipeline() {
   );
 }
 
+const neuralWeights = {
+  before: {
+    w1: [[0.12, -0.08, 0.04], [0.03, 0.09, -0.11], [-0.05, 0.06, 0.02], [0.07, -0.03, 0.10]],
+    b1: [0, 0, 0],
+    w2: [[0.05], [-0.04], [0.08]],
+    b2: [0],
+    loss: "0.693",
+  },
+  after: {
+    w1: [[1.84, -0.62, 0.31], [1.71, -0.48, 0.27], [0.96, 0.22, -0.15], [0.43, 1.26, 0.74]],
+    b1: [-1.32, 0.38, -0.51],
+    w2: [[2.41], [0.86], [-0.72]],
+    b2: [-1.08],
+    loss: "0.041",
+  },
+};
+
+function Matrix({ name, values }: { name: string; values: number[][] | number[] }) {
+  const rows = Array.isArray(values[0]) ? values as number[][] : [values as number[]];
+  return (
+    <div className="matrix-card">
+      <span>{name}</span>
+      <div>{rows.map((row, i) => <p key={i}>{row.map((value, j) => <b key={j}>{value.toFixed(2)}</b>)}</p>)}</div>
+      <small>shape = [{rows.length}, {rows[0].length}]</small>
+    </div>
+  );
+}
+
+function NeuralCheckpointExplorer() {
+  const [trained, setTrained] = useState(true);
+  const weights = trained ? neuralWeights.after : neuralWeights.before;
+  const losses = [0.693, 0.571, 0.438, 0.302, 0.184, 0.096, 0.041];
+  return (
+    <div className="model-explorer">
+      <div className="model-explorer-head">
+        <div><span>模型解剖台 01</span><h3>一个神经网络训练完，底层到底留下了什么？</h3></div>
+        <div className="state-switch"><button className={!trained ? "active" : ""} onClick={() => setTrained(false)}>训练前</button><button className={trained ? "active" : ""} onClick={() => setTrained(true)}>训练后</button></div>
+      </div>
+      <div className="checkpoint-layout">
+        <div className="checkpoint-architecture">
+          <span>结构没有消失</span>
+          <div><b>4</b><p>输入特征</p></div><i>× W1 + b1 →</i><div><b>3</b><p>隐藏神经元</p></div><i>× W2 + b2 →</i><div><b>1</b><p>风险概率</p></div>
+          <blockquote>训练主要改变右侧这些权重和偏置，而不是把模型变成一组人能直接阅读的业务规则。</blockquote>
+        </div>
+        <div className="weight-inspector">
+          <Matrix name="layer1.weight · W1" values={weights.w1} />
+          <Matrix name="layer1.bias · b1" values={weights.b1} />
+          <Matrix name="output.weight · W2" values={weights.w2} />
+          <Matrix name="output.bias · b2" values={weights.b2} />
+        </div>
+      </div>
+      <div className="training-result">
+        <div><span>损失 Loss</span><strong>{weights.loss}</strong><p>{trained ? "模型预测与训练答案之间的差距已经明显减小。" : "随机初始化时，模型还没有学到有效关系。"}</p></div>
+        <div className="loss-chart">{losses.map((loss, i) => <i key={i} style={{ height: `${Math.max(8, loss / .693 * 100)}%` }}><span>{loss.toFixed(2)}</span></i>)}</div>
+        <p><strong>训练后的模型文件，本质上就是：</strong>网络结构说明 + 一组组有名称、有形状的数字矩阵。预测时，新数据会依次流过这些矩阵。</p>
+      </div>
+    </div>
+  );
+}
+
+const tinyLlmTensors = [
+  { name: "token_embedding.weight", shape: "[16, 8]", role: "把16个Token映射为8维向量", preview: [[0.18, -0.42, 0.07, 0.31], [-0.11, 0.64, 0.28, -0.09]] },
+  { name: "blocks.0.attn.q_proj.weight", shape: "[8, 8]", role: "生成Query，决定当前Token要寻找什么", preview: [[0.23, -0.16, 0.41, 0.08], [0.04, 0.37, -0.29, 0.12]] },
+  { name: "blocks.0.attn.k_proj.weight", shape: "[8, 8]", role: "生成Key，表示上下文Token可提供什么线索", preview: [[-0.07, 0.52, 0.19, -0.33], [0.28, -0.14, 0.06, 0.47]] },
+  { name: "blocks.0.attn.v_proj.weight", shape: "[8, 8]", role: "生成Value，承载被注意力汇总的信息", preview: [[0.31, 0.09, -0.21, 0.17], [-0.26, 0.43, 0.15, 0.02]] },
+  { name: "blocks.0.mlp.up_proj.weight", shape: "[32, 8]", role: "前馈网络先扩展维度，组合更复杂的特征", preview: [[0.12, -0.08, 0.37, 0.21], [0.44, 0.05, -0.18, 0.29]] },
+  { name: "final_norm.weight", shape: "[8]", role: "稳定最后一层表示的数值尺度", preview: [[0.96, 1.03, 0.91, 1.08]] },
+  { name: "lm_head.weight", shape: "[16, 8]", role: "把隐藏表示转换为16个候选Token的分数", preview: [[0.17, 0.39, -0.24, 0.06], [-0.35, 0.11, 0.48, 0.22]] },
+];
+
+function LlmCheckpointExplorer() {
+  const [selected, setSelected] = useState(0);
+  const tensor = tinyLlmTensors[selected];
+  return (
+    <div className="model-explorer llm-explorer">
+      <div className="model-explorer-head"><div><span>模型解剖台 02</span><h3>一个大模型训练完，检查点文件里到底是什么？</h3></div><small>下面用微型Transformer说明真实大模型的同类结构</small></div>
+      <div className="llm-files">
+        <div><span>config.json</span><strong>结构说明</strong><p>层数、隐藏维度、注意力头数、词表大小。</p></div>
+        <div><span>tokenizer.json</span><strong>Tokenizer</strong><p>文字怎样切成Token，以及Token与编号的映射。</p></div>
+        <div className="main-file"><span>model.safetensors</span><strong>训练后的权重</strong><p>大量张量按名称保存；真实大模型通常会拆成多个分片。</p></div>
+        <div><span>generation_config.json</span><strong>生成设置</strong><p>温度、采样、结束Token等默认设置。</p></div>
+      </div>
+      <div className="tensor-browser">
+        <div className="tensor-list"><span>model.safetensors · 张量目录</span>{tinyLlmTensors.map((item, i) => <button key={item.name} className={selected === i ? "active" : ""} onClick={() => setSelected(i)}><strong>{item.name}</strong><small>{item.shape}</small></button>)}</div>
+        <div className="tensor-detail"><span>选中的张量</span><h3>{tensor.name}</h3><p>{tensor.role}</p><div className="tensor-values">{tensor.preview.map((row, i) => <p key={i}>{row.map((value, j) => <b key={j}>{value.toFixed(2)}</b>)}</p>)}</div><small>这里只展示左上角少量数值；完整张量形状为 {tensor.shape}。</small></div>
+        <div className="transformer-stack"><span>一次前向计算</span>{["Token IDs", "Embedding", "Attention", "MLP", "重复多个Block", "Norm", "LM Head", "下一个Token概率"].map((item, i) => <div key={item}><b>{String(i + 1).padStart(2, "0")}</b><p>{item}</p></div>)}</div>
+      </div>
+      <div className="scale-note"><strong>从“小模型”到“大模型”，核心变化主要是规模。</strong><p>真实大模型拥有更大的词表、更宽的隐藏维度、更多Transformer层和海量参数。训练后保存的仍然不是中文规则，而是数以亿计、数十亿计甚至更多的浮点数张量。模型能力来自这些参数共同形成的分布式表示。</p></div>
+    </div>
+  );
+}
+
+const kernelExamples = {
+  neural: {
+    label: "训练两层神经网络",
+    code: `# 真实运行：用纯Python训练一个 2→2→1 的小神经网络
+import math, random
+random.seed(7)
+
+# 两个特征：接近审批阈值、同一商户；标签：是否需要重点核查
+data = [([0, 0], 0), ([0, 1], 0), ([1, 0], 0), ([1, 1], 1)]
+
+def sigmoid(x):
+    return 1 / (1 + math.exp(-x))
+
+# W1: 2×2, b1: 2, W2: 2×1, b2: 1
+W1 = [[random.uniform(-.5, .5) for _ in range(2)] for _ in range(2)]
+b1 = [0.0, 0.0]
+W2 = [random.uniform(-.5, .5) for _ in range(2)]
+b2 = 0.0
+lr = 1.2
+
+for epoch in range(2001):
+    gW1 = [[0.0, 0.0], [0.0, 0.0]]
+    gb1 = [0.0, 0.0]
+    gW2 = [0.0, 0.0]
+    gb2 = 0.0
+    loss = 0.0
+
+    for x, y in data:
+        h = [sigmoid(x[0]*W1[0][j] + x[1]*W1[1][j] + b1[j]) for j in range(2)]
+        pred = sigmoid(h[0]*W2[0] + h[1]*W2[1] + b2)
+        loss += (pred - y) ** 2
+
+        d_out = 2 * (pred - y) * pred * (1 - pred)
+        for j in range(2):
+            gW2[j] += d_out * h[j]
+            d_h = d_out * W2[j] * h[j] * (1 - h[j])
+            for i in range(2):
+                gW1[i][j] += d_h * x[i]
+            gb1[j] += d_h
+        gb2 += d_out
+
+    for i in range(2):
+        for j in range(2):
+            W1[i][j] -= lr * gW1[i][j] / len(data)
+    for j in range(2):
+        b1[j] -= lr * gb1[j] / len(data)
+        W2[j] -= lr * gW2[j] / len(data)
+    b2 -= lr * gb2 / len(data)
+
+    if epoch in (0, 10, 100, 500, 2000):
+        print(f"epoch={epoch:4d}  loss={loss/len(data):.5f}")
+
+print("\n训练后的 state_dict：")
+print("layer1.weight =", [[round(v, 3) for v in row] for row in W1])
+print("layer1.bias   =", [round(v, 3) for v in b1])
+print("output.weight =", [round(v, 3) for v in W2])
+print("output.bias   =", round(b2, 3))
+
+print("\n四种输入的预测：")
+for x, y in data:
+    h = [sigmoid(x[0]*W1[0][j] + x[1]*W1[1][j] + b1[j]) for j in range(2)]
+    pred = sigmoid(h[0]*W2[0] + h[1]*W2[1] + b2)
+    print(x, "真实标签=", y, "预测概率=", round(pred, 3))`,
+  },
+  language: {
+    label: "训练极小语言模型",
+    code: `# 真实运行：训练一个极小的“下一个字符”语言模型
+# 它不是Transformer，但能展示Tokenizer、训练、权重和生成的基本链条
+import random
+random.seed(3)
+
+corpus = "审计需要证据。审计需要核验。智能体需要工具。结论需要复核。"
+tokens = sorted(set(corpus))
+token_to_id = {token: i for i, token in enumerate(tokens)}
+
+# 训练：统计每个字符后面出现另一个字符的次数
+counts = [[1 for _ in tokens] for _ in tokens]  # 加1平滑
+for current, following in zip(corpus, corpus[1:]):
+    counts[token_to_id[current]][token_to_id[following]] += 1
+
+# 归一化后，这张概率表就是这个极小模型训练出的“权重”
+weights = []
+for row in counts:
+    total = sum(row)
+    weights.append([value / total for value in row])
+
+checkpoint = {
+    "config": {"model_type": "bigram", "vocab_size": len(tokens)},
+    "tokenizer": token_to_id,
+    "bigram.weight": weights,
+}
+
+print("Tokenizer：", checkpoint["tokenizer"])
+print("bigram.weight shape =", (len(weights), len(weights[0])))
+print("权重矩阵前两行预览：")
+for row in weights[:2]:
+    print([round(v, 3) for v in row[:8]])
+
+text = "审"
+for _ in range(18):
+    row = weights[token_to_id[text[-1]]]
+    next_token = random.choices(tokens, weights=row, k=1)[0]
+    text += next_token
+print("\n生成结果：", text)
+print("\n真实LLM用多层Transformer张量替代这张简单概率表。")`,
+  },
+  agent: {
+    label: "运行智能体循环",
+    code: `# 真实运行：一个最小智能体循环
+evidence = []
+tools = {
+    "航班查询": "员工当天航班落地南京",
+    "酒店查询": "员工当晚入住南京酒店",
+    "客户查询": "当天没有苏州客户拜访记录",
+    "发票查验": "发票已在另一家公司出现",
+}
+
+plan = ["航班查询", "酒店查询", "客户查询", "发票查验"]
+goal = "核实上海机场至苏州的出租车费"
+print("目标：", goal)
+
+for step, tool_name in enumerate(plan, 1):
+    print(f"\n第{step}步：调用{tool_name}")
+    observation = tools[tool_name]
+    evidence.append(observation)
+    print("观察结果：", observation)
+    print("当前证据数：", len(evidence))
+
+print("\n停止条件：已取得四类独立证据")
+print("系统动作：提交审计人员复核，不自动认定违规。")`,
+  },
+  rule: {
+    label: "运行普通规则",
+    code: `# 真实运行：普通代码规则
+standard = 600
+amount = 720
+special_approval = False
+
+if amount > standard and not special_approval:
+    result = "标记为待核查"
+else:
+    result = "通过规则检查"
+
+print("住宿标准：", standard)
+print("报销金额：", amount)
+print("程序结果：", result)`,
+  },
+} as const;
+
+function PythonKernelLab() {
+  const [example, setExample] = useState<keyof typeof kernelExamples>("neural");
+  const [code, setCode] = useState(kernelExamples.neural.code);
+  const [output, setOutput] = useState("Python环境正在加载。首次打开需要下载浏览器运行时……");
+  const [status, setStatus] = useState<"loading" | "ready" | "running" | "error">("loading");
+  const workerRef = useRef<Worker | null>(null);
+
+  const startKernel = () => {
+    workerRef.current?.terminate();
+    setStatus("loading");
+    let worker: Worker;
+    try {
+      worker = new Worker("/pyodide-worker.mjs", { type: "module" });
+    } catch (error) {
+      setStatus("error");
+      setOutput(`Kernel创建失败：${error instanceof Error ? error.message : "当前浏览器不支持模块Worker"}`);
+      return;
+    }
+    workerRef.current = worker;
+    worker.onmessage = (event: MessageEvent) => {
+      const message = event.data;
+      if (message.type === "ready") {
+        setStatus("ready");
+        setOutput("Python Kernel 已就绪。点击“运行代码”。");
+      } else if (message.type === "result") {
+        setStatus("ready");
+        const parts = [message.stdout, message.stderr, message.value ? `返回值：${message.value}` : ""].filter(Boolean);
+        setOutput(parts.join("\n") || "代码运行完成，没有输出。");
+      } else if (message.type === "run-error" || message.type === "init-error") {
+        setStatus("error");
+        setOutput([message.stdout, message.stderr, message.error].filter(Boolean).join("\n"));
+      }
+    };
+    worker.onerror = (event) => {
+      setStatus("error");
+      setOutput(`Kernel加载失败：${event.message || "请检查网络后重试"}`);
+    };
+  };
+
+  useEffect(() => {
+    startKernel();
+    return () => workerRef.current?.terminate();
+  }, []);
+
+  const chooseExample = (key: keyof typeof kernelExamples) => {
+    setExample(key);
+    setCode(kernelExamples[key].code);
+    setOutput("已切换示例。Kernel中的既有变量仍然保留；需要清空时点击“重启内核”。");
+  };
+
+  const runCode = () => {
+    if (status !== "ready" || !workerRef.current) return;
+    setStatus("running");
+    setOutput("正在运行……");
+    workerRef.current.postMessage({ type: "run", code });
+  };
+
+  const restart = () => {
+    setOutput("正在重启Python Kernel并清空全部变量……");
+    startKernel();
+  };
+
+  return (
+    <div className="python-lab">
+      <div className="python-head"><div><span>浏览器Python Kernel</span><h3>代码可以编辑，也可以真实运行</h3></div><div className={`kernel-status ${status}`}><i />{status === "loading" ? "加载中" : status === "ready" ? "已就绪" : status === "running" ? "运行中" : "发生错误"}</div></div>
+      <div className="example-tabs">{Object.entries(kernelExamples).map(([key, item]) => <button key={key} className={example === key ? "active" : ""} onClick={() => chooseExample(key as keyof typeof kernelExamples)}>{item.label}</button>)}</div>
+      <div className="python-workspace">
+        <div className="editor-pane"><div><span>Python代码</span><small>同一Kernel会保留变量状态</small></div><textarea spellCheck={false} value={code} onChange={(event) => setCode(event.target.value)} aria-label="Python代码编辑器" /><footer><button className="run" disabled={status !== "ready"} onClick={runCode}>▶ 运行代码</button><button onClick={() => setCode(kernelExamples[example].code)}>恢复示例</button><button onClick={restart}>重启内核</button></footer></div>
+        <div className="output-pane"><div><span>运行输出</span><small>stdout / stderr</small></div><pre>{output}</pre></div>
+      </div>
+      <div className="kernel-note"><strong>这里运行的是真实Python，不是预先写好的动画。</strong><p>Python通过WebAssembly在浏览器的独立Worker中运行；它不连接真实审计系统，也没有任何企业数据或大模型API密钥。首次加载会稍慢，之后可连续运行多个代码单元。</p></div>
+    </div>
+  );
+}
+
 const agentTraceSteps = [
   ["目标", "核实BX-42017机场出租车费是否与真实行程一致。"],
   ["读取报销工具", "报销称“上海机场至苏州客户公司”，金额468元。"],
@@ -417,13 +734,13 @@ export default function Home() {
         </section>
 
         <section id="problem" className="lesson">
-          <SectionTitle no="01" time="10分钟" title="开始之前，先把要解决的问题说清楚" intro="技术不是起点。起点是审计目标、手里的资料、时间约束，以及最终需要什么样的证据。" />
+          <SectionTitle no="01" time="8分钟" title="开始之前，先把要解决的问题说清楚" intro="技术不是起点。起点是审计目标、手里的资料、时间约束，以及最终需要什么样的证据。" />
           <ProblemSection />
           <TeacherNote>先花足时间讲业务问题。问学员：“如果系统报出一万条预警，但九千条都是正常例外，它有价值吗？”让大家理解准确、完整、可追溯同样重要。</TeacherNote>
         </section>
 
         <section id="code" className="lesson">
-          <SectionTitle no="02" time="18分钟" title="第一步：普通代码和规则系统是什么" intro="在谈AI之前，先理解最传统的计算机程序：人把步骤和条件写清楚，计算机机械、快速、准确地执行。" />
+          <SectionTitle no="02" time="14分钟" title="第一步：普通代码和规则系统是什么" intro="在谈AI之前，先理解最传统的计算机程序：人把步骤和条件写清楚，计算机机械、快速、准确地执行。" />
           <Definition term="计算机程序" simple="一组明确的指令，告诉计算机先做什么、后做什么，以及遇到不同条件时怎么办。" precise="程序由变量、条件、循环、函数等结构组成；同样的输入和同样的代码，通常得到同样的输出。" />
           <div className="concept-grid four"><div><span>变量</span><strong>保存数据</strong><p>例如金额、日期、审批状态。</p></div><div><span>条件</span><strong>进行判断</strong><p>如果金额超标，就进入下一步。</p></div><div><span>循环</span><strong>重复处理</strong><p>对42,000笔报销逐笔执行。</p></div><div><span>函数</span><strong>封装步骤</strong><p>把“检查住宿标准”写成可复用模块。</p></div></div>
           <CodeLab />
@@ -434,7 +751,7 @@ export default function Home() {
         </section>
 
         <section id="ml" className="lesson">
-          <SectionTitle no="03" time="18分钟" title="第二步：什么是机器学习" intro="当人很难把所有模式写成规则时，可以给机器历史案例，让模型从数据中学习输入和结果之间的统计关系。" />
+          <SectionTitle no="03" time="14分钟" title="第二步：什么是机器学习" intro="当人很难把所有模式写成规则时，可以给机器历史案例，让模型从数据中学习输入和结果之间的统计关系。" />
           <Definition term="机器学习（Machine Learning）" simple="不给计算机写出每一条判断规则，而是给它许多案例，让它自己总结哪些输入通常对应哪些结果。" precise="机器学习使用数据和算法估计模型参数，使模型能够对训练时没有见过的新数据进行预测、分类或排序。" />
           <div className="notation"><div><span>输入 X</span><strong>特征</strong><p>金额、时间、商户、频率、说明相似度……</p></div><i>→</i><div><span>模型 f</span><strong>学习关系</strong><p>训练得到的内部参数，不是人逐条写出的规则。</p></div><i>→</i><div><span>输出 ŷ</span><strong>预测</strong><p>正常/异常，或0—100的风险概率。</p></div><div className="label"><span>训练时还需要</span><strong>标签 y</strong><p>历史上经过确认的真实结果。</p></div></div>
           <TrainingProcess />
@@ -446,10 +763,11 @@ export default function Home() {
         </section>
 
         <section id="nn" className="lesson">
-          <SectionTitle no="04" time="18分钟" title="第三步：什么是神经网络和深度学习" intro="神经网络仍然属于机器学习。变化在于，它可以从原始数据中逐层学习特征，不必完全依赖人先把特征整理好。" />
+          <SectionTitle no="04" time="20分钟" title="第三步：什么是神经网络和深度学习" intro="神经网络仍然属于机器学习。变化在于，它可以从原始数据中逐层学习特征，不必完全依赖人先把特征整理好。" />
           <Definition term="人工神经网络" simple="许多简单计算单元连接成层，输入经过一层层加权和变换，最后产生预测结果。" precise="神经网络是可微分的参数化函数；训练通过损失函数衡量错误，再用反向传播和优化算法调整大量权重。" />
           <div className="equation"><span>一个神经元做的事</span><strong>输入 × 权重，全部相加，再经过一个非线性函数</strong><code>output = activation(w₁x₁ + w₂x₂ + … + bias)</code><p>不要求学员计算公式，只要理解：权重表示影响大小；训练就是不断调整这些权重。</p></div>
           <NeuralNetworkLab />
+          <NeuralCheckpointExplorer />
           <div className="training-loop"><span>一次训练循环</span>{[["1", "做预测"], ["2", "与正确答案比较"], ["3", "计算损失 Loss"], ["4", "反向传播误差"], ["5", "微调每个权重"], ["6", "重复很多轮"]].map((x, i) => <div key={x[0]}><b>{x[0]}</b><p>{x[1]}</p>{i < 5 && <i>→</i>}</div>)}</div>
           <div className="content-block"><h3>为什么叫“深度”学习</h3><p>“深度”主要指神经网络有很多层。浅层可能学习边缘和线条，中间层组合成数字、文字、版面，更深层再组合成票据类型、金额区域或修改痕迹。</p><div className="feature-layers"><span>像素</span><i>→</i><span>边缘</span><i>→</i><span>数字与文字</span><i>→</i><span>版面区域</span><i>→</i><span>票据异常概率</span></div></div>
           <div className="important"><strong>训练与推理不是一回事</strong><p><b>训练</b>是用大量数据反复调整权重，成本高、时间长；<b>推理</b>是训练完成后，把新输入交给模型得到结果。我们日常使用大模型聊天，通常处于推理阶段。</p></div>
@@ -462,6 +780,7 @@ export default function Home() {
           <Definition term="大语言模型（LLM）" simple="一个读过海量文字、能够根据上下文继续生成文字的神经网络。" precise="大语言模型通过预训练学习Token序列的概率分布，并在指令微调、偏好对齐等阶段形成更适合问答和任务执行的行为。" />
           <TokenLab />
           <LlmPipeline />
+          <LlmCheckpointExplorer />
           <div className="three-stages"><div><span>阶段 1</span><strong>预训练</strong><p>在海量文本上反复预测下一个Token，学习语言、知识表达和关系模式。</p></div><div><span>阶段 2</span><strong>指令训练与对齐</strong><p>学习按照人的指令回答，减少有害或明显不合适的输出。</p></div><div><span>阶段 3</span><strong>推理使用</strong><p>用户给出提示词和上下文，模型逐Token生成当前回答。</p></div></div>
           <div className="content-block"><h3>为什么“预测下一个Token”能表现出这么多能力</h3><p>要准确预测大量复杂文本的后续内容，模型必须学习词语关系、语法结构、常见知识表达、文档格式和许多任务模式。当模型、数据和训练规模足够大时，连续预测就会表现为总结、翻译、问答、写作、代码生成和一定程度的推理能力。</p><p>但这不意味着模型像数据库一样保存并核验每个事实，也不意味着它真正理解世界的方式与人完全相同。</p></div>
           <div className="attention-box"><span>Transformer里的关键思想：Attention</span><h3>理解一句话时，当前词应该重点参考前文中的哪些词？</h3><p>注意力机制为上下文中的Token计算相关程度。例如理解“这笔住宿超标，但已经取得特殊审批”时，“但”后面的信息会显著改变最终判断。</p></div>
@@ -471,8 +790,16 @@ export default function Home() {
           <TeacherNote>一定把“大模型是神经网络”讲清楚。Token实验后说明真实模型词表、层数和参数规模巨大。讲Attention时只讲“相关性与信息选择”，不进入矩阵公式。</TeacherNote>
         </section>
 
+        <section id="kernel" className="lesson kernel-section">
+          <SectionTitle no="06" time="14分钟" title="动手实验：亲自训练，再打开模型检查点" intro="前面的矩阵不是装饰。现在使用浏览器内Python Kernel真正执行训练代码，观察损失下降、权重改变、语言模型生成和智能体循环。" />
+          <div className="kernel-intro"><div><span>你将亲眼看到</span><strong>代码定义结构</strong><p>模型有几层、每层多宽、数据怎样向前流动。</p></div><i>＋</i><div><span>训练真正改变</span><strong>权重与偏置</strong><p>预测错误推动数值不断调整，最终写入检查点。</p></div><i>＋</i><div><span>推理阶段使用</span><strong>训练后的参数</strong><p>新输入经过固定的参数计算，得到预测或下一个Token概率。</p></div></div>
+          <PythonKernelLab />
+          <div className="important"><strong>不要混淆演示规模与底层原理</strong><p>浏览器训练的是教学用微型模型，真实大模型会使用GPU集群、更多数据和更大的Transformer。但“定义架构—准备数据—计算损失—反向传播—更新权重—保存检查点—加载推理”这条底层链路是一致的。</p></div>
+          <TeacherNote>建议先运行神经网络示例，指出loss怎样下降，再让学员在代码中把训练轮数2001改为10比较结果。之后运行极小语言模型，明确它不是Transformer，只负责解释Tokenizer、权重和逐Token生成。</TeacherNote>
+        </section>
+
         <section id="agent" className="lesson">
-          <SectionTitle no="06" time="20分钟" title="第五步：大模型怎样变成智能体" intro="大模型是负责理解和生成的模型；智能体是围绕目标运行的系统。关键变化不是回答更长，而是能够使用工具并形成行动闭环。" />
+          <SectionTitle no="07" time="14分钟" title="第五步：大模型怎样变成智能体" intro="大模型是负责理解和生成的模型；智能体是围绕目标运行的系统。关键变化不是回答更长，而是能够使用工具并形成行动闭环。" />
           <Definition term="智能体（Agent）" simple="让大模型不只回答问题，还能为了完成目标，判断下一步、调用工具、读取结果并继续行动。" precise="智能体是能够感知环境状态、根据目标选择行动、通过工具影响或查询环境，并依据反馈更新状态的受控软件系统。" />
           <div className="model-system"><div><span>大模型</span><strong>一个模型</strong><p>输入上下文，输出文字或结构化指令。</p><small>擅长：理解、归纳、生成、规划建议</small></div><i>≠</i><div><span>智能体</span><strong>一个运行系统</strong><p>模型 + 目标 + 工具 + 状态 + 控制机制。</p><small>擅长：围绕目标持续完成多步骤任务</small></div></div>
           <div className="agent-loop"><span>智能体的基本循环</span>{["接收目标", "观察现状", "判断缺口", "选择工具", "执行行动", "读取反馈", "继续或停止"].map((x, i) => <div key={x}><b>{i + 1}</b><p>{x}</p></div>)}</div>
@@ -483,21 +810,21 @@ export default function Home() {
         </section>
 
         <section id="case" className="lesson">
-          <SectionTitle no="07" time="9分钟" title="回到同一个案例：每增加一种技术，究竟多了什么" intro="不是新技术把旧技术全部淘汰，而是把确定性规则、统计模型、视觉模型、语言模型和工具调用组合起来。" />
+          <SectionTitle no="08" time="5分钟" title="回到同一个案例：每增加一种技术，究竟多了什么" intro="不是新技术把旧技术全部淘汰，而是把确定性规则、统计模型、视觉模型、语言模型和工具调用组合起来。" />
           <CaseMatrix />
           <div className="stack"><span>一个成熟审计智能体的能力栈</span><div>{stages.map((s, i) => <section key={s.key}><b>0{i + 1}</b><strong>{s.name}</strong><p>{s.ability}</p></section>)}</div><blockquote>规则仍负责确定性检查；机器学习负责模式识别；神经网络负责复杂感知；大模型负责语义与推理；智能体负责把这些能力组织成可运行流程。</blockquote></div>
           <TeacherNote>切换五个标签，让学员只观察事项B和F：事项B展示如何减少误报；事项F展示为什么只有能主动取数的智能体才能完成证据闭环。</TeacherNote>
         </section>
 
         <section id="build" className="lesson">
-          <SectionTitle no="08" time="8分钟" title="最后落地：我们自己的审计智能体怎么做" intro="从一个窄而清楚的场景起步，先把证据、权限和人工节点设计好，再讨论模型和平台。" />
+          <SectionTitle no="09" time="5分钟" title="最后落地：我们自己的审计智能体怎么做" intro="从一个窄而清楚的场景起步，先把证据、权限和人工节点设计好，再讨论模型和平台。" />
           <DesignSteps />
           <div className="control-lines"><h3>上线前必须回答的六个问题</h3><ol><li><strong>依据对吗？</strong><span>使用的是哪个版本的法规和制度？</span></li><li><strong>数据能用吗？</strong><span>是否授权、完整、准确、符合保密要求？</span></li><li><strong>工具可控吗？</strong><span>能读什么、能写什么、失败时怎么办？</span></li><li><strong>证据可追溯吗？</strong><span>能否回到原始记录、原文和计算过程？</span></li><li><strong>人在回路吗？</strong><span>关键结论和高风险操作由谁审批？</span></li><li><strong>效果可衡量吗？</strong><span>召回、误报、稳定性和时间节省是多少？</span></li></ol></div>
           <TeacherNote>如果时间有限，这一章只让学员记住：先选场景，再定输入和工具，最后设人工关口。不要一开始追求跨全业务、全自主、多智能体。</TeacherNote>
         </section>
 
         <section id="summary" className="lesson summary">
-          <SectionTitle no="09" time="5分钟" title="总结：五个问题，串起整堂课" intro="能不能执行规则？能不能从案例学习？能不能自动学习复杂特征？能不能理解语言？能不能围绕目标行动？" />
+          <SectionTitle no="10" time="4分钟" title="总结：五个问题，串起整堂课" intro="能不能执行规则？能不能从案例学习？能不能自动学习复杂特征？能不能理解语言？能不能围绕目标行动？" />
           <div className="summary-chain">{stages.map((s, i) => <div key={s.key}><span>0{i + 1}</span><strong>{s.name}</strong><p>{s.question}</p><small>{s.ability}</small></div>)}</div>
           <Quiz />
           <div className="closing"><p>审计智能体的价值，不是替代审计人员作出职业判断。</p><h3>让机器承担查找、比对、计算和整理，<br />让人专注于证据评价、沟通、核实与决策。</h3><div><span>权限可控</span><span>过程留痕</span><span>证据可查</span><span>结论可复核</span></div></div>
