@@ -11,6 +11,22 @@
 | customer_visits.csv | 客户拜访CRM | 6 | 核对业务目的、客户地点和联系人状态。 |
 | receipt_ocr.csv | 票据OCR与图像检查 | 7 | 表示从票据图片中提取的文字、金额、明细和完整性分数。 |
 | employee_calendar.csv | 员工日历 | 4 | 用employee_id和event_date核对业务日程和个人日程。 |
+| classroom_training/ml_training_examples.csv | 历史标注训练集 | 300 | 240条训练、60条验证；独立于26笔本期待审数据，用于解释拟合、泛化和阈值。 |
+
+## 历史训练集字段
+
+| 字段 | 含义 |
+|---|---|
+| sample_id | 虚构历史案例编号。 |
+| split | `train`或`validation`，防止训练阶段读取验证数据。 |
+| amount_ratio_to_threshold | 报销金额与适用审批阈值的比例。 |
+| claims_48h | 同一员工48小时内的相似报销笔数。 |
+| same_vendor_share | 短期相似报销中同一商户所占比例。 |
+| description_similarity | 多笔报销说明的文本相似度。 |
+| valid_exception_approval | 是否存在有效例外审批，1表示存在。 |
+| confirmed_focus_review | 历史审计确认标签，1表示需要重点核查。 |
+
+> 教学训练集由固定随机种子生成，用于展示机器学习机制，不代表真实企业数据分布或生产模型性能。
 
 ## 主要关联键
 

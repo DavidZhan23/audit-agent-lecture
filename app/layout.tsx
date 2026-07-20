@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./course-interactives.css";
 
 export const metadata: Metadata = {
   title: "42,000笔报销，怎样找到真正值得核查的问题？｜审计智能体基础课",

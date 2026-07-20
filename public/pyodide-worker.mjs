@@ -7,6 +7,10 @@ const ready = (async () => {
     runtime = await loadPyodide({
       indexURL: "https://cdn.jsdelivr.net/pyodide/v0.28.2/full/",
     });
+    runtime.FS.mkdirTree("/data");
+    const trainingResponse = await fetch("/toy_audit_case/classroom_training/ml_training_examples.csv");
+    if (!trainingResponse.ok) throw new Error("历史训练集加载失败");
+    runtime.FS.writeFile("/data/ml_training_examples.csv", await trainingResponse.text(), { encoding: "utf8" });
     self.postMessage({ type: "ready" });
   } catch (error) {
     self.postMessage({

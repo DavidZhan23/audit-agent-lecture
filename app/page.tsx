@@ -1,6 +1,19 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import {
+  AgentBranchLab,
+  AttentionLab,
+  AuditAgentCanvas,
+  ConfusionMatrixLab,
+  DeepDive,
+  FunctionFittingLab,
+  KnownUnknownBridge,
+  LanguageTrainingShift,
+  LessonTakeaway,
+  NeuronContinuityLab,
+  TrainingLifecycle,
+} from "./course-interactives";
 
 type StageKey = "code" | "ml" | "nn" | "llm" | "agent";
 type CaseState = "发现" | "提示" | "遗漏" | "误报" | "排除误报";
@@ -21,15 +34,14 @@ const stages: Array<{
 ];
 
 const nav = [
-  ["problem", "先把问题说清楚", "15′"],
-  ["code", "普通代码与规则", "16′"],
-  ["ml", "机器学习", "16′"],
-  ["nn", "神经网络", "22′"],
-  ["llm", "大模型", "24′"],
-  ["agent", "智能体", "14′"],
-  ["case", "完整案例", "5′"],
-  ["build", "审计智能体怎么做", "4′"],
-  ["summary", "总结", "4′"],
+  ["problem", "完整审计问题", "12′"],
+  ["code", "普通代码与规则", "12′"],
+  ["ml", "机器学习与拟合", "22′"],
+  ["nn", "神经网络", "21′"],
+  ["llm", "大语言模型", "23′"],
+  ["agent", "智能体", "18′"],
+  ["build", "审计智能体落地", "9′"],
+  ["summary", "总结与检查", "3′"],
 ];
 
 const auditCases: Array<{
@@ -74,8 +86,8 @@ function SectionTitle({ no, time, title, intro }: { no: string; time: string; ti
   );
 }
 
-function TeacherNote({ children }: { children: React.ReactNode }) {
-  return <aside className="teacher-note"><strong>讲师提示</strong><p>{children}</p></aside>;
+function TeacherNote({ time, question, misconception, mustSay, canSkip, children }: { time?: string; question?: string; misconception?: string; mustSay?: string; canSkip?: string; children?: React.ReactNode }) {
+  return <aside className="teacher-note"><strong>讲师提示</strong><div>{time && <p><b>预计时间：</b>{time}</p>}{question && <p><b>现场提问：</b>{question}</p>}{misconception && <p><b>常见误解：</b>{misconception}</p>}{mustSay && <p><b>必须讲出：</b>{mustSay}</p>}{canSkip && <p><b>时间不足可跳过：</b>{canSkip}</p>}{children && <p>{children}</p>}</div></aside>;
 }
 
 function Definition({ term, simple, precise }: { term: string; simple: string; precise: string }) {
@@ -94,7 +106,9 @@ function Bridge({ from, problem, to }: { from: string; problem: string; to: stri
   );
 }
 
-function Header({ notes, setNotes }: { notes: boolean; setNotes: (v: boolean) => void }) {
+type ViewMode = "student" | "teacher" | "appendix";
+
+function Header({ mode, setMode }: { mode: ViewMode; setMode: (v: ViewMode) => void }) {
   const [progress, setProgress] = useState(0);
   const [timerOpen, setTimerOpen] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -120,7 +134,9 @@ function Header({ notes, setNotes }: { notes: boolean; setNotes: (v: boolean) =>
         <a href="#top" className="brand">从审计问题到智能体</a>
         <div className="top-progress"><i style={{ width: `${progress}%` }} /></div>
         <div className="top-actions">
-          <button className={notes ? "on" : ""} onClick={() => setNotes(!notes)}>{notes ? "隐藏讲师备注" : "显示讲师备注"}</button>
+          <button className={mode === "student" ? "on" : ""} onClick={() => setMode("student")}>学员视图</button>
+          <button className={mode === "teacher" ? "on" : ""} onClick={() => setMode("teacher")}>讲师视图</button>
+          <button className={mode === "appendix" ? "on" : ""} onClick={() => setMode("appendix")}>附录视图</button>
           <button onClick={() => setTimerOpen(!timerOpen)}>计时</button>
           <button onClick={() => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.()}>全屏</button>
         </div>
@@ -149,6 +165,7 @@ const toyDataFiles = [
   { file: "customer_visits.csv", label: "客户拜访CRM", count: "6条", key: "trip_id", role: "用于验证声称的客户、商务目的和联系人状态。", columns: ["trip_id", "employee", "city", "visit_status", "contact"], rows: [["T1004", "E1001", "杭州", "已完成", "在岗"], ["T2017", "E1004", "苏州", "无登记", "休假"], ["T2025", "E1001", "上海", "无登记", "休假"]] },
   { file: "receipt_ocr.csv", label: "票据OCR与图像检查", count: "7条", key: "claim_id", role: "表示从票据图片中提取的文字、金额、二维码结果、明细和图像完整性分数。", columns: ["claim_id", "printed", "QR", "integrity", "items"], rows: [["BX-42306", "286", "86", "96%", "数字2字体异常"], ["BX-42519", "988", "988", "3%", "儿童套餐|生日蛋糕"], ["BX-42017", "468", "468", "1%", "运输服务"]] },
   { file: "employee_calendar.csv", label: "员工日历", count: "4条", key: "employee_id + date", role: "用于核对当天是否存在业务日程，以及员工当时所在地点。", columns: ["employee", "date", "event_type", "event", "location"], rows: [["E1004", "05-18", "内部会议", "南京区域销售复盘", "南京"], ["E1001", "05-24", "个人日程", "家人生日聚餐", "上海"], ["E1003", "05-25", "供应商审查", "苏州精工质量审查", "苏州"]] },
+  { file: "ml_training_examples.csv", label: "历史标注训练集", count: "300条", key: "sample_id", role: "独立于本期待审数据的虚构历史案例：240条训练、60条验证，用于解释拟合、泛化、阈值和数据泄漏。", columns: ["sample_id", "split", "amount_ratio", "claims_48h", "label"], rows: [["HIST-0001", "train", "0.83", "4", "1"], ["HIST-0121", "train", "0.46", "1", "0"], ["HIST-0261", "validation", "0.91", "5", "1"]] },
 ] as const;
 
 function ToyDatasetExplorer() {
@@ -156,7 +173,7 @@ function ToyDatasetExplorer() {
   const item = toyDataFiles[selected];
   return (
     <div className="dataset-explorer">
-      <div className="dataset-head"><div><span>本课程的统一Toy Data Pack</span><h3>9张可关联的数据表 + 2份制度文档</h3><p>整堂课不再临时发明数字；后面每种技术都回到这组报销号和证据链。</p></div><div><a href="/toy_audit_case/toy_audit_case.xlsx" download>下载Excel工作簿</a><a className="primary" href="/toy_audit_case_download.zip" download>下载完整数据包</a></div></div>
+      <div className="dataset-head"><div><span>本课程的统一Toy Data Pack</span><h3>9张本期待审表 + 1份历史训练集 + 2份制度文档</h3><p>本期待审数据用于发现问题；历史标注数据单独用于训练和验证，避免把答案泄漏给模型。</p></div><div><a href="/toy_audit_case/toy_audit_case.xlsx" download>下载Excel工作簿</a><a className="primary" href="/toy_audit_case_download.zip" download>下载完整数据包</a></div></div>
       <div className="dataset-layout"><div className="dataset-files">{toyDataFiles.map((file, index) => <button key={file.file} className={selected === index ? "active" : ""} onClick={() => setSelected(index)}><span>{String(index + 1).padStart(2, "0")}</span><p><strong>{file.label}</strong><small>{file.file}</small></p><b>{file.count}</b></button>)}</div><div className="dataset-preview"><div className="dataset-file-meta"><span>当前文件</span><h4>{item.file}</h4><p>{item.role}</p><small>主要关联键：<code>{item.key}</code></small></div><div className="mini-data-table"><div>{item.columns.map(column => <strong key={column}>{column}</strong>)}</div>{item.rows.map((row, rowIndex) => <div key={rowIndex}>{row.map((cell, cellIndex) => <span key={cellIndex}>{cell}</span>)}</div>)}</div><div className="policy-files"><span>同时提供的非结构化资料</span><code>expense_policy.md</code><code>special_event_notice.md</code><p>一份常规制度，一份会展期补充通知。</p></div></div></div>
     </div>
   );
@@ -475,61 +492,95 @@ function LlmCheckpointExplorer() {
 const kernelExamples = {
   ml: {
     label: "训练机器学习分类器",
-    code: `# 真实运行：用历史案例训练一个简单分类模型
-import math
+    code: `# 真实运行：读取独立历史训练集，训练逻辑分类模型
+import csv, math
+from pathlib import Path
 
-# 特征对应expense_claims.csv：接近2,000元阈值、短期交易频率、是否同一商户
-# y是审计人员历史确认的结果：0=普通，1=需要重点核查
-data = [
-    ([0.10, 0.17, 0], 0),
-    ([0.75, 0.17, 0], 0),
-    ([0.82, 0.33, 0], 0),
-    ([0.88, 0.67, 1], 1),
-    ([0.92, 0.83, 1], 1),
-    ([0.70, 1.00, 1], 1),
+# 第一段：与上方动态图完全相同的一维拟合
+demo = [(0.12,0),(0.24,0),(0.39,0),(0.52,0),(0.63,1),(0.77,1),(0.91,1)]
+demo_w = demo_b = 0.0
+for epoch in range(61):
+    predictions = [1/(1+math.exp(-(demo_w*x+demo_b))) for x, y in demo]
+    demo_loss = sum(-(y*math.log(p+1e-9)+(1-y)*math.log(1-p+1e-9)) for p,(x,y) in zip(predictions,demo))/len(demo)
+    if epoch in (0, 10, 60):
+        print(f"动态图校验 epoch={epoch:2d} w={demo_w:.2f} b={demo_b:.2f} loss={demo_loss:.3f}")
+    grad_w = sum((p-y)*x for p,(x,y) in zip(predictions,demo))/len(demo)
+    grad_b = sum(p-y for p,(x,y) in zip(predictions,demo))/len(demo)
+    demo_w -= 2.0 * grad_w
+    demo_b -= 2.0 * grad_b
+
+print("\\n--- 进入五特征历史训练集 ---")
+
+# 浏览器Kernel会把网页中的CSV预载到/data；本地验证使用public路径
+path = Path("/data/ml_training_examples.csv")
+if not path.exists():
+    path = Path("public/toy_audit_case/classroom_training/ml_training_examples.csv")
+
+rows = list(csv.DictReader(path.open(encoding="utf-8")))
+train_rows = [row for row in rows if row["split"] == "train"]
+validation_rows = [row for row in rows if row["split"] == "validation"]
+feature_names = [
+    "amount_ratio_to_threshold", "claims_48h", "same_vendor_share",
+    "description_similarity", "valid_exception_approval"
 ]
 
+def features(row):
+    values = [float(row[name]) for name in feature_names]
+    values[1] = values[1] / 6  # 48小时笔数缩放到0—1
+    return values
+
 def sigmoid(z):
-    return 1 / (1 + math.exp(-z))
+    return 1 / (1 + math.exp(-max(-30, min(30, z))))
 
-# 模型要学习的参数：3个特征权重 + 1个偏置
-weights = [0.0, 0.0, 0.0]
+weights = [0.0] * len(feature_names)
 bias = 0.0
-learning_rate = 0.8
+learning_rate = 0.9
+print("历史训练集：", len(train_rows), "条")
+print("独立验证集：", len(validation_rows), "条")
+print("初始参数：", weights, "bias=", bias)
 
-for epoch in range(1201):
-    grad_w = [0.0, 0.0, 0.0]
+for epoch in range(401):
+    grad_w = [0.0] * len(weights)
     grad_b = 0.0
     loss = 0.0
-
-    for features, label in data:
-        score = sum(w*x for w, x in zip(weights, features)) + bias
-        prediction = sigmoid(score)
-        loss += -(label*math.log(prediction + 1e-9) +
-                  (1-label)*math.log(1-prediction + 1e-9))
-        error = prediction - label
-        for i in range(3):
-            grad_w[i] += error * features[i]
+    for row in train_rows:
+        x = features(row)
+        y = int(row["confirmed_focus_review"])
+        prediction = sigmoid(sum(w*v for w, v in zip(weights, x)) + bias)
+        loss += -(y*math.log(prediction + 1e-9) + (1-y)*math.log(1-prediction + 1e-9))
+        error = prediction - y
+        for index in range(len(weights)):
+            grad_w[index] += error * x[index]
         grad_b += error
+    for index in range(len(weights)):
+        weights[index] -= learning_rate * grad_w[index] / len(train_rows)
+    bias -= learning_rate * grad_b / len(train_rows)
+    if epoch in (0, 10, 50, 150, 400):
+        print(f"epoch={epoch:3d}  train_loss={loss/len(train_rows):.4f}")
 
-    for i in range(3):
-        weights[i] -= learning_rate * grad_w[i] / len(data)
-    bias -= learning_rate * grad_b / len(data)
+correct = 0
+tp = fp = fn = 0
+for row in validation_rows:
+    y = int(row["confirmed_focus_review"])
+    probability = sigmoid(sum(w*v for w, v in zip(weights, features(row))) + bias)
+    prediction = int(probability >= 0.5)
+    correct += prediction == y
+    tp += prediction == 1 and y == 1
+    fp += prediction == 1 and y == 0
+    fn += prediction == 0 and y == 1
 
-    if epoch in (0, 20, 100, 400, 1200):
-        print(f"epoch={epoch:4d}  loss={loss/len(data):.4f}")
+precision = tp / max(1, tp + fp)
+recall = tp / max(1, tp + fn)
+print("\\n训练后参数：", [round(w, 3) for w in weights], "bias=", round(bias, 3))
+print("验证集准确率：", f"{correct/len(validation_rows):.1%}")
+print("验证集查准率：", f"{precision:.1%}", "召回率：", f"{recall:.1%}")
 
-print("\\n模型学到的权重：", [round(w, 3) for w in weights])
-print("模型学到的偏置：", round(bias, 3))
-
-# 对Toy Data里情形C的四笔报销组合做预测
-new_claim_id = "BX-41881—BX-41884（组合）"
-new_claim = [0.98, 0.67, 1]  # 接近阈值、2天4笔、同一商户V301
-risk = sigmoid(sum(w*x for w, x in zip(weights, new_claim)) + bias)
-print("待评估记录：", new_claim_id)
-print("特征：", new_claim)
-print("预测的重点核查概率：", f"{risk:.1%}")
-print("注意：这是风险预测，不是违规结论。")`,
+# 对Toy Data事项C做推理：参数固定，不再训练
+case_c = [0.99, 4/6, 1.0, 0.93, 0.0]
+risk = sigmoid(sum(w*v for w, v in zip(weights, case_c)) + bias)
+print("\\n待评估：BX-41881—BX-41884（组合）")
+print("重点核查概率：", f"{risk:.1%}")
+print("注意：这是教学模型的风险预测，不是违规结论。")`,
   },
   neural: {
     label: "训练两层神经网络",
@@ -642,31 +693,94 @@ for _ in range(18):
 print("\\n生成结果：", text)
 print("\\n真实LLM用多层Transformer张量替代这张简单概率表。")`,
   },
+  attention: {
+    label: "计算一次微型Attention",
+    code: `# 真实运行：不用第三方库，计算一次单头Attention
+import math
+
+tokens = ["住宿超标", "但", "特殊审批", "补充通知"]
+# 每个Token先被表示成一个很小的向量；真实模型的维度会大得多
+Q = [0.9, 0.2, 0.7]
+keys = [
+    [0.5, 0.1, 0.2],
+    [0.6, 0.2, 0.5],
+    [0.9, 0.1, 0.8],
+    [0.8, 0.2, 0.9],
+]
+values = [
+    [0.8, 0.1],
+    [0.3, 0.4],
+    [0.1, 0.9],
+    [0.2, 1.0],
+]
+
+scores = [sum(q*k for q, k in zip(Q, key)) / math.sqrt(len(Q)) for key in keys]
+largest = max(scores)
+exp_scores = [math.exp(score - largest) for score in scores]
+weights = [value / sum(exp_scores) for value in exp_scores]
+context = [sum(weight * value[i] for weight, value in zip(weights, values)) for i in range(2)]
+
+print("当前Query：理解制度例外")
+for token, score, weight in zip(tokens, scores, weights):
+    print(f"{token:6s}  原始分数={score:.3f}  注意力权重={weight:.1%}")
+print("加权汇总后的上下文向量：", [round(v, 3) for v in context])
+print("提醒：权重表示当前计算中的信息关联，不是事实证明或因果关系。")`,
+  },
   agent: {
     label: "运行智能体循环",
-    code: `# 真实运行：一个最小智能体循环
-evidence = []
-tools = {
-    "flight_records.csv": "T2017：E1004当天从北京飞往南京",
-    "hotel_records.csv": "T2017：E1004当晚入住南京江宁商务酒店",
-    "customer_visits.csv": "T2017：苏州无拜访登记，客户联系人休假",
-    "employee_calendar.csv": "E1004当天参加南京区域销售复盘",
-    "invoice_registry.csv": "INV-T-42017存在重复引用EXT-COMPANY-7781",
-}
-
-plan = list(tools)
+    code: `# 真实运行：根据反馈选择下一步，而不是遍历写死的工具列表
 goal = "核实BX-42017：上海机场至苏州的468元出租车费"
+claim = {"claim_id": "BX-42017", "claimed_origin": "上海", "claimed_destination": "苏州"}
+tools = {
+    "flight": {"status": "ok", "destination": "南京", "source": "flight_records.csv / T2017"},
+    "hotel": {"status": "ok", "city": "南京", "source": "hotel_records.csv / T2017"},
+    "crm": {"status": "ok", "visit": "无登记", "contact": "休假", "source": "customer_visits.csv / T2017"},
+    "calendar": {"status": "ok", "event": "南京区域销售复盘", "source": "employee_calendar.csv / E1004"},
+    "invoice": {"status": "ok", "duplicate": "EXT-COMPANY-7781", "source": "invoice_registry.csv / INV-T-42017"},
+}
+state = {"evidence": {}, "failures": [], "calls": 0, "max_calls": 6}
+
+def choose_next_action(state):
+    evidence = state["evidence"]
+    if state["failures"]:
+        return "stop_error"
+    if state["calls"] >= state["max_calls"]:
+        return "stop_budget"
+    if "flight" not in evidence:
+        return "flight"
+    city_mismatch = evidence["flight"]["destination"] != claim["claimed_origin"]
+    if not city_mismatch:
+        return "stop_consistent"
+    if "hotel" not in evidence:
+        return "hotel"
+    if "crm" not in evidence:
+        return "crm"
+    if "calendar" not in evidence:
+        return "calendar"
+    if "invoice" not in evidence:
+        return "invoice"
+    return "stop_review"
+
 print("目标：", goal)
+while True:
+    action = choose_next_action(state)
+    if action.startswith("stop"):
+        print("\\n停止动作：", action)
+        break
+    state["calls"] += 1
+    result = tools[action]
+    print(f"\\n第{state['calls']}步：调用 {action}")
+    print("工具返回：", result)
+    if result["status"] != "ok":
+        state["failures"].append({"tool": action, "result": result})
+    else:
+        state["evidence"][action] = result
+    print("下一步将依据当前state重新选择，而不是执行固定列表。")
 
-for step, tool_name in enumerate(plan, 1):
-    print(f"\\n第{step}步：调用{tool_name}")
-    observation = tools[tool_name]
-    evidence.append(observation)
-    print("观察结果：", observation)
-    print("当前证据数：", len(evidence))
-
-print("\\n停止条件：已取得五类独立证据")
-print("系统动作：提交审计人员复核，不自动认定违规。")`,
+print("已取得证据：", list(state["evidence"]))
+print("工具失败：", state["failures"] or "无")
+print("系统动作：保留来源与不确定性，提交审计人员复核。")
+print("系统禁止：自动认定违规、错报或舞弊。")`,
   },
   rule: {
     label: "运行普通规则",
@@ -759,6 +873,8 @@ function PythonKernelProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Worker initialization is the external synchronization performed by this effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     startKernel();
     return () => workerRef.current?.terminate();
   }, [startKernel]);
@@ -786,6 +902,8 @@ function InlinePythonLab({ example, guide }: { example: keyof typeof kernelExamp
   useEffect(() => {
     if (!kernel) return;
     if (output.startsWith("Python环境") || output.startsWith("正在重启")) {
+      // Reflect an external worker status transition in the editor output.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (kernel.status === "ready") setOutput("Python Kernel 已就绪。点击“运行代码”。");
       if (kernel.status === "error") setOutput(kernel.message);
     }
@@ -837,6 +955,7 @@ function AgentTrace() {
   useEffect(() => {
     if (!auto) return;
     if (visible >= agentTraceSteps.length) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAuto(false);
       return;
     }
@@ -925,12 +1044,14 @@ function Quiz() {
   return <div className="quiz"><div className="quiz-score"><span>结课自测</span><strong>{score}<small>/5</small></strong><p>{Object.keys(answers).length === 5 ? score === 5 ? "已经掌握整条能力链。" : "查看标出的正确答案，再回顾相应章节。" : "完成五道题，检查概念是否真正说清楚。"}</p></div><div>{qs.map((q, i) => <section key={q[0]}><p><span>0{i + 1}</span>{q[0]}</p><div>{q[1].map((a, j) => { const answered = answers[i] !== undefined; const cls = answers[i] === j ? (q[2] === j ? "correct" : "wrong") : answered && q[2] === j ? "answer" : ""; return <button className={cls} key={a} onClick={() => setAnswers({ ...answers, [i]: j })}>{a}</button>; })}</div></section>)}</div></div>;
 }
 
-export default function Home() {
+// Kept temporarily as a content migration reference until the next cleanup pass.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function LegacyHome() {
   const [notes, setNotes] = useState(false);
   return (
     <PythonKernelProvider>
     <main id="top" className={notes ? "show-notes" : ""}>
-      <Header notes={notes} setNotes={setNotes} />
+      <Header mode={notes ? "teacher" : "student"} setMode={(next) => setNotes(next !== "student")} />
       <aside className="sidenav"><div><span>2小时课程</span><strong>从规则到智能体</strong></div><nav>{nav.map((x, i) => <a href={`#${x[0]}`} key={x[0]}><span>{String(i + 1).padStart(2, "0")}</span><b>{x[1]}</b><small>{x[2]}</small></a>)}</nav></aside>
       <div className="page">
         <section className="hero">
@@ -1044,6 +1165,133 @@ export default function Home() {
         <footer><strong>从普通代码到审计智能体</strong><span>面向审计人员的2小时人工智能基础课</span><a href="#top">回到顶部 ↑</a></footer>
       </div>
     </main>
+    </PythonKernelProvider>
+  );
+}
+
+export default function Home() {
+  const [mode, setMode] = useState<ViewMode>("student");
+  return (
+    <PythonKernelProvider>
+      <main id="top" className={`view-${mode} ${mode !== "student" ? "show-notes" : ""}`}>
+        <Header mode={mode} setMode={setMode} />
+        <aside className="sidenav"><div><span>2小时课程</span><strong>从规则到智能体</strong></div><nav>{nav.map((x, i) => <a href={`#${x[0]}`} key={x[0]}><span>{String(i + 1).padStart(2, "0")}</span><b>{x[1]}</b><small>{x[2]}</small></a>)}</nav></aside>
+        <div className="page">
+          <section className="hero">
+            <p>面向审计人员的2小时人工智能基础课</p>
+            <h1>42,000笔报销，4名审计人员，10个工作日。<br />怎样找到真正值得核查的问题？</h1>
+            <div className="hero-lead">我们不从术语开始，而从一个完整审计任务开始。每引入一种技术，只回答：它为什么出现、解决了什么、还解决不了什么。</div>
+            <div className="hero-scenario"><div><span>数据规模</span><strong>42,000笔</strong><small>差旅及招待费报销</small></div><div><span>人力限制</span><strong>4人 × 10天</strong><small>不可能靠人工逐笔深查</small></div><div><span>证据分布</span><strong>9表 + 历史集 + 2文档</strong><small>训练数据与本期待审数据严格分离</small></div><div><span>最终交付</span><strong>可复核疑点</strong><small>不是笼统的“AI风险分”</small></div></div>
+            <div className="hero-path">{stages.map((stage, index) => <a key={stage.key} href={`#${stage.key}`}><span>0{index + 1}</span><strong>{stage.name}</strong><small>{stage.question}</small></a>)}</div>
+            <a className="hero-start" href="#problem">先进入这个审计任务 <span>↓</span></a>
+          </section>
+
+          <section id="problem" className="lesson">
+            <SectionTitle no="01" time="0—12分钟" title="第一步不是选技术，而是把审计问题说清楚" intro="先亲手做一次筛查，再看一笔报销的证据怎样散落在不同系统中，最后定义什么才算真正解决。" />
+            <ProblemSection />
+            <LessonTakeaway>技术的目标不是生成一个风险分，而是帮助审计人员形成可追溯、可解释、可复核的疑点。</LessonTakeaway>
+            <Bridge from="人工逐笔检查的瓶颈" problem="人看不完42,000笔记录，但大量确定性检查其实可以被准确描述并重复执行。" to="普通代码与规则" />
+            <TeacherNote time="12分钟" question="你刚才判断错了，还是当时根本没有足够信息？" misconception="异常、疑点、错报和舞弊不是同一个概念。" mustSay="本课程的交付目标是可复核疑点，不是AI分数。" canSkip="数据文件逐项预览可在课后展开。" />
+          </section>
+
+          <section id="code" className="lesson">
+            <SectionTitle no="02" time="12—24分钟" title="普通代码与规则：把已经知道的判断写出来" intro="当判断关系明确时，不需要模型。人把步骤和条件写清楚，计算机机械、快速、准确地执行。" />
+            <Definition term="计算机程序" simple="一组明确的指令，告诉计算机先做什么、后做什么，以及遇到不同条件时怎么办。" precise="程序由变量、条件、循环、函数等结构组成；同样的输入和同样的代码，通常得到同样的输出。" />
+            <DatasetAnchor caseId="A / B" claimIds="BX-41610、BX-41902 / BX-41002" files={["expense_claims.csv", "invoice_registry.csv", "approvals.csv", "special_event_notice.md"]} task="先用确定性规则查出相同发票号；再观察“住宿费 > 600”为什么会把有月度通知和事前审批的BX-41002误报。" />
+            <div className="concept-grid four"><div><span>变量</span><strong>保存数据</strong><p>例如金额、日期、审批状态。</p></div><div><span>条件</span><strong>进行判断</strong><p>如果金额超标，就进入下一步。</p></div><div><span>循环</span><strong>重复处理</strong><p>对42,000笔报销逐笔执行。</p></div><div><span>函数</span><strong>封装步骤</strong><p>把“检查住宿标准”写成可复用模块。</p></div></div>
+            <CodeLab />
+            <InlinePythonLab example="rule" guide="代码先只读expense_claims.csv中BX-41002的720元，因超过600元而报警；加入approvals.csv和会展通知后，再按明确条件排除误报。" />
+            <div className="content-block"><h3>规则系统的本质</h3><p>规则把业务人员已经知道的判断逻辑写成代码。它是自动化，但不一定属于机器学习。</p><div className="two-col"><div><strong>它非常擅长</strong><ul><li>金额、日期和数量的精确比较</li><li>发票号码完全重复</li><li>审批缺失、字段为空</li><li>必须一致执行的制度条件</li></ul></div><div><strong>它无法自己做到</strong><ul><li>从案例中总结新规律</li><li>理解图片和自然语言</li><li>发现没有预先写出的组合模式</li><li>自动理解复杂例外</li></ul></div></div></div>
+            <LessonTakeaway>规则不是落后的技术；边界明确、必须一致执行的检查，规则通常更可靠、更便宜、更容易解释。</LessonTakeaway>
+            <Bridge from="规则系统的瓶颈" problem="四笔费用分别是1,960、1,980、1,950、1,990元，全部低于2,000元审批阈值。单笔规则全部放过，但组合起来很可疑。" to="机器学习" />
+            <TeacherNote time="12分钟" question="specialPeriod变量已经存在，为什么程序结果没有变化？" misconception="代码不是AI的反义词；模型和智能体最终也由代码运行。" mustSay="人写判断逻辑，计算机只执行被明确表达的逻辑。" canSkip="函数封装的技术语法。" />
+          </section>
+
+          <section id="ml" className="lesson">
+            <SectionTitle no="03" time="24—46分钟" title="机器学习：把“学习”还原成函数拟合" intro="当关系无法完整写成规则、但存在历史案例时，可以选择一个带参数的函数，让程序通过最小化误差寻找较合适的参数。" />
+            <KnownUnknownBridge />
+            <Definition term="机器学习（Machine Learning）" simple="给模型许多带答案的历史案例，让它寻找一个能够近似输入与结果关系的函数。" precise="机器学习通过优化算法估计参数θ，使参数化函数fθ在训练数据上的总体损失较小，并期待它能泛化到未见数据。" />
+            <DatasetAnchor caseId="C" claimIds="BX-41881 — BX-41884" files={["classroom_training/ml_training_examples.csv", "expense_claims.csv", "expense_policy.md"]} task="300条历史标注案例只用于训练和验证；训练完成后，再把四笔本期待审报销作为新数据输入模型。" />
+            <div className="notation"><div><span>输入 X</span><strong>特征</strong><p>金额比例、48小时笔数、商户集中、说明相似度。</p></div><i>→</i><div><span>函数 fθ</span><strong>带参数的模型</strong><p>训练改变参数θ，从而改变函数形状。</p></div><i>→</i><div><span>输出 ŷ</span><strong>预测</strong><p>重点核查概率，不是违规结论。</p></div><div className="label"><span>训练时还需要</span><strong>真实标签 y</strong><p>历史上经过审计确认的结果。</p></div></div>
+            <FunctionFittingLab />
+            <TrainingLifecycle />
+            <InlinePythonLab example="ml" guide="代码读取300条独立历史案例，前240条训练、后60条验证。依次找出特征X、标签y、参数、Loss、验证集结果和事项C预测；注意Loss下降不等于模型已经可靠。" />
+            <ConfusionMatrixLab />
+            <div className="content-block"><h3>监督学习和无监督学习</h3><div className="two-col"><div><strong>监督学习：有历史答案</strong><p>用经过确认的正常和疑点案例训练分类模型。</p></div><div><strong>无监督学习：没有标准答案</strong><p>按照相似性分组或寻找离群点，发现未知模式。</p></div></div></div>
+            <DeepDive title="解析解、梯度、交叉熵与过拟合"><p><b>解析解不是机器学习的分界线。</b>线性回归在一些条件下可以直接求出最优参数；复杂模型通常使用数值优化逐步逼近。梯度表示Loss增大最快的方向，训练沿相反方向调整参数。分类模型常用交叉熵惩罚“自信但错误”的预测。过拟合则意味着训练题表现很好，新题表现很差。</p></DeepDive>
+            <LessonTakeaway>机器学习不是自己产生真理，而是从历史案例中找到一个能近似输入与结果关系的函数。</LessonTakeaway>
+            <Bridge from="机器学习的瓶颈" problem="表格里只写着“出租车费286元”。真正的异常藏在票据图片中：数字2的字体不一致，二维码金额其实是86元。" to="神经网络与深度学习" />
+            <TeacherNote time="22分钟" question="Loss下降能否证明模型已经适合上线？为什么？" misconception="机器学习不等于没有解析解，也不等于模型自动发现真相。" mustSay="训练是寻找参数；验证是检查未见数据；推理时参数固定。" canSkip="附录中的交叉熵和梯度解释。" />
+          </section>
+
+          <section id="nn" className="lesson">
+            <SectionTitle no="04" time="46—67分钟" title="神经网络：把被拟合的函数变得更有表达能力" intro="神经网络没有跳出机器学习。它仍然通过Loss训练，只是把函数变成由很多层、很多参数组成的复杂结构。" />
+            <Definition term="人工神经网络" simple="许多简单计算单元连接成层，输入经过一层层加权和非线性变换，最后产生预测结果。" precise="神经网络是可微分的参数化函数；训练通过损失函数衡量错误，再用反向传播和优化算法调整大量权重。" />
+            <DatasetAnchor caseId="D" claimIds="BX-42306" files={["expense_claims.csv", "invoice_registry.csv", "receipt_ocr.csv"]} task="报销金额和图上可见字样都是286元，但二维码与发票平台都是86元，图像完整性分数为96%。问题来自原始图像而不是表格字段。" />
+            <div className="equation"><span>从上一章继续</span><strong>把“加权求和 + 非线性变换”连接成多层函数</strong><code>output = activation(w₁x₁ + w₂x₂ + … + bias)</code><p>训练目标没有改变：仍然是调整参数、降低Loss。</p></div>
+            <NeuronContinuityLab />
+            <NeuralCheckpointExplorer />
+            <InlinePythonLab example="neural" guide="代码中W1、b1、W2、b2就是训练后保存的参数。先看Loss下降，再把训练轮数改成10，比较参数和预测概率。" />
+            <div className="training-loop"><span>一次训练循环</span>{[["1", "做预测"], ["2", "与答案比较"], ["3", "计算Loss"], ["4", "反向传播"], ["5", "微调权重"], ["6", "重复多轮"]].map((x, i) => <div key={x[0]}><b>{x[0]}</b><p>{x[1]}</p>{i < 5 && <i>→</i>}</div>)}</div>
+            <DeepDive title="反向传播到底做什么"><p>反向传播高效计算每个参数对Loss影响有多大，优化器再据此做小幅调整。课堂不推导链式法则，只要求理解：预测错了以后，系统能够知道每个参数应往哪个方向改一点。</p><NeuralNetworkLab /></DeepDive>
+            <LessonTakeaway>神经网络仍然是机器学习；它只是把被拟合的函数变成了多层、非线性、拥有大量参数的复杂函数。</LessonTakeaway>
+            <Bridge from="深度学习的瓶颈" problem="视觉模型识别出了“儿童套餐”和“生日蛋糕”，但怎样把这些词与客户招待目的、日期和制度联系起来？" to="大语言模型" />
+            <TeacherNote time="21分钟" question="神经网络与上一章的机器学习，训练目标有什么不同？" misconception="神经网络不是电子大脑，也不会因为层数多就自动理解业务。" mustSay="变化的是函数结构和参数规模，不变的是用Loss训练参数。" canSkip="反向传播附录和旧版网络拆解互动。" />
+          </section>
+
+          <section id="llm" className="lesson">
+            <SectionTitle no="05" time="67—90分钟" title="大语言模型：用神经网络学习Token序列" intro="大语言模型是在大规模Token序列上训练、通常采用Transformer架构的深度神经网络。" />
+            <Definition term="大语言模型（LLM）" simple="一个根据前文不断预测下一个Token，并由此生成语言的大型神经网络。" precise="大语言模型通过预训练最小化Token序列预测损失，再经过指令微调和偏好对齐形成更适合问答与任务执行的行为。" />
+            <DatasetAnchor caseId="B / E" claimIds="BX-41002 / BX-42519" files={["expense_policy.md", "special_event_notice.md", "receipt_ocr.csv", "customer_visits.csv", "employee_calendar.csv"]} task="大模型需要理解制度例外，也需要综合“周日、儿童套餐、生日蛋糕、CRM无拜访、家人生日”这组语义证据。" />
+            <LanguageTrainingShift />
+            <TokenLab />
+            <LlmPipeline />
+            <AttentionLab />
+            <LlmCheckpointExplorer />
+            <InlinePythonLab example="language" guide="先看Tokenizer如何把字符映射成编号，再看训练如何得到bigram.weight，最后看模型怎样逐个生成字符。真实LLM用多层Transformer张量完成同类预测。" />
+            <div className="three-stages"><div><span>阶段1</span><strong>预训练</strong><p>在海量文本上反复预测下一个Token。</p></div><div><span>阶段2</span><strong>指令训练与对齐</strong><p>学习按照人的指令回答并遵守约束。</p></div><div><span>阶段3</span><strong>推理使用</strong><p>参数固定，模型逐Token生成当前回答。</p></div></div>
+            <div className="llm-addons"><div><span>提示词</span><strong>把任务讲清楚</strong><p>规定角色、目标和输出格式。</p></div><div><span>上下文</span><strong>提供当前资料</strong><p>合同、制度和底稿。</p></div><div><span>RAG</span><strong>先检索再回答</strong><p>找到相关制度并保留出处。</p></div><div><span>工具</span><strong>让模型能查和算</strong><p>数据库、程序和发票服务。</p></div></div>
+            <div className="hallucination"><div><strong>为什么会幻觉</strong><p>模型首先生成统计上合理的后续文字，而不是天然从权威系统提取经核验的事实。</p></div><div><span>语言流畅</span><i>≠</i><span>事实正确</span><i>≠</i><span>证据充分</span><i>≠</i><span>审计结论</span></div></div>
+            <DeepDive title="用纯Python查看一次微型Attention计算"><InlinePythonLab example="attention" guide="观察Query、Key、Value怎样形成注意力权重。重点理解相关信息被加权汇总，不要把权重当作因果关系或事实证明。" /></DeepDive>
+            <LessonTakeaway>大模型不是装满答案的数据库，而是一个根据上下文预测后续Token的大型神经网络。</LessonTakeaway>
+            <Bridge from="大模型的瓶颈" problem="模型可以建议核对航班和酒店，但不会天然进入企业系统，也不会自己根据查询结果继续调查。" to="智能体" />
+            <TeacherNote time="23分钟" question="一段非常流畅的制度解释，能否直接进入审计底稿？" misconception="大模型不是数据库；Attention关联也不是事实核验。" mustSay="LLM仍使用同一训练循环，只是数据、网络和参数规模巨大。" canSkip="微型Attention代码和部分张量目录。" />
+          </section>
+
+          <section id="agent" className="lesson">
+            <SectionTitle no="06" time="90—108分钟" title="智能体：把模型放进目标—行动—反馈循环" intro="系统围绕目标选择行动、调用工具、读取反馈、更新状态并受控停止，才从回答走向完成任务。" />
+            <Definition term="智能体（Agent）" simple="让大模型不只回答问题，还能为了完成目标，判断下一步、调用工具、读取结果并继续行动。" precise="智能体是能够感知环境状态、根据目标选择行动、通过工具影响或查询环境，并依据反馈更新状态的受控软件系统。" />
+            <DatasetAnchor caseId="F" claimIds="BX-42017" files={["expense_claims.csv", "flight_records.csv", "hotel_records.csv", "customer_visits.csv", "employee_calendar.csv", "invoice_registry.csv"]} task="从报销表出发，利用trip_id=T2017和employee_id=E1004主动调用多个数据工具，逐步形成南京行程与报销说明矛盾的证据链。" />
+            <div className="concept-grid four"><div><span>普通程序</span><strong>步骤明确</strong><p>执行人预先写好的逻辑。</p></div><div><span>工作流</span><strong>流程固定</strong><p>连接系统，但路径主要预先确定。</p></div><div><span>大模型</span><strong>生成决策</strong><p>根据上下文输出文字或指令。</p></div><div><span>智能体</span><strong>反馈闭环</strong><p>根据工具结果决定下一步。</p></div></div>
+            <div className="model-system"><div><span>大模型</span><strong>一个模型</strong><p>输入上下文，输出文字或结构化指令。</p></div><i>≠</i><div><span>智能体</span><strong>一个运行系统</strong><p>模型 + 目标 + 工具 + 状态 + 控制。</p></div></div>
+            <AgentBranchLab />
+            <InlinePythonLab example="agent" guide="代码不再使用写死的工具列表。找到choose_next_action：它根据证据缺口、城市矛盾、工具失败和调用预算选择下一步，并在满足停止条件后转人工。" />
+            <div className="chat-agent"><div><span>单次输入输出</span><strong>聊天应用</strong><p>用户提问 → 模型回答 → 结束。</p></div><div><span>目标—行动—反馈闭环</span><strong>具备智能体能力</strong><p>选择工具 → 读取结果 → 决定下一步。</p></div><p>网页只是界面。能调用工具并根据结果继续行动，才具有智能体能力。</p></div>
+            <div className="autonomy"><h3>审计场景不追求“越自主越好”</h3><div><span>可以自动</span><p>读取、检索、计算、比对和整理。</p></div><div><span>需要审批</span><p>扩大数据范围、写入和对外发送。</p></div><div><span>必须由人判断</span><p>证据评价、重大定性和审计意见。</p></div></div>
+            <LessonTakeaway>大模型是智能体中的理解与决策部件；智能体是包含模型、工具、状态、循环和控制机制的完整系统。</LessonTakeaway>
+            <TeacherNote time="18分钟" question="如果航班工具失败，智能体应该继续猜、直接通过，还是受控停止？" misconception="网页不等于智能体；固定for循环也不等于依据反馈行动。" mustSay="智能体必须有工具、状态、反馈和停止条件，审计定性仍由人负责。" canSkip="行程一致分支，可只演示矛盾与工具失败。" />
+          </section>
+
+          <section id="build" className="lesson">
+            <SectionTitle no="07" time="108—117分钟" title="落地：我们自己的审计智能体应该怎样建设" intro="先回看五种技术各自增加的能力，再用设计画布定义一个窄场景、明确证据和人工关口。" />
+            <CaseMatrix />
+            <div className="stack"><span>一个成熟审计智能体的能力栈</span><div>{stages.map((s, i) => <section key={s.key}><b>0{i + 1}</b><strong>{s.name}</strong><p>{s.ability}</p></section>)}</div><blockquote>规则负责确定性检查；机器学习负责统计模式；神经网络负责复杂感知；大模型负责语言与上下文；智能体把这些能力组织成受控流程。</blockquote></div>
+            <AuditAgentCanvas />
+            <div className="control-lines"><h3>上线前必须回答的六个问题</h3><ol><li><strong>依据对吗？</strong><span>使用的是哪个版本的制度？</span></li><li><strong>数据能用吗？</strong><span>是否授权、完整、准确和保密？</span></li><li><strong>工具可控吗？</strong><span>能读什么、能写什么、失败怎么办？</span></li><li><strong>证据可追溯吗？</strong><span>能否回到原始记录和计算过程？</span></li><li><strong>人在回路吗？</strong><span>关键结论由谁审批？</span></li><li><strong>效果可衡量吗？</strong><span>召回、误报、稳定性和节省时间？</span></li></ol></div>
+            <LessonTakeaway>不要从“万能审计智能体”开始；从一个窄任务、明确证据、只读工具和人工复核节点开始。</LessonTakeaway>
+            <TeacherNote time="9分钟" question="你当前最耗时、最重复、又有明确人工复核节点的任务是什么？" misconception="新技术不会把旧技术全部淘汰，成熟系统一定是组合能力。" mustSay="先影子运行，再小范围试点，最后逐步扩大。" canSkip="案例矩阵可只切换事项B与F。" />
+          </section>
+
+          <section id="summary" className="lesson summary">
+            <SectionTitle no="08" time="117—120分钟" title="总结：五个问题，串起整堂课" intro="能不能执行规则？能不能从案例学习？能不能表达复杂函数？能不能处理语言？能不能围绕目标行动？" />
+            <div className="summary-chain">{stages.map((s, i) => <div key={s.key}><span>0{i + 1}</span><strong>{s.name}</strong><p>{s.question}</p><small>{s.ability}</small></div>)}</div>
+            <Quiz />
+            <div className="closing"><p>审计智能体的价值，不是替代审计人员作出职业判断。</p><h3>让机器承担查找、比对、计算和整理，<br />让人专注于证据评价、沟通、核实与决策。</h3><div><span>权限可控</span><span>过程留痕</span><span>证据可查</span><span>结论可复核</span></div></div>
+            <TeacherNote time="3分钟" question="请不用术语，用自己的话说出从规则到智能体的能力链。" mustSay="风险不是结论，模型不是审计人员，智能体必须受控。" canSkip="若时间不足，自测可作为课后练习。" />
+          </section>
+          <footer><strong>从普通代码到审计智能体</strong><span>面向审计人员的2小时人工智能基础课</span><a href="#top">回到顶部 ↑</a></footer>
+        </div>
+      </main>
     </PythonKernelProvider>
   );
 }
