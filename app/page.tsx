@@ -15,6 +15,7 @@ import {
   NeuronContinuityLab,
   TrainingLifecycle,
 } from "./course-interactives";
+import { FacePredictLab } from "./face-predict-lab";
 
 type StageKey = "code" | "ml" | "nn" | "llm" | "agent";
 type CaseState = "发现" | "提示" | "遗漏" | "误报" | "排除误报";
@@ -27,22 +28,21 @@ const stages: Array<{
   limit: string;
   sees: string;
 }> = [
-  { key: "code", name: "代码与规则", question: "条件是否满足？", ability: "按人写好的步骤准确执行", limit: "只会处理事先写出的情况", sees: "结构化字段" },
-  { key: "ml", name: "机器学习", question: "它像不像历史异常？", ability: "从案例中归纳统计规律", limit: "依赖特征、数据和历史标签", sees: "数据中的组合模式" },
-  { key: "nn", name: "神经网络", question: "原始内容里有什么特征？", ability: "自动学习多层复杂特征", limit: "识别内容不等于理解业务语境", sees: "数字、图片、文本" },
-  { key: "llm", name: "大模型", question: "这些信息合起来意味着什么？", ability: "理解语言、综合上下文、生成解释", limit: "可能幻觉，且不会天然访问系统", sees: "制度、说明与多文档上下文" },
-  { key: "agent", name: "智能体", question: "为了完成目标，下一步该做什么？", ability: "调用工具、读取反馈、持续行动", limit: "必须受权限、证据和人工复核约束", sees: "目标、工具结果与运行状态" },
+  { key: "code", name: "通俗逻辑与规则", question: "条件是否满足？", ability: "用人写清的逻辑批量、稳定地判断", limit: "只会处理事先写出的情况", sees: "结构化字段与明确阈值" },
+  { key: "ml", name: "特征拟合（ML）", question: "它像不像历史异常？", ability: "用少量人工特征拟合历史规律", limit: "特征靠人设计；看不见原始像素与长文本", sees: "表格特征组合" },
+  { key: "nn", name: "人工神经网络", question: "高维原始输入里有什么？", ability: "在超多特征上自动学习表示", limit: "识别内容不等于理解制度与业务", sees: "像素、波形等高维信号" },
+  { key: "llm", name: "大语言模型", question: "这些信息合起来意味着什么？", ability: "在语言序列上做大规模 ANN 预测与生成", limit: "可能幻觉；不会天然访问业务系统", sees: "制度、说明与多文档上下文" },
+  { key: "agent", name: "Agent + LLM", question: "下一步该调用什么、如何停？", ability: "用 LLM 决策，用工具行动，用状态闭环", limit: "必须受权限、证据和人工复核约束", sees: "目标、工具结果与运行状态" },
 ];
 
 const nav = [
-  ["problem", "一笔审计问题", "12′"],
-  ["code", "普通代码与规则", "12′"],
-  ["ml", "机器学习与拟合", "22′"],
-  ["nn", "神经网络", "21′"],
-  ["llm", "大语言模型", "23′"],
-  ["agent", "智能体", "18′"],
-  ["build", "审计智能体落地", "9′"],
-  ["summary", "总结与检查", "3′"],
+  ["problem", "从问题出发", "8′"],
+  ["code", "通俗逻辑与规则", "10′"],
+  ["ml", "特征拟合 ML", "15′"],
+  ["nn", "超多特征与 ANN", "15′"],
+  ["llm", "从 ANN 到 LLM", "18′"],
+  ["agent", "Agent + LLM", "40′"],
+  ["audit", "审计智能体", "10′"],
 ];
 
 const auditCases: Array<{
@@ -132,7 +132,7 @@ function Header({ mode, setMode }: { mode: ViewMode; setMode: (v: ViewMode) => v
   return (
     <>
       <header className="topbar">
-        <a href="#top" className="brand">从审计问题到智能体</a>
+        <a href="#top" className="brand">LLM · Agent · 审计应用</a>
         <div className="top-progress"><i style={{ width: `${progress}%` }} /></div>
         <div className="top-actions">
           <button className={mode === "student" ? "on" : ""} onClick={() => setMode("student")}>学员视图</button>
@@ -1248,117 +1248,150 @@ export default function Home() {
   return <PythonKernelProvider>
     <main id="top" className={`view-${mode} ${mode !== "student" ? "show-notes" : ""}`}>
       <Header mode={mode} setMode={setMode} />
-      <aside className="sidenav"><div><span>2小时课程</span><strong>从规则到智能体</strong></div><nav>{nav.map((x, i) => <a href={`#${x[0]}`} key={x[0]}><span>{String(i + 1).padStart(2, "0")}</span><b>{x[1]}</b><small>{x[2]}</small></a>)}</nav></aside>
+      <aside className="sidenav"><div><span>约2小时</span><strong>LLM · Agent · 审计</strong></div><nav>{nav.map((x, i) => <a href={`#${x[0]}`} key={x[0]}><span>{String(i + 1).padStart(2, "0")}</span><b>{x[1]}</b><small>{x[2]}</small></a>)}</nav></aside>
       <div className="page">
         <section className="hero">
-          <p>面向审计人员的2小时人工智能基础课</p>
-          <h1>今天只审一笔报销：<br />出租车费 286 元。</h1>
-          <div className="hero-lead">用同一笔 BX-42306，看清规则、机器学习、神经网络、大模型和智能体分别多做了哪一步。</div>
-          <div className="hero-scenario"><div><span>报销金额</span><strong>286元</strong><small>出租车费，摘要“市内交通”</small></div><div><span>明确规则</span><strong>上限300元</strong><small>单看报销表会通过</small></div><div><span>票面图片</span><strong>看起来是286</strong><small>需要从像素识别数字</small></div><div><span>查验平台</span><strong>实际是86元</strong><small>最终形成矛盾证据</small></div></div>
+          <p>LLM，Agent基础、架构以及其在审计中的应用</p>
+          <h1>从问题出发：<br />每一层技术，到底多解决了什么？</h1>
+          <div className="hero-lead">用同一笔 BX-42306（出租车费 286 元），按「通俗逻辑 → 特征拟合 → ANN → LLM → Agent+LLM」讲清功用与优劣；最后留给审计智能体专题。</div>
+          <div className="hero-scenario"><div><span>报销金额</span><strong>286元</strong><small>出租车费，摘要“市内交通”</small></div><div><span>明确规则</span><strong>上限300元</strong><small>单看报销表会通过</small></div><div><span>票面图片</span><strong>看起来是286</strong><small>超多像素特征</small></div><div><span>查验平台</span><strong>实际是86元</strong><small>需语言、制度与取证闭环</small></div></div>
           <div className="hero-path">{stages.map((stage, index) => <a key={stage.key} href={`#${stage.key}`}><span>0{index + 1}</span><strong>{stage.name}</strong><small>{stage.question}</small></a>)}</div>
-          <a className="hero-start" href="#problem">先把这一笔说清楚 <span>↓</span></a>
+          <a className="hero-start" href="#problem">先把问题说清楚 <span>↓</span></a>
         </section>
 
         <section id="problem" className="lesson">
-          <SectionTitle no="01" time="0—12分钟" title="我们究竟要解决什么？" intro="不是判断286是大还是小，而是判断这笔报销是否需要转人工核查，并形成可追溯的理由。" />
+          <SectionTitle no="01" time="0—8分钟" title="从问题出发：我们究竟要解决什么？" intro="不是判断286是大还是小，而是判断这笔报销是否需要转人工核查，并形成可追溯的理由。后面每一层技术，都只回答：它多解决了哪一块，又留下什么边界。" />
           <SingleCaseProject />
+          <div className="content-block"><h3>本课路线图</h3><div className="two-col"><div><strong>能力递进</strong><ul><li>通俗逻辑：解决最简单、边界清晰的问题</li><li>特征拟合（ML）：解决“写不尽但有历史答案”的问题</li><li>ANN：解决超多特征、难以人工造特征的问题</li><li>LLM：ANN 在语言序列上的规模化发展</li><li>Agent + LLM：让模型能取证、能循环、能受控停止</li></ul></div><div><strong>不变的交付</strong><ul><li>可追溯的事实来源</li><li>可解释的判断路径</li><li>可复核的疑点清单</li><li>不是笼统的“AI风险分”</li></ul></div></div></div>
           <CapabilityChain />
-          <LessonTakeaway>技术的目标不是生成一个风险分，而是帮助审计人员形成可追溯、可解释、可复核的疑点。</LessonTakeaway>
-          <Bridge from="人工处理的起点" problem="其中有些判断已经非常明确：例如金额是否超过300元。这种关系可以直接写进程序。" to="普通代码与规则" />
-          <TeacherNote time="12分钟" question="只看报销表，你会放行吗？" misconception="异常、疑点、违规和舞弊不是同一个概念。" mustSay="整堂课始终只问BX-42306的下一步。" canSkip="先不展开多表数据包。" />
+          <LessonTakeaway>从问题选方法：每一层技术都有明确功用，也有明确劣势；不要跳过简单层直接上复杂层。</LessonTakeaway>
+          <Bridge from="人工处理的起点" problem="有些判断已经非常明确：例如金额是否超过300元。这种关系可以用通俗逻辑直接写进程序。" to="通俗逻辑与规则" />
+          <TeacherNote time="8分钟" question="只看报销表，你会放行吗？" misconception="异常、疑点、违规和舞弊不是同一个概念。" mustSay="整堂课始终围绕BX-42306问：这一层多解决了什么？" canSkip="先不展开多表数据包。" />
         </section>
 
         <section id="code" className="lesson">
-          <SectionTitle no="02" time="12—24分钟" title="普通代码与规则：把已经知道的判断写出来" intro="当关系已经明确时，人写逻辑，计算机批量执行。" />
-          <Definition term="计算机程序" simple="一组明确的指令，告诉计算机什么情况下做什么。" precise="程序由变量、条件、循环和函数等结构组成；同样的输入和代码通常产生同样的输出。" />
+          <SectionTitle no="02" time="8—18分钟" title="① 通俗逻辑与规则：解决最简单的问题" intro="当判断关系已经明确时，人把条件写清楚，计算机批量、稳定、可解释地执行。这是自动化的起点，也是审计里最该先用的一层。" />
+          <Definition term="规则 / 通俗逻辑程序" simple="用人已经想清楚的“如果…那么…”来判断：输入固定字段，输出固定结论。" precise="由变量、条件、循环和函数组成；同样的输入和代码通常产生同样的输出，便于审计留痕与复核。" />
           <SingleCaseAnchor step="规则" reads="报销类型和金额" task="人明确写出：出租车费超过300元才报警。BX-42306的286元因此被放行。" />
           <div className="concept-grid four"><div><span>变量</span><strong>保存数据</strong><p>金额286、上限300。</p></div><div><span>条件</span><strong>进行判断</strong><p>如果286 &gt; 300，则报警。</p></div><div><span>循环</span><strong>重复处理</strong><p>用于每笔报销。</p></div><div><span>函数</span><strong>封装步骤</strong><p>复用“检查上限”。</p></div></div>
           <InlinePythonLab example="rule" guide="运行后必须得到“通过”。这不是程序算错，而是它的输入里根本没有票面图像和平台金额。" />
-          <CapabilityBoundary method="规则" input="报销金额286、上限300" unique="对明确条件进行稳定、可解释、零随机的批量检查" output="286<300，通过" limit="不会看图片；不会发现没写出的关系" />
-          <LessonTakeaway>规则不是落后的技术；边界明确的检查，它通常更可靠、更便宜、更容易解释。</LessonTakeaway>
-          <Bridge from="规则的瓶颈" problem="金额接近上限、摘要笼统、缺少行程号都是弱信号。人很难写尽它们的所有组合。" to="机器学习" />
-          <TeacherNote time="12分钟" question="这条规则的结果错了吗？" misconception="规则通过只代表已写出的条件未命中。" mustSay="规则的逻辑来自人。" canSkip="技术语法细节。" />
+          <CapabilityBoundary method="通俗逻辑 / 规则" input="报销金额286、上限300" unique="对明确条件进行稳定、可解释、零随机的批量检查" output="286<300，通过" limit="不会看图片；不会发现没写出的关系；写不尽复杂组合" />
+          <div className="two-col"><div><strong>优势</strong><ul><li>可解释、可复核、成本低</li><li>结果稳定，适合制度硬约束</li><li>易做权限与日志</li></ul></div><div><strong>劣势</strong><ul><li>只能处理人事先写出的情况</li><li>弱信号组合很难穷举</li><li>无法直接处理图像与自由文本</li></ul></div></div>
+          <LessonTakeaway>能写清逻辑的，优先用规则。规则不是“落后”，而是审计场景里最可靠的一层。</LessonTakeaway>
+          <Bridge from="规则的瓶颈" problem="金额接近上限、摘要笼统、缺少行程号都是弱信号。人很难写尽它们的所有组合，但历史上有不少带答案的案例。" to="特征拟合（机器学习）" />
+          <TeacherNote time="10分钟" question="这条规则的结果错了吗？" misconception="规则通过只代表已写出的条件未命中。" mustSay="规则的逻辑来自人；它解决的是最简单、最清晰的问题。" canSkip="技术语法细节。" />
         </section>
 
         <section id="ml" className="lesson">
-          <SectionTitle no="03" time="24—46分钟" title="机器学习：把“学习”还原成函数拟合" intro="关系无法完整写出、但有历史案例时，让程序通过最小化预测误差寻找参数。" />
+          <SectionTitle no="03" time="18—33分钟" title="② 特征拟合（ML）：对需要拟合的问题学参数" intro="关系写不尽、但有历史标签时：人先抽出少量特征，再让模型拟合“特征 → 结果”的近似函数。" />
           <KnownUnknownBridge />
-          <Definition term="机器学习（Machine Learning）" simple="给模型带答案的历史案例，让它寻找输入与结果之间的近似函数。" precise="通过优化算法估计参数θ，使fθ在训练数上的总体损失较小，并检查它能否泛化到新数据。" />
-          <SingleCaseAnchor step="机器学习" reads="三个表格特征 + 12笔历史结果" task="输入金额/上限、摘要是否笼统、是否缺少行程号，学习这些组合与历史核查结果的近似关系。" />
-          <div className="notation"><div><span>输入 X</span><strong>三个特征</strong><p>0.953、摘要笼统=1、缺行程=1。</p></div><i>→</i><div><span>函数 fθ</span><strong>带参数的模型</strong><p>训练改变θ。</p></div><i>→</i><div><span>输出 ŷ</span><strong>核查概率</strong><p>用于排序，不是结论。</p></div><div className="label"><span>训练答案</span><strong>历史标签 y</strong><p>过去是否需重点核查。</p></div></div>
+          <Definition term="机器学习 · 特征拟合" simple="人先把案例变成若干特征数字，再让模型从带答案的历史里找到一组参数，使预测尽量接近真实标签。" precise="估计参数θ，使fθ(X)在训练数据上的损失较小，并用独立验证集检查能否泛化到新事项。" />
+          <SingleCaseAnchor step="特征拟合" reads="三个表格特征 + 历史结果" task="输入金额/上限、摘要是否笼统、是否缺少行程号，学习这些组合与历史核查结果的近似关系。" />
+          <div className="notation"><div><span>输入 X</span><strong>人工特征</strong><p>0.953、摘要笼统=1、缺行程=1。</p></div><i>→</i><div><span>函数 fθ</span><strong>带参数模型</strong><p>训练改变θ。</p></div><i>→</i><div><span>输出 ŷ</span><strong>核查概率</strong><p>用于排序，不是结论。</p></div><div className="label"><span>训练答案</span><strong>历史标签 y</strong><p>过去是否需重点核查。</p></div></div>
           <FunctionFittingLab />
           <InlinePythonLab example="ml" guide="先找history里的12道“带答案的题”，再看weights从0变成训练后的数值，最后对BX-42306预测。" />
           <ConfusionMatrixLab />
-          <CapabilityBoundary method="机器学习" input="表格特征 + 历史标签" unique="不需要人写尽每个组合；从案例中拟合出近似关系" output="BX-42306的重点核查概率" limit="仍然没有看票据像素；概率不构成证据" />
+          <CapabilityBoundary method="特征拟合（ML）" input="表格特征 + 历史标签" unique="不需要人写尽每个组合；从案例中拟合出近似关系" output="BX-42306的重点核查概率" limit="特征靠人设计；仍未看票据像素；概率不构成证据" />
+          <div className="two-col"><div><strong>优势</strong><ul><li>能处理“写不尽”的组合规律</li><li>可用阈值平衡误报与遗漏</li><li>在表格特征上成本相对可控</li></ul></div><div><strong>劣势</strong><ul><li>特征工程依赖业务经验</li><li>特征一多、关系一深就难拟合</li><li>看不见图像等高维原始输入</li></ul></div></div>
           <DeepDive title="解析解、梯度、交叉熵和过拟合"><p><b>解析解不是机器学习的分界线。</b>有些模型可以直接求参数，复杂模型通常用数值优化逐步逼近。</p><TrainingLifecycle /></DeepDive>
-          <LessonTakeaway>机器学习不是产生真理，而是从历史案例中找到近似关系的函数。</LessonTakeaway>
-          <Bridge from="机器学习的瓶颈" problem="表格只写着“出租车费286元”。真正异常藏在票据图片里，而模型还没看过像素。" to="神经网络" />
-          <TeacherNote time="22分钟" question="模型给出80%概率，这是证据吗？" misconception="机器学习不是自动发现真相。" mustSay="训练改变的是参数。" canSkip="梯度和交叉熵。" />
+          <LessonTakeaway>ML 的核心是：用人选的特征去拟合历史。它解决“组合规律”，但不自动解决“特征从哪来”。</LessonTakeaway>
+          <Bridge from="特征拟合的瓶颈" problem="表格只写着“出租车费286元”。真正异常藏在票据图片的成千上万像素里——特征空间突然变得极大。" to="人工神经网络（ANN）" />
+          <TeacherNote time="15分钟" question="模型给出80%概率，这是证据吗？" misconception="机器学习不是自动发现真相。" mustSay="这一层的关键词是特征拟合；训练改变的是参数。" canSkip="梯度和交叉熵。" />
         </section>
 
         <section id="nn" className="lesson">
-          <SectionTitle no="04" time="46—67分钟" title="神经网络：让模型从像素识别数字" intro="神经网络仍属于机器学习；只是被拟合的函数变得多层、非线性、更有表达能力。" />
-          <Definition term="人工神经网络" simple="许多简单计算单元连成层，输入经过逐层加权和非线性变换，最后产生预测。" precise="反向传播计算每个参数对Loss的影响，优化器据此调整权重。" />
-          <SingleCaseAnchor step="神经网络" reads="票据图片的64个像素" task="先用经典8×8手写数字数据集训练“看数字”的能力，再理解票据OCR如何识别出286。" />
-          <div className="equation"><span>从上一章继续</span><strong>神经网络仍是带参数的函数</strong><code>64个像素 → 24个隐藏神经元 → 10个数字概率</code><p>训练仍是调整权重，让预测与正确标签的差距更小。</p></div>
+          <SectionTitle no="04" time="33—48分钟" title="③ 超多特征：用 ANN 自动学习表示" intro="当输入是像素、波形这类“特征极多、难以人工造齐”的信号时，人工神经网络把拟合对象变成多层非线性函数，让表示从数据里学出来。" />
+          <Definition term="人工神经网络（ANN）" simple="许多简单计算单元连成层：高维输入经过逐层加权和非线性变换，最后产生预测。" precise="仍属于机器学习；反向传播计算参数对Loss的影响，优化器据此调整大量权重。变化的是函数结构与参数规模，不变的是用Loss训练。" />
+          <SingleCaseAnchor step="ANN" reads="票据图片的64个像素（教学缩影）" task="先用经典8×8手写数字数据集体会“超多输入→自动学特征”，再理解票据OCR如何识别出286。" />
+          <div className="equation"><span>为什么需要 ANN</span><strong>特征太多时，人工造特征会失效</strong><code>64个像素 → 24个隐藏神经元 → 10个数字概率</code><p>训练仍是调整权重，让预测与正确标签的差距更小；隐藏层相当于在学习“哪些笔画组合有用”。</p></div>
           <DigitsImageLab />
-          <InlinePythonLab example="neural" guide="代码真正读入1,300张8×8数字图像：1,000张训练64→24→10网络，再用300张未参与训练的图片测试。" />
+          <FacePredictLab />
+          <InlinePythonLab example="neural" guide="代码真正读入1,300张8×8数字图像：1,000张训练64→24→10网络，再用300张未参与训练的图片测试。上方「真实 ANN 演示」则用 ResNet18 对人脸高维像素做迁移分类。" />
           <div className="training-loop"><span>一次训练循环</span>{[["1", "做预测"], ["2", "与答案比较"], ["3", "计算Loss"], ["4", "反向传播"], ["5", "微调权重"], ["6", "重复多轮"]].map((x, i) => <div key={x[0]}><b>{x[0]}</b><p>{x[1]}</p>{i < 5 && <i>→</i>}</div>)}</div>
-          <div className="content-block"><h3>训练完后到底留下什么？</h3><p>网络结构和四组数字矩阵：<code>W1[64,24]</code>、<code>b1[24]</code>、<code>W2[24,10]</code>、<code>b2[10]</code>。新图片的64个像素流过这些矩阵，得到10个数字概率。</p></div>
-          <CapabilityBoundary method="神经网络" input="原始8×8像素" unique="直接从图像学习笔画、轮廓和数字形状，不需要人先写“2长什么样”" output="票面金额识别为286" limit="只是“看见”数字，还不理解制度和业务意义" />
+          <div className="content-block"><h3>训练完后到底留下什么？</h3><p>网络结构和四组数字矩阵：<code>W1[64,24]</code>、<code>b1[24]</code>、<code>W2[24,10]</code>、<code>b2[10]</code>。新图片的64个像素流过这些矩阵，得到10个数字概率——这就是“表示学习”的最小课堂版。</p></div>
+          <CapabilityBoundary method="ANN" input="原始8×8像素（高维）" unique="在超多特征上自动学习笔画与形状，不需要人先写“2长什么样”" output="票面金额识别为286" limit="只是“看见”数字，还不理解制度和业务意义" />
+          <div className="two-col"><div><strong>优势</strong><ul><li>适合图像等超多特征输入</li><li>减少手工特征工程</li><li>表达能力强，可拟合复杂边界</li></ul></div><div><strong>劣势</strong><ul><li>需要更多数据与算力</li><li>可解释性通常弱于规则/浅层ML</li><li>识别内容 ≠ 理解制度语境</li></ul></div></div>
           <DeepDive title="反向传播与小网络解剖"><p>反向传播高效计算每个参数对Loss的影响，优化器再据此调整。</p><NeuronContinuityLab /><NeuralCheckpointExplorer /><NeuralNetworkLab /></DeepDive>
-          <LessonTakeaway>神经网络没有跳出机器学习；它只是更复杂的参数化函数。</LessonTakeaway>
-          <Bridge from="图像识别的瓶颈" problem="网络识别出“286”，平台返回“86”。但“金额不一致应如何处理”是语言和制度问题。" to="大语言模型" />
-          <TeacherNote time="21分钟" question="识别出286后，网络知道这笔报销有问题吗？" misconception="识别内容不等于理解业务。" mustSay="神经网络属于机器学习。" canSkip="反向传播推导。" />
+          <LessonTakeaway>ANN 仍然是“拟合”，只是面向超多特征：它学会了看，但还不会读制度和自己去查系统。</LessonTakeaway>
+          <Bridge from="ANN 的下一步" problem="网络识别出“286”，平台返回“86”。“金额不一致应如何按制度处理”是语言与上下文问题——需要把 ANN 扩展到大规模 Token 序列。" to="大语言模型（LLM）" />
+          <TeacherNote time="15分钟" question="识别出286后，网络知道这笔报销有问题吗？" misconception="识别内容不等于理解业务；ANN 不是电子大脑。" mustSay="强调：超多特征 → ANN；ANN 仍属机器学习。" canSkip="反向传播推导。" />
         </section>
 
         <section id="llm" className="lesson">
-          <SectionTitle no="05" time="67—90分钟" title="大语言模型：用神经网络学习Token序列" intro="大模型是在大规模Token序列上训练、通常采用Transformer的深度神经网络。" />
-          <Definition term="大语言模型（LLM）" simple="一个根据前文不断预测下一个Token，并由此生成语言的大型神经网络。" precise="通过预训练最小化Token预测损失，再经过指令微调和对齐形成更适合任务的行为。" />
-          <SingleCaseAnchor step="大模型" reads="金额比较结果 + 制度文字" task="输入“报销286、票面286、平台86”和制度第12条，要求模型说明事实、标准、不确定性和建议。" />
+          <SectionTitle no="05" time="48—66分钟" title="④ 从 ANN 到 LLM：在语言上规模化的神经网络" intro="大语言模型是 ANN 的发展：数据变成海量 Token 序列，结构通常是 Transformer，目标仍是预测——只是预测的是“下一个词块”。" />
+          <Definition term="大语言模型（LLM）" simple="一个根据前文不断预测下一个Token，并由此生成语言的大型神经网络（ANN）。" precise="通过预训练最小化Token预测损失，再经过指令微调和对齐形成更适合问答与任务指令的行为。它不是数据库，也不会天然访问企业系统。" />
+          <div className="content-block"><h3>和上一章的连续关系</h3><p><b>同一条技术链：</b>ML 拟合参数 → ANN 拟合高维函数 → LLM 用超大 ANN 拟合语言序列。变化的是数据形态、网络规模与任务接口；不变的是“用损失训练参数、用参数做预测”。</p></div>
+          <SingleCaseAnchor step="LLM" reads="金额比较结果 + 制度文字" task="输入“报销286、票面286、平台86”和制度第12条，要求模型说明事实、标准、不确定性和建议。" />
           <LanguageTrainingShift />
           <LlmPipeline />
           <AttentionLab />
           <InlinePythonLab example="language" guide="这个极小字符模型只负责把“下一个Token预测”运行出来。真实LLM使用巨大的Transformer神经网络。" />
+          <div className="three-stages"><div><span>阶段1</span><strong>预训练</strong><p>在海量文本上反复预测下一个Token。</p></div><div><span>阶段2</span><strong>指令训练与对齐</strong><p>学习按照人的指令回答并遵守约束。</p></div><div><span>阶段3</span><strong>推理使用</strong><p>参数固定，模型逐Token生成当前回答。</p></div></div>
           <div className="hallucination"><div><strong>为什么会幻觉</strong><p>模型首先生成统计上合理的文字，而不是天然从权威系统取得经核验的事实。</p></div><div><span>语言流畅</span><i>≠</i><span>事实正确</span><i>≠</i><span>证据充分</span><i>≠</i><span>审计结论</span></div></div>
-          <CapabilityBoundary method="大模型" input="识别结果 + 制度与指令" unique="处理语言、联系上下文、生成结构化解释" output="“票面286与平台86不一致，按第12条转人工复核”" limit="不会天然进入企业系统主动取数" />
+          <CapabilityBoundary method="LLM" input="识别结果 + 制度与指令" unique="处理语言、联系上下文、生成结构化解释" output="“票面286与平台86不一致，按第12条转人工复核”" limit="不会天然进入企业系统主动取数；可能幻觉" />
+          <div className="two-col"><div><strong>优势</strong><ul><li>能综合制度与多段证据做解释</li><li>接口灵活（提示词、结构化输出）</li><li>可衔接检索（RAG）与工具调用雏形</li></ul></div><div><strong>劣势</strong><ul><li>可能一本正经地编造</li><li>默认是“单次问答”，不会自己取证</li><li>把证据手工贴进提示词成本高、易漏</li></ul></div></div>
           <DeepDive title="Token体验、模型张量和微型Attention代码"><TokenLab /><LlmCheckpointExplorer /><InlinePythonLab example="attention" guide="观察Query、Key、Value形成注意力权重，不要把权重当作事实证明。" /></DeepDive>
-          <LessonTakeaway>大模型不是装满答案的数据库，而是根据上下文预测后续Token的大型神经网络。</LessonTakeaway>
-          <Bridge from="大模型的瓶颈" problem="手工把286、86和制度复制给模型，它会解释；但它不会自己去三个系统取回这些东西。" to="智能体" />
-          <TeacherNote time="23分钟" question="如果不把86元告诉模型，它能凭语言能力知道吗？" misconception="语言流畅不是证据。" mustSay="LLM仍是神经网络。" canSkip="Attention数学代码。" />
+          <LessonTakeaway>LLM 是 ANN 在语言上的规模化：擅长理解与生成，但不等于会调查。要把“建议”变成“行动”，需要 Agent。</LessonTakeaway>
+          <Bridge from="LLM 的瓶颈" problem="手工把286、86和制度复制给模型，它会解释；但它不会自己去三个系统取回这些东西，也不会根据查询结果决定下一步。" to="Agent + LLM" />
+          <TeacherNote time="18分钟" question="如果不把86元告诉模型，它能凭语言能力知道吗？" misconception="语言流畅不是证据；LLM 不是数据库。" mustSay="明确说：LLM = 大规模 ANN；下一章才进入 Agent。" canSkip="Attention数学代码。" />
         </section>
 
         <section id="agent" className="lesson">
-          <SectionTitle no="06" time="90—108分钟" title="智能体：把模型放进目标—行动—反馈循环" intro="系统围绕目标选择行动、调用工具、读取反馈、更新状态并受控停止。" />
-          <Definition term="智能体（Agent）" simple="让大模型不只回答，还能为了目标判断下一步、调用工具、读取结果并继续。" precise="智能体是包含模型或决策模块、工具、状态、循环和控制机制的软件系统。" />
-          <SingleCaseAnchor step="智能体" reads="目标、工具返回结果、当前状态" task="从报销号开始，选择读报销、识别票面、查平台、检索制度；每步根据上一步反馈决定。" />
-          <div className="concept-grid four"><div><span>普通程序</span><strong>步骤明确</strong><p>执行预先写好的逻辑。</p></div><div><span>工作流</span><strong>流程固定</strong><p>连接系统，路径主要预定。</p></div><div><span>大模型</span><strong>生成决策</strong><p>根据上下文输出指令。</p></div><div><span>智能体</span><strong>反馈闭环</strong><p>根据工具结果继续。</p></div></div>
-          <div className="model-system"><div><span>大模型</span><strong>一个模型</strong><p>输入上下文，输出文字或指令。</p></div><i>≠</i><div><span>智能体</span><strong>一个运行系统</strong><p>模型 + 目标 + 工具 + 状态 + 控制。</p></div></div>
+          <SectionTitle no="06" time="66—106分钟" title="⑤ Agent + LLM：基础、行业规范、架构与价值" intro="大模型负责理解与决策；Agent 是把模型放进“目标—行动—反馈”闭环的运行系统。本章篇幅最长：先弄清 Agent 是什么，再看规范、架构与好处，最后用同一笔报销跑通闭环。" />
+
+          <div className="content-block"><h3>6.1 什么是 Agent？</h3><p>聊天窗口里“问一句答一句”通常只是 LLM 应用；当系统能够<strong>围绕目标选择下一步、调用工具、读取结果、更新状态并在条件满足时停止</strong>，才具备 Agent 能力。</p></div>
+          <Definition term="智能体（Agent）" simple="让 LLM 不只回答，还能为了目标判断下一步、调用工具、读取结果并继续，直到达成目标或触发停止条件。" precise="Agent 是包含决策模块（常为 LLM）、工具接口、状态/记忆、编排循环与控制策略的软件系统；LLM 是其中的理解与规划部件，不是系统的全部。" />
+          <div className="concept-grid four"><div><span>普通程序</span><strong>步骤明确</strong><p>执行预先写好的逻辑。</p></div><div><span>工作流</span><strong>流程固定</strong><p>连接系统，路径主要预定。</p></div><div><span>大模型</span><strong>生成决策</strong><p>根据上下文输出文字或指令。</p></div><div><span>Agent</span><strong>反馈闭环</strong><p>根据工具结果决定下一步。</p></div></div>
+          <div className="model-system"><div><span>LLM</span><strong>一个模型</strong><p>输入上下文，输出文字或结构化指令。</p></div><i>≠</i><div><span>Agent</span><strong>一个运行系统</strong><p>模型 + 目标 + 工具 + 状态 + 控制。</p></div></div>
+
+          <div className="content-block"><h3>6.2 行业里常见的规范与底线</h3><p>不同厂商名词不同，但成熟落地几乎都会约定这些“非可选”约束——审计场景尤其严格。</p><div className="control-lines"><ol><li><strong>最小权限</strong><span>默认只读；写入、外发、扩权必须审批。</span></li><li><strong>人在回路</strong><span>重大定性、对外结论由人确认；Agent 产出疑点与证据包。</span></li><li><strong>工具边界清晰</strong><span>每个工具有输入输出契约、超时与失败语义；禁止“查不到就当没有问题”。</span></li><li><strong>全程可观测</strong><span>记录提示、工具调用、返回与决策理由，便于复盘与追责。</span></li><li><strong>停止条件明确</strong><span>证据齐全、预算耗尽、工具失败、置信不足时必须停止或升级。</span></li><li><strong>数据与合规</strong><span>授权范围、脱敏、留存周期与模型侧数据外泄风险要事先设计。</span></li></ol></div></div>
+
+          <div className="content-block"><h3>6.3 参考架构：Agent 由哪些块组成？</h3><p>课堂用一张“积木图”记忆即可：缺任何一块，都容易退化成“会说话但不会办事”的聊天框，或“会乱跑的脚本”。</p></div>
+          <div className="stack"><span>Agent 参考架构（教学版）</span><div>
+            <section><b>01</b><strong>目标与策略</strong><p>任务目标、成功标准、禁止事项、升级规则。</p></section>
+            <section><b>02</b><strong>LLM 决策核</strong><p>理解上下文，选择下一步行动或产出结构化计划。</p></section>
+            <section><b>03</b><strong>工具层</strong><p>检索、数据库、OCR、发票查验、计算器等可调用能力。</p></section>
+            <section><b>04</b><strong>状态与记忆</strong><p>已获证据、缺口、失败记录、对话/工作记忆。</p></section>
+            <section><b>05</b><strong>编排循环</strong><p>感知→决策→行动→观察→更新；可 ReAct / 计划-执行等模式。</p></section>
+            <section><b>06</b><strong>控制与护栏</strong><p>权限、配额、审计日志、人工关口、安全策略。</p></section>
+          </div><blockquote>行业实践里常见模式：ReAct（推理与行动交错）、Plan-and-Execute（先计划再执行）、以及带人工审批节点的 Human-in-the-loop。审计落地更强调后两者中的“可控停”。</blockquote></div>
+
+          <div className="content-block"><h3>6.4 使用 Agent 带来的好处（以及别神话）</h3><div className="two-col"><div><strong>好处</strong><ul><li>把多系统取证从“人手粘贴”变成可重复流程</li><li>按证据缺口动态选下一步，减少固定清单漏项</li><li>工具失败可显式记录并升级，而不是静默放过</li><li>输出证据包，便于复核与底稿衔接</li><li>同一套护栏可服务多类窄场景复用</li></ul></div><div><strong>不要神话</strong><ul><li>不会自动等于“更准的审计意见”</li><li>工具质量差，Agent 只会更快地做错</li><li>缺少日志与权限，风险比单次聊天更大</li><li>场景过宽、目标含糊时成本与失控风险上升</li></ul></div></div></div>
+
+          <div className="autonomy"><h3>自主度：审计场景不追求“越自动越好”</h3><div><span>可以自动</span><p>读取、检索、计算、比对和整理。</p></div><div><span>需要审批</span><p>扩大数据范围、写入和对外发送。</p></div><div><span>必须由人判断</span><p>证据评价、重大定性和审计意见。</p></div></div>
+
+          <div className="content-block"><h3>6.5 回到 BX-42306：跑通一次闭环</h3></div>
+          <SingleCaseAnchor step="Agent" reads="目标、工具返回结果、当前状态" task="从报销号开始，选择读报销、识别票面、查平台、检索制度；每步根据上一步反馈决定。" />
           <AgentBranchLab />
           <InlinePythonLab example="agent" guide="找到choose_next_action：它不是遍历固定列表，而是检查state里还缺哪块证据、金额是否矛盾，再选择工具。" />
-          <CapabilityBoundary method="智能体" input="目标 + 可调用工具 + 运行状态" unique="主动取数，把工具反馈放回上下文，并选择下一步" output="含事实、制度来源、不确定性和建议的证据包" limit="不应自动认定违规、舞弊或审计结论" />
-          <LessonTakeaway>大模型是智能体中的理解与决策部件；智能体是包含模型、工具、状态、循环和控制的完整系统。</LessonTakeaway>
-          <TeacherNote time="18分钟" question="票据工具失败时，智能体能否猜一个金额继续？" misconception="网页不等于智能体；固定for循环也不等于依据反馈行动。" mustSay="智能体必须有工具、状态、反馈和停止条件。" canSkip="金额一致分支。" />
+          <CapabilityBoundary method="Agent + LLM" input="目标 + 可调用工具 + 运行状态" unique="主动取数，把工具反馈放回上下文，并选择下一步" output="含事实、制度来源、不确定性和建议的证据包" limit="不应自动认定违规、舞弊或审计结论" />
+          <LessonTakeaway>Agent = LLM + 工具 + 状态 + 循环 + 控制。规范与架构不是附加题，而是能不能上线的前提。</LessonTakeaway>
+          <Bridge from="通用 Agent 能力" problem="我们已经有了 Agent + LLM 的通用积木。审计场景还要回答：审什么单据、连哪些系统、证据标准是什么、人工关口设在哪。" to="审计智能体（专题占位）" />
+          <TeacherNote time="40分钟" question="票据工具失败时，Agent 能否猜一个金额继续？" misconception="网页不等于 Agent；固定 for 循环也不等于依据反馈行动。" mustSay="讲透定义、六条规范、六块架构、好处与边界；演示矛盾/失败分支。" canSkip="金额一致分支可略讲。" />
         </section>
 
-        <section id="build" className="lesson">
-          <SectionTitle no="07" time="108—117分钟" title="落地：我们自己的审计智能体应该怎样建设" intro="先回看五种技术增加的能力，再定义一个窄场景、明确证据和人工关口。" />
-          <CapabilityChain />
-          <AuditAgentCanvas />
-          <DeepDive title="高级案例：26笔报销、9张表和跨系统证据链"><p>理解单笔主线后，再用完整Toy Data Pack练习重复发票、例外审批、拆分报销和行程矛盾。</p><ToyDatasetExplorer /><CaseMatrix /></DeepDive>
-          <LessonTakeaway>不要从“万能审计智能体”开始；从一个窄任务、明确证据、只读工具和人工复核节点开始。</LessonTakeaway>
-          <TeacherNote time="9分钟" question="你能把第一个场景缩小到“一类单据的一个核查目标”吗？" misconception="新技术不会把旧技术全部淘汰。" mustSay="先影子运行，再小范围试点。" canSkip="高级多表案例。" />
-        </section>
-
-        <section id="summary" className="lesson summary">
-          <SectionTitle no="08" time="117—120分钟" title="总结：五个问题，串起整堂课" intro="能不能执行规则？能不能从案例学习？能不能看图片？能不能处理语言？能不能围绕目标行动？" />
+        <section id="audit" className="lesson">
+          <SectionTitle no="07" time="106—116分钟" title="⑥ 审计智能体（内容占位）" intro="本章预留为「审计智能体」专题：把前五层能力落到审计组织、流程与系统。详细设计确定后，将在此展开。" />
+          <div className="content-block" style={{ borderStyle: "dashed" }}>
+            <h3>🚧 本章建设中</h3>
+            <p>计划覆盖但不限于：审计智能体的场景切片、证据与底稿要求、与规则/ML/ANN/LLM/Agent 的组合方式、试点路径与评价指标。请先掌握第 1—5 部分的问题驱动能力链。</p>
+            <p><b>暂时保留的思考锚点（非正式定稿）：</b></p>
+            <ul>
+              <li>交付物仍是可复核疑点，不是自动审计意见</li>
+              <li>确定性检查优先规则；模式与感知用模型；调查闭环用 Agent</li>
+              <li>先影子运行，再小范围试点</li>
+            </ul>
+          </div>
+          <DeepDive title="（可选预习）多表 Toy Data 与能力矩阵"><p>单笔主线吃透后，可用完整数据包预习重复发票、例外审批、拆分报销、行程矛盾等情形。正式「审计智能体」章节定稿后，将重新组织这些材料。</p><ToyDatasetExplorer /><CaseMatrix /><AuditAgentCanvas /></DeepDive>
           <div className="summary-chain">{stages.map((s, i) => <div key={s.key}><span>0{i + 1}</span><strong>{s.name}</strong><p>{s.question}</p><small>{s.ability}</small></div>)}</div>
           <Quiz />
-          <div className="closing"><p>从同一笔286元报销回看整条能力链。</p><h3>规则检查已知条件；模型学习案例和像素；<br />大模型理解语言；智能体去取证并受控停止。</h3><div><span>286&lt;300</span><span>票面286</span><span>平台86</span><span>转人工复核</span></div></div>
-          <TeacherNote time="3分钟" question="为什么五种方法不能相互替代？" mustSay="每一层增加一种能力，也留下新的边界。" canSkip="自测可作为课后练习。" />
+          <div className="closing"><p>回看 BX-42306：规则放行 → 特征提示 → ANN 看见 286 → LLM 解释矛盾 → Agent 取证并停止。</p><h3>选对问题层级，再选对方法；<br />Agent 让 LLM 能办事，审计仍由人收口。</h3><div><span>规则</span><span>ML</span><span>ANN</span><span>LLM</span><span>Agent</span></div></div>
+          <TeacherNote time="10分钟" question="你最想用 Agent 自动化的审计子任务是什么？" mustSay="本章仅为占位；强调前五层已形成完整问题驱动链条。" canSkip="Toy Data 预习。" />
         </section>
-        <footer><strong>从普通代码到审计智能体</strong><span>用同一笔286元报销讲清五种能力</span><a href="#top">回到顶部 ↑</a></footer>
+
+        <footer><strong>LLM，Agent基础、架构以及其在审计中的应用</strong><span>从问题出发的能力链：规则 → ML → ANN → LLM → Agent</span><a href="#top">回到顶部 ↑</a></footer>
       </div>
     </main>
   </PythonKernelProvider>;
 }
+

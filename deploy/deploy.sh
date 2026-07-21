@@ -24,6 +24,9 @@ usage() {
 部署完成后课件访问地址（默认）:
   http://211.159.166.109:8080/
 
+ANN 人脸演示（第 ③ 章）会随脚本部署：同步 checkpoint、安装 Python 依赖、
+PM2 启动 face-predict（本机 8765），课件经 /api/face-predict 代理。
+
 fitness 应用不受影响:
   http://211.159.166.109/
 EOF
@@ -48,8 +51,13 @@ REMOTE_DIR="${REMOTE_DIR:-/var/www/audit-agent-courseware}"
 APP_PORT="${APP_PORT:-3001}"
 NGINX_PORT="${NGINX_PORT:-8080}"
 PM2_APP_NAME="${PM2_APP_NAME:-audit-courseware}"
+PM2_FACE_NAME="${PM2_FACE_NAME:-face-predict}"
+ENABLE_FACE_PREDICT="${ENABLE_FACE_PREDICT:-true}"
+FACE_PREDICT_HOST="${FACE_PREDICT_HOST:-127.0.0.1}"
+FACE_PREDICT_PORT="${FACE_PREDICT_PORT:-8765}"
+FACE_PREDICT_URL="${FACE_PREDICT_URL:-http://${FACE_PREDICT_HOST}:${FACE_PREDICT_PORT}}"
 AUTO_SETUP="${AUTO_SETUP:-true}"
-SSH_OPTS=(-o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
+SSH_OPTS=(-o StrictHostKeyChecking=accept-new -o ConnectTimeout=30 -o ServerAliveInterval=10)
 
 if [[ -z "${SERVER_USER:-}" ]]; then
   echo "请在 deploy/deploy.env 中设置 SERVER_USER"
@@ -76,16 +84,27 @@ run_ssh() {
 log "目标服务器: $SSH_TARGET"
 log "远程目录:   $REMOTE_DIR"
 log "对外端口:   $NGINX_PORT (fitness 仍使用 80)"
+log "人脸推理:   ENABLE_FACE_PREDICT=$ENABLE_FACE_PREDICT ($FACE_PREDICT_URL)"
+
+if [[ "$ENABLE_FACE_PREDICT" == "true" ]]; then
+  local_ckpt="$PROJECT_ROOT/services/face-predict/checkpoints/transfer/best.pt"
+  if [[ ! -f "$local_ckpt" ]]; then
+    fail "本机缺少模型权重 $local_ckpt（约 123MB），无法部署 ANN 演示。可设 ENABLE_FACE_PREDICT=false 仅部署课件。"
+  fi
+  log "检测到 checkpoint: $(du -h "$local_ckpt" | awk '{print $1}')"
+fi
 
 log "测试 SSH 连接..."
-run_ssh "$SSH_TARGET" "echo ok" >/dev/null || fail "无法 SSH 到 $SSH_TARGET，请检查用户、密钥与防火墙"
+if ! run_ssh "$SSH_TARGET" "echo ok" >/dev/null; then
+  fail "无法 SSH 到 ${SSH_TARGET} (超时或认证失败). 请检查: 1) 本机网络 2) 腾讯云安全组是否放行 22 3) 服务器是否开机 4) 密码/密钥是否正确"
+fi
 
 log "确保远程目录存在..."
 run_ssh "$SSH_TARGET" \
   "sudo mkdir -p '$REMOTE_DIR' && sudo chown -R \"\$USER:\$USER\" '$REMOTE_DIR'"
 
 if [[ "$MODE" != "--setup-only" ]]; then
-  log "同步项目文件..."
+  log "同步项目文件（含 services/face-predict 与 checkpoint，排除 .venv）..."
   rsync -avz --delete \
     --exclude-from="$SCRIPT_DIR/rsync-exclude.txt" \
     -e "$RSYNC_SSH" \
@@ -99,9 +118,10 @@ fi
 
 log "在服务器上构建并发布..."
 run_ssh "$SSH_TARGET" \
-  "REMOTE_DIR='$REMOTE_DIR' DEPLOY_DIR='$REMOTE_DIR/deploy' APP_PORT='$APP_PORT' NGINX_PORT='$NGINX_PORT' PM2_APP_NAME='$PM2_APP_NAME' AUTO_SETUP='$AUTO_SETUP' SERVER_HOST='$SERVER_HOST' bash -s" \
+  "REMOTE_DIR='$REMOTE_DIR' DEPLOY_DIR='$REMOTE_DIR/deploy' APP_PORT='$APP_PORT' NGINX_PORT='$NGINX_PORT' PM2_APP_NAME='$PM2_APP_NAME' PM2_FACE_NAME='$PM2_FACE_NAME' ENABLE_FACE_PREDICT='$ENABLE_FACE_PREDICT' FACE_PREDICT_HOST='$FACE_PREDICT_HOST' FACE_PREDICT_PORT='$FACE_PREDICT_PORT' FACE_PREDICT_URL='$FACE_PREDICT_URL' AUTO_SETUP='$AUTO_SETUP' SERVER_HOST='$SERVER_HOST' bash -s" \
   < "$SCRIPT_DIR/remote-deploy.sh"
 
 log "部署完成"
 log "课件:   http://${SERVER_HOST}:${NGINX_PORT}/"
+log "ANN:    打开第 ③ 章「真实 ANN 演示」"
 log "Fitness: http://${SERVER_HOST}/"

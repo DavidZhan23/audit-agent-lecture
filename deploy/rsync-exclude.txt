@@ -14,3 +14,9 @@ deploy/deploy.env
 *.log
 .DS_Store
 coverage/
+services/face-predict/.venv/
+services/face-predict/**/__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+.Python

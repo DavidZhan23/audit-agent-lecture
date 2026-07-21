@@ -1,0 +1,34 @@
+---
+description: 课件结构文档优先读取，并在内容变更后强制同步更新 docs
+alwaysApply: true
+---
+
+# 课件 docs 同步规范
+
+## 开工前（强制）
+
+处理本仓库课件/教学相关任务时，先阅读：
+
+1. `docs/README.md`
+2. `docs/lecture-structure.md`
+3. 若改某一章，再读 `docs/sections/` 对应文件
+
+以 `app/page.tsx` 的 `export default function Home` 为线上课件事实来源。
+
+## 改完后（强制）
+
+以下任一变更发生时，**同一回合内**更新 `docs/`，使 md 与代码一致：
+
+- 增删/重排章节，或改 `nav` / section `id` / 时长 / 标题
+- 改 `stages`、能力链文案、主线案例（如 BX-42306）
+- 增删互动组件或改其教学意图
+- 改 Toy Data、情形 A–F、训练/待审数据边界
+- 切换默认导出页面（例如启用 `ComplexHome`）
+
+至少更新受影响的：`lecture-structure.md`、对应 `sections/*.md`；涉及互动/数据则更新 `interactives.md` / `data-pack.md`。
+
+## 不要做的事
+
+- 不要只改代码留下过期 docs
+- 不要把未导出的备用页面当成默认结构写进 docs（除非已切换）
+- 不要把本期待审答案写进训练集而不更新 `data-pack.md` 的泄漏警告

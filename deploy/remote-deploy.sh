@@ -10,9 +10,15 @@ DEPLOY_DIR="${DEPLOY_DIR:-$REMOTE_DIR/deploy}"
 APP_PORT="${APP_PORT:-3001}"
 NGINX_PORT="${NGINX_PORT:-8080}"
 PM2_APP_NAME="${PM2_APP_NAME:-audit-courseware}"
+PM2_FACE_NAME="${PM2_FACE_NAME:-face-predict}"
+ENABLE_FACE_PREDICT="${ENABLE_FACE_PREDICT:-true}"
+FACE_PREDICT_HOST="${FACE_PREDICT_HOST:-127.0.0.1}"
+FACE_PREDICT_PORT="${FACE_PREDICT_PORT:-8765}"
+FACE_PREDICT_URL="${FACE_PREDICT_URL:-http://${FACE_PREDICT_HOST}:${FACE_PREDICT_PORT}}"
 AUTO_SETUP="${AUTO_SETUP:-true}"
 SERVER_HOST="${SERVER_HOST:-127.0.0.1}"
 SCRIPT_DIR="$DEPLOY_DIR"
+FACE_DIR="$REMOTE_DIR/services/face-predict"
 NGINX_BIN=""
 
 log() { printf '\n[deploy] %s\n' "$*"; }
@@ -126,6 +132,70 @@ install_pm2() {
   fi
 }
 
+ensure_python() {
+  if [[ "$ENABLE_FACE_PREDICT" != "true" ]]; then
+    log "已关闭 ENABLE_FACE_PREDICT，跳过 Python / 人脸推理安装"
+    return 0
+  fi
+
+  if command -v python3 >/dev/null 2>&1; then
+    log "Python: $(python3 --version 2>&1)"
+  else
+    [[ "$AUTO_SETUP" == "true" ]] || fail "缺少 python3"
+    log "安装 Python3..."
+    if command -v apt-get >/dev/null 2>&1; then
+      sudo apt-get update -y
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-venv python3-pip
+    elif command -v dnf >/dev/null 2>&1; then
+      sudo dnf install -y python3 python3-pip
+    elif command -v yum >/dev/null 2>&1; then
+      sudo yum install -y python3 python3-pip
+    else
+      fail "无法识别包管理器，请手动安装 python3"
+    fi
+  fi
+
+  # venv 模块（部分发行版需单独包）
+  if ! python3 -c "import venv" 2>/dev/null; then
+    [[ "$AUTO_SETUP" == "true" ]] || fail "python3 缺少 venv 模块"
+    if command -v apt-get >/dev/null 2>&1; then
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y python3-venv
+    elif command -v dnf >/dev/null 2>&1; then
+      sudo dnf install -y python3-venv || true
+    fi
+  fi
+}
+
+setup_face_predict() {
+  if [[ "$ENABLE_FACE_PREDICT" != "true" ]]; then
+    pm2 delete "$PM2_FACE_NAME" >/dev/null 2>&1 || true
+    return 0
+  fi
+
+  [[ -d "$FACE_DIR" ]] || fail "缺少人脸推理目录: $FACE_DIR（请确认 rsync 已同步 services/face-predict）"
+  [[ -f "$FACE_DIR/checkpoints/transfer/best.pt" ]] || fail "缺少模型权重: $FACE_DIR/checkpoints/transfer/best.pt（约 123MB，请确认本机有该文件且未被 rsync 排除）"
+  [[ -f "$FACE_DIR/server.py" ]] || fail "缺少 $FACE_DIR/server.py"
+
+  cd "$FACE_DIR"
+  log "配置人脸推理 Python 虚拟环境（CPU torch，适合小内存云主机）..."
+  if [[ ! -x .venv/bin/python ]]; then
+    python3 -m venv .venv
+  fi
+
+  .venv/bin/pip install -U pip wheel
+  # 先装 CPU 版 torch，再装其余依赖，避免拉 CUDA 大包
+  .venv/bin/pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+  if [[ -f requirements.deploy.txt ]]; then
+    .venv/bin/pip install -r requirements.deploy.txt
+  else
+    .venv/bin/pip install -r requirements.txt
+  fi
+
+  log "验证推理包导入..."
+  .venv/bin/python -c "import torch, cv2, fastapi; print('torch', torch.__version__)"
+  [[ -x "$FACE_DIR/.venv/bin/python" ]] || fail "找不到可执行文件: $FACE_DIR/.venv/bin/python"
+}
+
 ensure_remote_dir() {
   sudo mkdir -p "$REMOTE_DIR"
   sudo chown -R "$USER:$USER" "$REMOTE_DIR"
@@ -142,16 +212,22 @@ build_app() {
 
 configure_pm2() {
   cd "$REMOTE_DIR"
-  # 直接对外暴露 NGINX_PORT（8080），不再经系统 nginx 反代
-  export REMOTE_DIR PM2_APP_NAME
+  export REMOTE_DIR PM2_APP_NAME PM2_FACE_NAME
   export PUBLIC_PORT="$NGINX_PORT"
   export NGINX_PORT
-  log "启动 / 重启 PM2 进程: $PM2_APP_NAME (0.0.0.0:$NGINX_PORT)"
+  export ENABLE_FACE_PREDICT FACE_PREDICT_HOST FACE_PREDICT_PORT FACE_PREDICT_URL
+
+  log "启动 / 重启 PM2：课件 $PM2_APP_NAME (0.0.0.0:$NGINX_PORT)"
+  if [[ "$ENABLE_FACE_PREDICT" == "true" ]]; then
+    log "同时启动人脸推理 $PM2_FACE_NAME ($FACE_PREDICT_HOST:$FACE_PREDICT_PORT)"
+  fi
+
   pm2 delete "$PM2_APP_NAME" >/dev/null 2>&1 || true
+  pm2 delete "$PM2_FACE_NAME" >/dev/null 2>&1 || true
   pm2 start "$SCRIPT_DIR/ecosystem.config.cjs" --update-env
   pm2 save
-  sleep 3
-  pm2 describe "$PM2_APP_NAME" | head -40 || true
+  sleep 5
+  pm2 list || true
 }
 
 configure_nginx() {
@@ -172,7 +248,7 @@ open_firewall_port() {
     sudo ufw allow "${NGINX_PORT}/tcp" || true
     log "ufw 已尝试开放 ${NGINX_PORT}/tcp"
   else
-    log "未检测到 firewalld/ufw；云防火墙/安全组请确认已放行 ${NGINX_PORT}/tcp"
+    log "未检测到 firewalld/ufw；云防火墙/安全组请确认已放行 ${NGINX_PORT}/tcp（人脸推理仅本机 8765，无需对外开放）"
   fi
 }
 
@@ -181,14 +257,33 @@ health_check() {
   local code
   code="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${NGINX_PORT}/" || true)"
   if [[ "$code" != "200" ]]; then
-    log "健康检查失败，最近 PM2 日志如下："
+    log "健康检查失败，最近课件 PM2 日志："
     pm2 logs "$PM2_APP_NAME" --lines 40 --nostream || true
     fail "应用健康检查失败 (127.0.0.1:${NGINX_PORT} -> HTTP ${code:-000})"
+  fi
+
+  if [[ "$ENABLE_FACE_PREDICT" == "true" ]]; then
+    # 模型预热可能较慢，多等一会
+    local i face_ok="000"
+    for i in 1 2 3 4 5 6 7 8 9 10; do
+      face_ok="$(curl -s -o /dev/null -w '%{http_code}' "http://${FACE_PREDICT_HOST}:${FACE_PREDICT_PORT}/health" || true)"
+      [[ "$face_ok" == "200" ]] && break
+      sleep 3
+    done
+    if [[ "$face_ok" != "200" ]]; then
+      log "人脸推理健康检查失败，最近日志："
+      pm2 logs "$PM2_FACE_NAME" --lines 60 --nostream || true
+      fail "人脸推理未就绪 (http://${FACE_PREDICT_HOST}:${FACE_PREDICT_PORT}/health -> HTTP ${face_ok})"
+    fi
+    local health_json
+    health_json="$(curl -s "http://${FACE_PREDICT_HOST}:${FACE_PREDICT_PORT}/health" || true)"
+    log "人脸推理就绪: $health_json"
   fi
 
   local public_host="${SERVER_HOST:-127.0.0.1}"
   log "健康检查通过"
   log "课件访问地址: http://${public_host}:${NGINX_PORT}/"
+  log "ANN 演示：打开第 ③ 章「真实 ANN 演示」（经 /api/face-predict 同源代理）"
   log "fitness 应用: http://${public_host}/ (80 端口未改动)"
 }
 
@@ -196,7 +291,9 @@ main() {
   ensure_remote_dir
   install_node22
   install_pm2
+  ensure_python
   build_app
+  setup_face_predict
   configure_pm2
   configure_nginx
   open_firewall_port

@@ -197,8 +197,34 @@
   .fitting-lab { overflow-x: auto; }
   .digit-controls button:last-child { margin-left: 0; }
   .digit-flow { flex-wrap: wrap; }
+  .face-lab-stage { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .fit-chart .model-curve, .fit-chart .loss-point { transition: none; }
 }
+
+/* —— FacePredictLab（ANN 真实演示） —— */
+.face-lab { margin: 22px 0; border: 1px solid var(--line); background: #fbfbf8; }
+.face-lab-lead { margin: 0; padding: 14px 21px; color: var(--muted); font-size: 12px; line-height: 1.75; border-bottom: 1px solid var(--line); }
+.face-lab-lead code { font-size: 11px; }
+.face-lab-actions { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 21px; border-bottom: 1px solid var(--line); }
+.face-lab-actions button { padding: 8px 12px; border: 1px solid var(--line); background: white; font-size: 11px; cursor: pointer; }
+.face-lab-actions button.primary { color: white; background: var(--accent); border-color: var(--accent); }
+.face-lab-actions button:disabled { opacity: .45; cursor: not-allowed; }
+.face-lab-stage { display: grid; grid-template-columns: 1.1fr 1fr; min-height: 280px; }
+.face-lab-preview, .face-lab-result { padding: 18px 21px; }
+.face-lab-preview { border-right: 1px solid var(--line); }
+.face-lab-preview > span, .face-lab-result > span { display: block; margin-bottom: 12px; color: var(--accent); font-size: 9px; font-weight: 800; }
+.face-lab-preview video, .face-lab-preview img { display: block; width: 100%; max-height: 320px; object-fit: contain; background: #111; border: 1px solid var(--line); }
+.face-lab-empty { display: flex; align-items: center; justify-content: center; min-height: 200px; padding: 20px; border: 1px dashed var(--line); color: var(--muted); font-size: 12px; text-align: center; background: white; }
+.face-lab-status { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+.face-lab-error { margin: 0; padding: 12px; border: 1px solid #cfa293; background: #f8ebe7; color: #984c3a; font-size: 12px; line-height: 1.65; }
+.face-lab-label { margin-bottom: 18px; padding: 16px; border: 1px solid var(--line); background: white; }
+.face-lab-label small { display: block; color: var(--muted); font-size: 9px; }
+.face-lab-label strong { display: block; margin: 8px 0 4px; font-family: var(--serif); font-size: 28px; }
+.face-lab-label em { color: var(--warm); font-style: normal; font-size: 12px; }
+.face-lab-probs { display: flex; flex-direction: column; gap: 10px; }
+.face-lab-probs > div > div { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 11px; }
+.face-lab-probs > div > div small { color: var(--muted); }
+.face-lab-probs i { display: block; height: 6px; background: var(--accent); }

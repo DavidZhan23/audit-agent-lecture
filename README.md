@@ -1,12 +1,21 @@
 # 审计智能体基础课课件
 
-从一笔 286 元报销讲起，互动讲解规则、机器学习、神经网络、大模型与智能体。
+**课程标题：** LLM，Agent基础、架构以及其在审计中的应用  
+
+从审计问题（BX-42306）出发：通俗逻辑 → 特征拟合（ML）→ ANN → LLM → Agent+LLM；审计智能体章节为占位待设计。
 
 技术栈：[vinext](https://github.com/cloudflare/vinext)（Next.js App Router）。
+
+## 给 AI / 协作者：先读结构文档
+
+改课件前请先阅读 **[`docs/`](docs/README.md)**（总览见 [`docs/lecture-structure.md`](docs/lecture-structure.md)）。  
+项目约束：`.cursor/rules/lecture-docs.mdc`、根目录 `AGENTS.md`。  
+**改章节/互动/案例后必须同步更新 `docs/`。**
 
 ## 环境要求
 
 - Node.js `>=22.13.0`
+- （可选，ANN 人脸演示）Python 3.10+，见 `services/face-predict/README.md`
 
 ## 本地开发
 
@@ -14,6 +23,21 @@
 npm install
 npm run dev
 ```
+
+### ANN 人脸识别演示（第 ③ 章）
+
+需**另开终端**启动 Python 推理服务（默认 `8765`），课件页通过 `/api/face-predict` 同源代理调用：
+
+```bash
+cd services/face-predict
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python server.py
+```
+
+然后浏览器打开课程「超多特征与 ANN」中的「真实 ANN 演示」：上传照片或摄像头拍照。  
+详情与 curl 示例见 [`services/face-predict/README.md`](services/face-predict/README.md)。
 
 常用命令：
 
@@ -66,16 +90,36 @@ npm run dev
    ./deploy/deploy.sh
    ```
 
-   脚本会：同步代码 → 安装依赖并构建 → 用 PM2 在 `8080` 启动 → 做健康检查。
+   脚本会：同步代码（含 `services/face-predict` 与 `best.pt`）→ 安装 Node/Python 依赖并构建 → PM2 启动课件（8080）与人脸推理（本机 8765）→ 健康检查。
+
+   若暂时不部署 ANN 演示，在 `deploy.env` 设 `ENABLE_FACE_PREDICT=false`。
+
+### 公网使用摄像头（HTTPS）
+
+浏览器要求 **HTTPS**（或 localhost）才能调用摄像头。可一键开自签名 HTTPS（**8443**，PM2 反代，不占用 80，不影响 fitness）：
+
+```bash
+# 先确保课件已在 8080 运行（./deploy/deploy.sh）
+./deploy/enable-https.sh
+```
+
+然后：
+
+1. 腾讯云安全组放行 **TCP 8443**
+2. 打开 `https://211.159.166.109:8443/`
+3. 首次提示证书不受信任 → **高级 → 继续访问**
+4. 即可使用「打开摄像头」
+
+`http://IP:8080` 仍可看课件，但不能开网页摄像头（可用上传/拍照上传）。
 
 ### 后续代码更新
-
 
 ```bash
 ./deploy/deploy.sh
 ```
 
-无需重复配置 `deploy.env` 或重新放行端口（除非你改了端口）。
+无需重复配置 `deploy.env` 或重新放行端口（除非你改了端口）。  
+**说明：** 首次带人脸推理的部署会下载 CPU 版 PyTorch，耗时与磁盘占用较大；之后更新会复用服务器上的 `.venv`（rsync 已排除该目录）。
 
 可选参数：
 
@@ -90,19 +134,23 @@ npm run dev
 | 路径 | 作用 |
 |------|------|
 | `deploy/deploy.sh` | 本机一键部署入口 |
-| `deploy/remote-deploy.sh` | 服务器端构建与启动 |
+| `deploy/remote-deploy.sh` | 服务器端构建与启动（含 Python venv） |
 | `deploy/deploy.env` | 本机私有配置（勿提交密钥） |
 | `deploy/deploy.env.example` | 配置模板 |
-| `deploy/ecosystem.config.cjs` | PM2 进程配置 |
+| `deploy/ecosystem.config.cjs` | PM2：课件 + face-predict |
+| `services/face-predict/` | ANN 推理包与 checkpoint |
 
 ### 服务器上常用运维命令
 
 SSH 登录后：
 
 ```bash
-pm2 list                          # 查看进程
-pm2 logs audit-courseware         # 查看日志
+pm2 list                          # 应看到 audit-courseware 与 face-predict
+pm2 logs audit-courseware         # 课件日志
+pm2 logs face-predict             # 人脸推理日志
 pm2 restart audit-courseware      # 重启课件
+pm2 restart face-predict          # 重启推理
+curl http://127.0.0.1:8765/health # 推理健康检查
 ```
 
 ## 项目结构（简要）

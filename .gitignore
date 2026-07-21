@@ -40,3 +40,8 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+services/face-predict/.venv/
+services/face-predict/**/__pycache__/
+# 权重过大（>100MB），GitHub 会拒收；部署靠 rsync 同步本地文件
+services/face-predict/checkpoints/
+
