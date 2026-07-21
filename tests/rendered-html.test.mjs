@@ -18,7 +18,10 @@ test("server-renders the complete audit AI course", async () => {
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   const html = await response.text();
-  assert.match(html, /贯穿全课的不是一笔报销，而是一项审计任务/);
+  assert.match(html, /整堂课的顶层结构/);
+  assert.match(html, /大模型和智能体的技术基础/);
+  assert.match(html, /Agent基础与架构：全课的核心章节/);
+  assert.match(html, /Agent在审计中的应用（内容占位）/);
   assert.match(html, /BX-41610/);
   assert.match(html, /BX-41881/);
   assert.match(html, /BX-42306/);
@@ -28,7 +31,7 @@ test("server-renders the complete audit AI course", async () => {
   assert.match(html, /64个像素/);
   assert.match(html, /趣味支线/);
   assert.match(html, /从 ANN 到 LLM：理解语言与业务语境/);
-  assert.match(html, /目标—行动—反馈/);
+  assert.match(html, /工具与反馈循环/);
   assert.doesNotMatch(html, /Your site is taking shape|codex-preview/);
 });
 

@@ -36,13 +36,37 @@ const stages: Array<{
 ];
 
 const nav = [
-  ["problem", "从问题出发", "10′"],
-  ["code", "通俗逻辑与规则", "12′"],
-  ["ml", "特征拟合 ML", "18′"],
-  ["nn", "超多特征与 ANN", "20′"],
-  ["llm", "从 ANN 到 LLM", "20′"],
-  ["agent", "Agent + LLM", "30′"],
+  ["problem", "从问题出发", "8′"],
+  ["code", "通俗逻辑与规则", "10′"],
+  ["ml", "特征拟合 ML", "15′"],
+  ["nn", "超多特征与 ANN", "15′"],
+  ["llm", "从 ANN 到 LLM", "18′"],
+  ["agent", "Agent + LLM", "40′"],
   ["audit", "审计智能体", "10′"],
+];
+
+const courseParts = [
+  {
+    no: "第一部分",
+    title: "大模型和智能体的技术基础",
+    range: "01—05",
+    href: "#problem",
+    description: "从问题、规则、ML、ANN一路走到LLM，解释每种技术为什么出现。",
+  },
+  {
+    no: "第二部分 · 核心",
+    title: "Agent基础与架构",
+    range: "06",
+    href: "#agent",
+    description: "集中讲定义、模块、工具循环、行业规范、价值与约束。",
+  },
+  {
+    no: "第三部分 · 待设计",
+    title: "Agent在审计中的应用",
+    range: "07",
+    href: "#audit",
+    description: "把通用能力组合成审计智能体；当前保留为后续深入设计的占位章。",
+  },
 ];
 
 const auditCases: Array<{
@@ -184,18 +208,24 @@ function DatasetAnchor({ caseId, claimIds, files, task }: { caseId: string; clai
   return <div className="dataset-anchor"><span>本章难度案例</span><strong>情形 {caseId} · {claimIds}</strong><p>{task}</p><div>{files.map(file => <code key={file}>{file}</code>)}</div></div>;
 }
 
-function ProjectCaseLadder() {
+function CourseArchitecture() {
+  return <div className="course-architecture">
+    <div className="course-architecture-head"><span>整堂课的顶层结构</span><h3>先理解技术，再理解Agent，最后讨论审计应用</h3><p>三部分是课程骨架。递进案例只是第一部分用于解释技术演进的教学方法，不能取代这套总体架构。</p></div>
+    <div className="course-architecture-parts">{courseParts.map(part => <a href={part.href} key={part.no}><span>{part.no}</span><small>章节 {part.range}</small><h4>{part.title}</h4><p>{part.description}</p></a>)}</div>
+  </div>;
+}
+
+function FoundationCaseLadder() {
   const cases = [
     { no: "01", method: "规则", title: "同一张发票，被报销两次", detail: "号码、金额和日期完全一致", why: "判断条件可以完整写出", claim: "BX-41610 / BX-41902" },
     { no: "02", method: "ML", title: "四笔都低于2,000元，却集中发生", detail: "同员工、同商户、两天内、说明相似", why: "需要组合多个弱信号", claim: "BX-41881—84" },
     { no: "03", method: "ANN", title: "票面286元，平台实际86元", detail: "异常可能藏在数字“2”的像素里", why: "需要直接处理高维图像", claim: "BX-42306" },
     { no: "04", method: "LLM", title: "客户招待，却出现儿童餐和生日蛋糕", detail: "周日、CRM无拜访、日历为家属生日", why: "需要理解语言和业务语境", claim: "BX-42519" },
-    { no: "05", method: "Agent", title: "声称去苏州，行程证据却指向南京", detail: "航班、酒店、CRM和日历分散在不同系统", why: "下一步取证取决于上一步反馈", claim: "BX-42017" },
   ];
   return <div className="case-ladder">
-    <div className="case-ladder-head"><div><span>贯穿全课的不是一笔报销，而是一项审计任务</span><h3>A集团差旅及招待费专项审计</h3><p>42,000笔报销，4名审计人员，10个工作日。目标是形成可追溯、可解释、可复核的疑点，而不是生成一个笼统风险分。</p></div><strong>难度逐级增加 ↓</strong></div>
+    <div className="case-ladder-head"><div><span>第一部分内部的教学线索</span><h3>问题逐渐变难，技术基础逐层出现</h3><p>规则、ML、ANN和LLM分别对应一种新的问题困难。这条案例线只服务于“技术基础”的讲解；Agent将在第二部分作为独立核心系统展开。</p></div><strong>第一部分 · 01—05</strong></div>
     <div className="case-ladder-list">{cases.map(item => <article key={item.no}><b>{item.no}</b><div><span>{item.method} · {item.claim}</span><h4>{item.title}</h4><p>{item.detail}</p></div><small>{item.why}</small></article>)}</div>
-    <div className="case-ladder-rule"><strong>课程组织原则</strong><p>每次只增加一种新的困难：组合复杂度 → 数据维度 → 语义复杂度 → 行动不确定性。新技术由上一种方法的明确局限自然引出。</p></div>
+    <div className="case-ladder-rule"><strong>第一部分组织原则</strong><p>每一章先提出上一种方法解决不了的具体问题，再引入一个新概念。讲到LLM为止，只回答“模型怎样理解和生成”；Agent的系统架构、工具循环与控制机制留到第二部分集中讲。</p></div>
   </div>;
 }
 
@@ -1279,29 +1309,37 @@ export default function Home() {
   return <PythonKernelProvider>
     <main id="top" className={`view-${mode} ${mode !== "student" ? "show-notes" : ""}`}>
       <Header mode={mode} setMode={setMode} />
-      <aside className="sidenav"><div><span>约2小时</span><strong>LLM · Agent · 审计</strong></div><nav>{nav.map((x, i) => <a href={`#${x[0]}`} key={x[0]}><span>{String(i + 1).padStart(2, "0")}</span><b>{x[1]}</b><small>{x[2]}</small></a>)}</nav></aside>
+      <aside className="sidenav"><div><span>约2小时 · 三部分</span><strong>LLM · Agent · 审计</strong></div><nav>
+        <p className="nav-part"><span>第一部分</span>技术基础</p>
+        {nav.slice(0, 5).map((x, i) => <a href={`#${x[0]}`} key={x[0]}><span>{String(i + 1).padStart(2, "0")}</span><b>{x[1]}</b><small>{x[2]}</small></a>)}
+        <p className="nav-part core"><span>第二部分</span>Agent基础与架构</p>
+        <a href="#agent"><span>06</span><b>{nav[5][1]}</b><small>{nav[5][2]}</small></a>
+        <p className="nav-part"><span>第三部分</span>审计应用</p>
+        <a href="#audit"><span>07</span><b>{nav[6][1]}</b><small>{nav[6][2]}</small></a>
+      </nav></aside>
       <div className="page">
         <section className="hero">
           <p>LLM，Agent基础、架构以及其在审计中的应用</p>
-          <h1>42,000笔报销，4名审计人员，10个工作日。<br />怎样找到真正值得核查的问题？</h1>
-          <div className="hero-lead">我们不从术语开始，而从一项完整审计任务开始。问题每难一层，再引入一种新技术：规则 → ML → ANN → LLM → Agent。</div>
+          <h1>从技术基础，到Agent架构，<br />再到审计应用。</h1>
+          <div className="hero-lead">整堂课分为三个部分：先讲清规则、ML、ANN和LLM为什么逐层出现；再集中讲Agent的定义、架构、工具循环与规范；最后落到审计智能体。</div>
           <div className="hero-scenario"><div><span>数据规模</span><strong>42,000笔</strong><small>差旅及招待费报销</small></div><div><span>人力限制</span><strong>4人 × 10天</strong><small>不可能靠人工逐笔深查</small></div><div><span>证据分布</span><strong>9表 + 2文档</strong><small>历史训练数据另行保存</small></div><div><span>最终交付</span><strong>可复核疑点</strong><small>事实、依据、来源与不确定性</small></div></div>
-          <div className="hero-path">{stages.map((stage, index) => <a key={stage.key} href={`#${stage.key}`}><span>0{index + 1}</span><strong>{stage.name}</strong><small>{stage.question}</small></a>)}</div>
-          <a className="hero-start" href="#problem">先把问题说清楚 <span>↓</span></a>
+          <div className="hero-path three-parts">{courseParts.map((part, index) => <a key={part.no} href={part.href}><span>0{index + 1}</span><strong>{part.title}</strong><small>{part.no}</small></a>)}</div>
+          <a className="hero-start" href="#problem">进入第一部分：技术基础 <span>↓</span></a>
         </section>
 
         <section id="problem" className="lesson">
-          <SectionTitle no="01" time="0—10分钟" title="从问题出发：我们究竟要解决什么？" intro="目标不是“使用AI”，而是在有限时间内，从大量报销中形成事实清楚、证据可追溯、可以交给审计人员复核的疑点。" />
-          <ProjectCaseLadder />
+          <SectionTitle no="01" time="第一部分 · 0—8分钟" title="整堂课如何组织：先基础，再Agent，再审计应用" intro="先明确三部分总体架构，再从一个具体问题进入技术基础。案例负责帮助理解，不替代课程的顶层结构。" />
+          <CourseArchitecture />
+          <FoundationCaseLadder />
           <div className="content-block"><h3>本课路线图</h3><div className="two-col"><div><strong>能力递进</strong><ul><li>通俗逻辑：解决最简单、边界清晰的问题</li><li>特征拟合（ML）：解决“写不尽但有历史答案”的问题</li><li>ANN：解决超多特征、难以人工造特征的问题</li><li>LLM：ANN 在语言序列上的规模化发展</li><li>Agent + LLM：让模型能取证、能循环、能受控停止</li></ul></div><div><strong>不变的交付</strong><ul><li>可追溯的事实来源</li><li>可解释的判断路径</li><li>可复核的疑点清单</li><li>不是笼统的“AI风险分”</li></ul></div></div></div>
           <CapabilityChain />
           <LessonTakeaway>从问题选方法：每一层技术都有明确功用，也有明确劣势；不要跳过简单层直接上复杂层。</LessonTakeaway>
           <Bridge from="人工处理的起点" problem="有些判断已经非常明确：例如发票号、金额和日期全部相同。这种关系可以直接写进程序并批量执行。" to="通俗逻辑与规则" />
-          <TeacherNote time="10分钟" question="这五个问题为什么不能全部用一组金额规则解决？" misconception="异常、疑点、违规和舞弊不是同一个概念。" mustSay="贯穿全课的是同一项审计任务，不是强迫同一笔报销适配全部技术。" canSkip="先不展开多表数据包。" />
+          <TeacherNote time="8分钟" question="为什么不能从大模型直接跳到审计智能体？" misconception="LLM和Agent不是同一个层级的概念；Agent也不是一种更大的模型。" mustSay="先讲技术基础；第二部分单独讲Agent系统；第三部分才讨论审计应用。" canSkip="第一部分案例的具体数据字段稍后逐章展开。" />
         </section>
 
         <section id="code" className="lesson">
-          <SectionTitle no="02" time="10—22分钟" title="① 通俗逻辑与规则：解决最明确的问题" intro="当判断关系可以完整写出时，不需要模型。人定义条件，计算机对42,000笔记录批量、稳定、可解释地执行。" />
+          <SectionTitle no="02" time="第一部分 · 8—18分钟" title="① 通俗逻辑与规则：解决最明确的问题" intro="当判断关系可以完整写出时，不需要模型。人定义条件，计算机对42,000笔记录批量、稳定、可解释地执行。" />
           <Definition term="规则 / 通俗逻辑程序" simple="用人已经想清楚的“如果…那么…”来判断：输入固定字段，输出固定结论。" precise="由变量、条件、循环和函数组成；同样的输入和代码通常产生同样的输出，便于审计留痕与复核。" />
           <DatasetAnchor caseId="A · 明确重复" claimIds="BX-41610 / BX-41902" files={["expense_claims.csv", "invoice_registry.csv"]} task="两张报销单的发票号、金额和日期完全一致。问题一目了然，判断条件也可以完整写出。" />
           <div className="concept-grid four"><div><span>变量</span><strong>保存数据</strong><p>报销号、发票号、金额和日期。</p></div><div><span>条件</span><strong>进行判断</strong><p>三个关键字段是否全部相同。</p></div><div><span>循环</span><strong>重复处理</strong><p>检查42,000笔报销。</p></div><div><span>函数</span><strong>封装步骤</strong><p>复用“重复发票检查”。</p></div></div>
@@ -1310,11 +1348,11 @@ export default function Home() {
           <div className="two-col"><div><strong>优势</strong><ul><li>可解释、可复核、成本低</li><li>结果稳定，适合制度硬约束</li><li>易做权限与日志</li></ul></div><div><strong>劣势</strong><ul><li>只能处理人事先写出的情况</li><li>弱信号组合很难穷举</li><li>无法直接处理图像与自由文本</li></ul></div></div>
           <LessonTakeaway>能写清逻辑的，优先用规则。规则不是“落后”，而是审计场景里最可靠的一层。</LessonTakeaway>
           <Bridge from="规则的瓶颈" problem="四笔费用各不相同，却都略低于2,000元审批线，并集中在同一员工、同一商户和两天内。单条条件都不够，组合却很可疑。" to="特征拟合（机器学习）" />
-          <TeacherNote time="12分钟" question="如果发票号码只差一位，规则应该算重复吗？谁来决定？" misconception="规则不是落后技术；确定性检查通常最适合规则。" mustSay="人写判断逻辑，计算机执行；数据存在也不等于代码会自动使用。" canSkip="技术语法细节。" />
+          <TeacherNote time="10分钟" question="如果发票号码只差一位，规则应该算重复吗？谁来决定？" misconception="规则不是落后技术；确定性检查通常最适合规则。" mustSay="人写判断逻辑，计算机执行；数据存在也不等于代码会自动使用。" canSkip="技术语法细节。" />
         </section>
 
         <section id="ml" className="lesson">
-          <SectionTitle no="03" time="22—40分钟" title="② 特征拟合（ML）：让多个弱信号共同说话" intro="关系写不尽、但有历史标签时：人先把案例变成少量特征，再让模型拟合“特征 → 结果”的近似函数。" />
+          <SectionTitle no="03" time="第一部分 · 18—33分钟" title="② 特征拟合（ML）：让多个弱信号共同说话" intro="关系写不尽、但有历史标签时：人先把案例变成少量特征，再让模型拟合“特征 → 结果”的近似函数。" />
           <KnownUnknownBridge />
           <Definition term="机器学习 · 特征拟合" simple="人先把案例变成若干特征数字，再让模型从带答案的历史里找到一组参数，使预测尽量接近真实标签。" precise="估计参数θ，使fθ(X)在训练数据上的损失较小，并用独立验证集检查能否泛化到新事项。" />
           <DatasetAnchor caseId="C · 弱信号组合" claimIds="BX-41881—BX-41884" files={["classroom_training/ml_training_examples.csv", "expense_claims.csv", "expense_policy.md"]} task="四笔金额为1,960、1,980、1,950和1,990元：同员工、同商户、两天内、说明相似。任何单一信号都不足，组合起来却值得优先核查。" />
@@ -1327,11 +1365,11 @@ export default function Home() {
           <DeepDive title="解析解、梯度、交叉熵和过拟合"><p><b>解析解不是机器学习的分界线。</b>有些模型可以直接求参数，复杂模型通常用数值优化逐步逼近。</p><TrainingLifecycle /></DeepDive>
           <LessonTakeaway>ML 的核心是：用人选的特征去拟合历史。它解决“组合规律”，但不自动解决“特征从哪来”。</LessonTakeaway>
           <Bridge from="特征拟合的瓶颈" problem="下一笔报销的表格字段看起来正常，真正异常却藏在票据图片中：数字“2”的字体和背景纹理可能被修改。" to="人工神经网络（ANN）" />
-          <TeacherNote time="18分钟" question="模型给出80%概率，这是证据吗？" misconception="机器学习不是自动发现真相，Loss下降也不等于可以上线。" mustSay="训练改变参数；验证检查未见数据；概率只用于排序。" canSkip="梯度和交叉熵。" />
+          <TeacherNote time="15分钟" question="模型给出80%概率，这是证据吗？" misconception="机器学习不是自动发现真相，Loss下降也不等于可以上线。" mustSay="训练改变参数；验证检查未见数据；概率只用于排序。" canSkip="梯度和交叉熵。" />
         </section>
 
         <section id="nn" className="lesson">
-          <SectionTitle no="04" time="40—60分钟" title="③ 超多特征：用 ANN 直接处理票据像素" intro="当异常藏在像素、波形等高维原始数据中，人工整理少量特征已经不够。神经网络把函数变成多层结构，从数据中学习有用表示。" />
+          <SectionTitle no="04" time="第一部分 · 33—48分钟" title="③ 超多特征：用 ANN 直接处理票据像素" intro="当异常藏在像素、波形等高维原始数据中，人工整理少量特征已经不够。神经网络把函数变成多层结构，从数据中学习有用表示。" />
           <Definition term="人工神经网络（ANN）" simple="许多简单计算单元连成层：高维输入经过逐层加权和非线性变换，最后产生预测。" precise="仍属于机器学习；反向传播计算参数对Loss的影响，优化器据此调整大量权重。变化的是函数结构与参数规模，不变的是用Loss训练。" />
           <DatasetAnchor caseId="D · 图像异常" claimIds="BX-42306" files={["expense_claims.csv", "invoice_registry.csv", "receipt_ocr.csv"]} task="报销金额和票面都显示286元，发票查验平台却是86元，数字“2”疑似后加。异常不在表格组合里，而在原始票据像素中。" />
           <div className="equation"><span>为什么需要 ANN</span><strong>特征太多时，人工造特征会失效</strong><code>64个像素 → 24个隐藏神经元 → 10个数字概率</code><p>训练仍是调整权重，让预测与正确标签的差距更小；隐藏层相当于在学习“哪些笔画组合有用”。</p></div>
@@ -1345,11 +1383,11 @@ export default function Home() {
           <DeepDive title="反向传播与小网络解剖"><p>反向传播高效计算每个参数对Loss的影响，优化器再据此调整。</p><NeuronContinuityLab /><NeuralCheckpointExplorer /><NeuralNetworkLab /></DeepDive>
           <LessonTakeaway>ANN 仍然是“拟合”，只是面向超多特征：它学会了看，但还不会读制度和自己去查系统。</LessonTakeaway>
           <Bridge from="ANN 的下一步" problem="视觉网络也能从另一张小票识别出“儿童套餐”和“生日蛋糕”，但它不会自然理解这些词为什么与“周日客户招待”、CRM无拜访和家属生日相互矛盾。" to="大语言模型（LLM）" />
-          <TeacherNote time="20分钟" question="识别出286后，网络知道这笔报销有问题吗？" misconception="识别内容不等于理解业务；ANN 不是电子大脑。" mustSay="强调：超多特征 → ANN；ANN仍属机器学习；人脸实验是趣味支线。" canSkip="反向传播推导；时间紧时人脸演示只跑一次。" />
+          <TeacherNote time="15分钟" question="识别出286后，网络知道这笔报销有问题吗？" misconception="识别内容不等于理解业务；ANN 不是电子大脑。" mustSay="强调：超多特征 → ANN；ANN仍属机器学习；人脸实验是趣味支线。" canSkip="反向传播推导；时间紧时人脸演示只跑一次。" />
         </section>
 
         <section id="llm" className="lesson">
-          <SectionTitle no="05" time="60—80分钟" title="④ 从 ANN 到 LLM：理解语言与业务语境" intro="大语言模型仍然是神经网络。它把训练对象扩展到海量Token序列，从而能够处理制度、说明和多段上下文之间的语言关系。" />
+          <SectionTitle no="05" time="第一部分 · 48—66分钟" title="④ 从 ANN 到 LLM：理解语言与业务语境" intro="大语言模型仍然是神经网络。它把训练对象扩展到海量Token序列，从而能够处理制度、说明和多段上下文之间的语言关系。" />
           <Definition term="大语言模型（LLM）" simple="一个根据前文不断预测下一个Token，并由此生成语言的大型神经网络（ANN）。" precise="通过预训练最小化Token预测损失，再经过指令微调和对齐形成更适合问答与任务指令的行为。它不是数据库，也不会天然访问企业系统。" />
           <div className="content-block"><h3>和上一章的连续关系</h3><p><b>同一条技术链：</b>ML 拟合参数 → ANN 拟合高维函数 → LLM 用超大 ANN 拟合语言序列。变化的是数据形态、网络规模与任务接口；不变的是“用损失训练参数、用参数做预测”。</p></div>
           <DatasetAnchor caseId="E · 语义矛盾" claimIds="BX-42519" files={["receipt_ocr.csv", "customer_visits.csv", "employee_calendar.csv", "expense_policy.md"]} task="报销说明为“周日接待重要客户”，但小票含儿童套餐和生日蛋糕，CRM无客户拜访，员工日历为家属生日。问题来自语言和业务语境的共同矛盾。" />
@@ -1364,11 +1402,13 @@ export default function Home() {
           <DeepDive title="Token体验、模型张量和微型Attention代码"><TokenLab /><LlmCheckpointExplorer /><InlinePythonLab example="attention" guide="观察Query、Key、Value形成注意力权重，不要把权重当作事实证明。" /></DeepDive>
           <LessonTakeaway>LLM 是 ANN 在语言上的规模化：擅长理解与生成，但不等于会调查。要把“建议”变成“行动”，需要 Agent。</LessonTakeaway>
           <Bridge from="LLM 的瓶颈" problem="模型可以建议核对航班、酒店和CRM，但关键资料分散在不同系统，下一步该查什么还取决于刚刚查到的结果。" to="Agent + LLM" />
-          <TeacherNote time="20分钟" question="如果不把CRM和日历资料提供给模型，它能凭语言能力知道吗？" misconception="语言流畅不是证据；LLM不是数据库。" mustSay="明确说：LLM = 大规模ANN；它能解释已提供上下文，但不会天然主动取数。" canSkip="Attention数学代码。" />
+          <TeacherNote time="18分钟" question="如果不把CRM和日历资料提供给模型，它能凭语言能力知道吗？" misconception="语言流畅不是证据；LLM不是数据库。" mustSay="明确说：LLM = 大规模ANN；它能解释已提供上下文，但不会天然主动取数。" canSkip="Attention数学代码。" />
         </section>
 
         <section id="agent" className="lesson">
-          <SectionTitle no="06" time="80—110分钟" title="⑤ Agent + LLM：让系统主动取证并受控停止" intro="大模型负责理解与决策；Agent把模型放进“目标—行动—反馈”闭环。问题的最后一层困难，是证据分散，而且下一步调查路径不能预先完全写死。" />
+          <SectionTitle no="06" time="第二部分 · 66—106分钟" title="Agent基础与架构：全课的核心章节" intro="第一部分回答了模型怎样理解和生成；第二部分集中回答Agent究竟是什么、由哪些模块组成、怎样使用工具形成反馈循环，以及为什么必须受到约束。" />
+
+          <div className="part-mandate"><span>第二部分 · 40分钟核心章</span><strong>这一章不只是演示一个审计案例，而是建立可迁移到各种行业和任务的Agent通用框架。</strong><p>定义 → LLM与Agent的区别 → 模块组成 → 工具与反馈循环 → 行业规范 → 使用价值 → 自主运行边界。</p></div>
 
           <div className="content-block"><h3>6.1 什么是 Agent？</h3><p>聊天窗口里“问一句答一句”通常只是 LLM 应用；当系统能够<strong>围绕目标选择下一步、调用工具、读取结果、更新状态并在条件满足时停止</strong>，才具备 Agent 能力。</p></div>
           <Definition term="智能体（Agent）" simple="让 LLM 不只回答，还能为了目标判断下一步、调用工具、读取结果并继续，直到达成目标或触发停止条件。" precise="Agent 是包含决策模块（常为 LLM）、工具接口、状态/记忆、编排循环与控制策略的软件系统；LLM 是其中的理解与规划部件，不是系统的全部。" />
@@ -1398,14 +1438,14 @@ export default function Home() {
           <CapabilityBoundary method="Agent + LLM" input="目标 + 可调用工具 + 运行状态" unique="主动取数，把工具反馈放回上下文，并选择下一步" output="含事实、制度来源、不确定性和建议的证据包" limit="不应自动认定违规、舞弊或审计结论" />
           <LessonTakeaway>Agent = LLM + 工具 + 状态 + 循环 + 控制。规范与架构不是附加题，而是能不能上线的前提。</LessonTakeaway>
           <Bridge from="通用 Agent 能力" problem="我们已经有了 Agent + LLM 的通用积木。审计场景还要回答：审什么单据、连哪些系统、证据标准是什么、人工关口设在哪。" to="审计智能体（专题占位）" />
-          <TeacherNote time="30分钟" question="航班工具失败时，Agent能否把“查不到”当作行程一致？" misconception="网页不等于Agent；固定for循环也不等于依据反馈行动。" mustSay="讲透定义、六条规范、六块架构、好处与边界；演示矛盾和工具失败分支。" canSkip="行程一致分支可略讲。" />
+          <TeacherNote time="40分钟" question="航班工具失败时，Agent能否把“查不到”当作行程一致？" misconception="网页不等于Agent；固定for循环也不等于依据反馈行动。" mustSay="本章是全课核心：定义、LLM与Agent区别、六条规范、六块架构、价值与边界缺一不可。" canSkip="行程一致分支可略讲，但不能压缩Agent定义与架构。" />
         </section>
 
         <section id="audit" className="lesson">
-          <SectionTitle no="07" time="110—120分钟" title="⑥ 审计智能体（内容占位）" intro="本章预留为「审计智能体」专题：把前五层能力组合进审计组织、流程与系统。详细内容将在后续逐章设计。" />
+          <SectionTitle no="07" time="第三部分 · 106—116分钟" title="Agent在审计中的应用（内容占位）" intro="第三部分将把前两部分的通用技术和Agent架构组合成审计智能体。当前只保留清楚的设计边界，具体内容由后续逐节确定。" />
           <div className="content-block" style={{ borderStyle: "dashed" }}>
             <h3>🚧 本章建设中</h3>
-            <p>计划覆盖但不限于：审计智能体的场景切片、证据与底稿要求、与规则/ML/ANN/LLM/Agent 的组合方式、试点路径与评价指标。请先掌握第 1—5 部分的问题驱动能力链。</p>
+            <p>后续将逐项设计：审计智能体要解决什么问题、怎样选择落地场景、如何连接数据制度与工具、怎样形成可复核证据、哪些步骤可自动执行、哪些判断必须由审计人员完成，以及如何试点和评价。</p>
             <p><b>暂时保留的思考锚点（非正式定稿）：</b></p>
             <ul>
               <li>交付物仍是可复核疑点，不是自动审计意见</li>
@@ -1417,7 +1457,7 @@ export default function Home() {
           <div className="summary-chain">{stages.map((s, i) => <div key={s.key}><span>0{i + 1}</span><strong>{s.name}</strong><p>{s.question}</p><small>{s.ability}</small></div>)}</div>
           <Quiz />
           <div className="closing"><p>回看难度阶梯：完全重复 → 弱信号组合 → 图像像素 → 语言语境 → 多系统动态取证。</p><h3>问题增加一种困难，技术才增加一种能力；<br />Agent让LLM能办事，审计仍由人收口。</h3><div><span>规则</span><span>ML</span><span>ANN</span><span>LLM</span><span>Agent</span></div></div>
-          <TeacherNote time="10分钟" question="你最想用 Agent 自动化的审计子任务是什么？" mustSay="本章仅为占位；强调前五层已形成完整问题驱动链条。" canSkip="Toy Data 预习。" />
+          <TeacherNote time="10分钟" question="你最想用 Agent 自动化的审计子任务是什么？" mustSay="本章仅为第三部分占位；具体场景、证据、权限和评价方法将在后续逐节确定。" canSkip="Toy Data 预习。" />
         </section>
 
         <footer><strong>LLM，Agent基础、架构以及其在审计中的应用</strong><span>从问题出发的能力链：规则 → ML → ANN → LLM → Agent</span><a href="#top">回到顶部 ↑</a></footer>

@@ -2,7 +2,7 @@
 
 **课程标题：** LLM，Agent基础、架构以及其在审计中的应用  
 
-从一项差旅及招待费审计任务出发，用五个难度递增的事项讲清：通俗逻辑 → 特征拟合（ML）→ ANN → LLM → Agent+LLM；审计智能体章节仍为占位待设计。
+课程采用三部分架构：① 大模型和智能体的技术基础（规则 → ML → ANN → LLM）；② Agent基础与架构（核心长章）；③ Agent在审计中的应用（占位待设计）。
 
 技术栈：[vinext](https://github.com/cloudflare/vinext)（Next.js App Router）。
 
