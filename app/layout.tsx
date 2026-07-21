@@ -4,14 +4,14 @@ import "./course-interactives.css";
 
 export const metadata: Metadata = {
   title: "LLM，Agent基础、架构以及其在审计中的应用",
-  description: "从审计问题出发：规则 → 特征拟合（ML）→ ANN → LLM → Agent+LLM，讲清每层功用、优劣与落地边界。",
+  description: "从一项审计任务出发，用五个难度递增的案例讲清规则、ML、ANN、LLM与Agent的能力、边界和审计应用。",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
   },
   openGraph: {
     title: "LLM，Agent基础、架构以及其在审计中的应用",
-    description: "规则 → ML → ANN → LLM → Agent。以同一笔报销看清每层多做什么。",
+    description: "规则 → ML → ANN → LLM → Agent。问题逐级变难，技术逐层增加能力。",
     type: "website",
     images: ["/og-v3.png"],
   },

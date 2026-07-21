@@ -142,50 +142,50 @@ export function DigitsImageLab() {
 }
 
 export function LanguageTrainingShift() {
-  const tokens = ["报销", "金额", "与", "查验平台", "不一致", "时", "转", "人工复核"];
+  const tokens = ["客户", "招待", "证据", "相互", "矛盾", "时", "转", "人工复核"];
   const [target, setTarget] = useState(5);
   return <div className="shift-lab interactive"><div className="interactive-head"><div><span>核心互动 · 训练答案从哪里来</span><h3>把同一句话错开一位，就得到下一个Token训练样本</h3></div><button onClick={() => setTarget(5)}>重置</button></div><div className="shift-row"><span>输入上下文</span><div>{tokens.map((token, index) => <button key={index} className={index < target ? "context" : "future"} disabled={index > 6} onClick={() => index >= 1 && index <= 6 && setTarget(index)}>{index < target ? token : "·"}</button>)}</div></div><div className="shift-row target"><span>正确答案</span><div>{tokens.map((token, index) => <b key={index} className={index === target ? "active" : ""}>{index === target ? token : "·"}</b>)}</div></div><div className="shift-result"><span>模型当前任务</span><strong>看到“{tokens.slice(0, target).join("")}”，预测下一个Token是“{tokens[target]}”</strong><p>真实文本自动提供答案；预测错误产生Loss，反向传播继续调整神经网络权重。</p></div></div>;
 }
 
 const attentionSets = {
   comparison: {
-    label: "金额矛盾",
-    focus: "是否不一致",
-    tokens: [["报销286", .52], ["票面286", .66], ["平台86", .96], ["不一致", 1]],
-    conclusion: "模型在判断“不一致”时，更重点参考票面与平台的两个金额。",
+    label: "招待目的",
+    focus: "是否像真实客户招待",
+    tokens: [["周日", .54], ["客户招待", .72], ["儿童套餐", .91], ["生日蛋糕", 1]],
+    conclusion: "模型判断业务目的时，会联系日期、申报说明和小票明细中的语义线索。",
   },
   policy: {
-    label: "制度适用",
-    focus: "应当怎样处理",
-    tokens: [["金额不一致", .96], ["必须一致", .82], ["转人工复核", 1], ["不自动定性", .74]],
-    conclusion: "Attention帮助模型联系矛盾事实与制度处理要求，但它仍不是事实核验。",
+    label: "交叉印证",
+    focus: "还需参考哪些上下文",
+    tokens: [["CRM无拜访", 1], ["联系人休假", .78], ["家属生日", .91], ["转人工复核", .84]],
+    conclusion: "Attention帮助模型联系多段上下文，但这些关联仍需回到原始系统核验。",
   },
 } as const;
 
 export function AttentionLab() {
   const [mode, setMode] = useState<keyof typeof attentionSets>("comparison");
   const item = attentionSets[mode];
-  return <div className="attention-lab interactive"><div className="interactive-head"><div><span>核心互动 · Attention</span><h3>理解当前问题时，模型应该重点参考哪些Token？</h3></div><button onClick={() => setMode("comparison")}>重置</button></div><div className="attention-tabs"><button className={mode === "comparison" ? "active" : ""} onClick={() => setMode("comparison")}>步骤1 · 理解金额矛盾</button><button className={mode === "policy" ? "active" : ""} onClick={() => setMode("policy")}>步骤2 · 联系制度</button></div><div className="attention-focus"><span>当前要理解</span><strong>{item.focus}</strong></div><div className="attention-tokens">{item.tokens.map(([token, weight]) => <div key={token}><span style={{ opacity: .28 + weight * .72 }}>{token}</span><i style={{ width: `${weight * 100}%` }}/><small>关联程度 {(weight * 100).toFixed(0)}%</small></div>)}</div><p>{item.conclusion}</p></div>;
+  return <div className="attention-lab interactive"><div className="interactive-head"><div><span>核心互动 · Attention</span><h3>理解当前问题时，模型应该重点参考哪些Token？</h3></div><button onClick={() => setMode("comparison")}>重置</button></div><div className="attention-tabs"><button className={mode === "comparison" ? "active" : ""} onClick={() => setMode("comparison")}>步骤1 · 理解票据语义</button><button className={mode === "policy" ? "active" : ""} onClick={() => setMode("policy")}>步骤2 · 联系业务记录</button></div><div className="attention-focus"><span>当前要理解</span><strong>{item.focus}</strong></div><div className="attention-tokens">{item.tokens.map(([token, weight]) => <div key={token}><span style={{ opacity: .28 + weight * .72 }}>{token}</span><i style={{ width: `${weight * 100}%` }}/><small>关联程度 {(weight * 100).toFixed(0)}%</small></div>)}</div><p>{item.conclusion}</p></div>;
 }
 
 type AgentScenario = "mismatch" | "consistent" | "error";
 const agentScenarios: Record<AgentScenario, { label: string; steps: Array<[string,string,string]> }> = {
   mismatch: { label: "证据矛盾", steps: [
-    ["读取报销", "BX-42306：出租车费286元", "金额低于300元，但目标要求核验原始票据。"],
-    ["识别票面", "神经网络识别出票面金额286元", "还缺少权威查验金额，选择平台工具。"],
-    ["查验发票", "平台返回86元", "两个来源金额不一致，需要查制度而不是自行定性。"],
-    ["检索制度", "不一致时应转人工复核", "已获得事实、标准和来源，达到停止条件。"],
-    ["停止并升级", "形成“286 vs 86”证据包", "提交审计人员复核，不自动认定违规。"],
+    ["读取报销", "BX-42017：上海机场→苏州客户，出租车费468元", "金额不显眼，但目标要求核验真实行程。"],
+    ["查询航班", "员工当天由北京飞抵南京", "落地城市与报销起点、目的地矛盾，继续查询住宿。"],
+    ["查询酒店", "员工当晚入住南京酒店", "第二个独立来源继续指向南京，需要核实业务目的。"],
+    ["查询CRM与日历", "无苏州拜访；日历为南京内部会议", "事实来源已经能够形成可复核的行程疑点。"],
+    ["停止并升级", "形成“声称苏州 vs 证据南京”证据包", "提交审计人员复核，不自动认定违规。"],
   ]},
-  consistent: { label: "金额一致", steps: [
-    ["读取报销", "BX-42306：出租车费286元", "继续读取票面。"],
-    ["识别票面", "票面金额286元", "继续查验平台。"],
-    ["查验并停止", "平台同样返回286元", "核心证据一致，记录过程后停止。"],
+  consistent: { label: "行程一致", steps: [
+    ["读取报销", "BX-42017：上海机场→苏州客户", "先查询实际航班。"],
+    ["查询航班", "航班抵达上海，与报销起点一致", "核心行程证据一致，无需扩大查询范围。"],
+    ["记录并停止", "保留航班来源与核验时间", "满足当前停止条件，减少不必要的系统访问。"],
   ]},
   error: { label: "工具失败", steps: [
-    ["读取报销", "BX-42306：出租车费286元", "继续查验原始票据。"],
-    ["读取票据", "图像服务超时，未取得结果", "不能把“查不到”当作“没有问题”。"],
-    ["受控停止", "保留失败原因并转人工", "不编造票面金额。"],
+    ["读取报销", "BX-42017：上海机场→苏州客户", "下一步需要查询实际航班。"],
+    ["查询航班", "航班系统超时，未取得结果", "不能把“查不到”当作“行程一致”。"],
+    ["受控停止", "保留失败原因并转人工", "不编造到达城市，也不静默放行。"],
   ]},
 };
 
@@ -194,7 +194,7 @@ export function AgentBranchLab() {
   const [visible, setVisible] = useState(1);
   const current = agentScenarios[scenario];
   const select = (next: AgentScenario) => { setScenario(next); setVisible(1); };
-  return <div className="agent-branch interactive"><div className="interactive-head"><div><span>核心互动 · 反馈分支</span><h3>下一步不是固定列表，而是由上一步结果决定</h3></div><button onClick={() => setVisible(1)}>重置</button></div><div className="scenario-tabs">{(Object.keys(agentScenarios) as AgentScenario[]).map((key) => <button key={key} className={scenario === key ? "active" : ""} onClick={() => select(key)}>{agentScenarios[key].label}</button>)}</div><div className="agent-state"><span>目标</span><strong>核验BX-42306的286元出租车费</strong><p>工具预算：最多4次；禁止写入业务系统；结论必须由人复核。</p></div><ol className="branch-trace">{current.steps.slice(0, visible).map((step, index) => <li key={`${scenario}-${index}`}><b>{String(index + 1).padStart(2,"0")}</b><div><span>行动：{step[0]}</span><strong>{step[1]}</strong><p>决策理由：{step[2]}</p></div></li>)}</ol><div className="branch-actions"><button disabled={visible >= current.steps.length} onClick={() => setVisible(Math.min(current.steps.length, visible + 1))}>执行下一步</button><button className="primary" onClick={() => setVisible(current.steps.length)}>运行到停止</button><p>{visible >= current.steps.length ? "当前状态：已按停止条件结束。" : `当前状态：已完成 ${visible}/${current.steps.length} 步，等待选择下一行动。`}</p></div></div>;
+  return <div className="agent-branch interactive"><div className="interactive-head"><div><span>核心互动 · 反馈分支</span><h3>下一步不是固定列表，而是由上一步结果决定</h3></div><button onClick={() => setVisible(1)}>重置</button></div><div className="scenario-tabs">{(Object.keys(agentScenarios) as AgentScenario[]).map((key) => <button key={key} className={scenario === key ? "active" : ""} onClick={() => select(key)}>{agentScenarios[key].label}</button>)}</div><div className="agent-state"><span>目标</span><strong>核验BX-42017声称的苏州客户行程</strong><p>工具预算：最多5次；默认只读；禁止自动定性；结论必须由人复核。</p></div><ol className="branch-trace">{current.steps.slice(0, visible).map((step, index) => <li key={`${scenario}-${index}`}><b>{String(index + 1).padStart(2,"0")}</b><div><span>行动：{step[0]}</span><strong>{step[1]}</strong><p>决策理由：{step[2]}</p></div></li>)}</ol><div className="branch-actions"><button disabled={visible >= current.steps.length} onClick={() => setVisible(Math.min(current.steps.length, visible + 1))}>执行下一步</button><button className="primary" onClick={() => setVisible(current.steps.length)}>运行到停止</button><p>{visible >= current.steps.length ? "当前状态：已按停止条件结束。" : `当前状态：已完成 ${visible}/${current.steps.length} 步，等待选择下一行动。`}</p></div></div>;
 }
 
 export function AuditAgentCanvas() {

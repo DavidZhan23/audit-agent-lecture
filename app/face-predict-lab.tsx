@@ -186,8 +186,8 @@ export function FacePredictLab() {
     <div className="face-lab interactive">
       <div className="interactive-head">
         <div>
-          <span>真实 ANN 演示 · ResNet18 迁移学习</span>
-          <h3>上传或拍照：高维像素 → 人脸裁剪 → 三分类</h3>
+          <span>趣味实验 · 真实 ANN · ResNet18 迁移学习</span>
+          <h3>同样是像素：网络怎样从数字识别扩展到人脸特征？</h3>
         </div>
         <button
           type="button"
@@ -205,8 +205,8 @@ export function FacePredictLab() {
       </div>
 
       <p className="face-lab-lead">
-        课堂用真实网络体会「超多特征」：输入是整图像素，模型先检测人脸，再对裁剪后的脸做{" "}
-        <code>笑雨 / 骐源 / 其他</code> 分类。低置信度会输出「无法确定」。上传前会自动压缩，避免请求过大。
+        这是神经网络章节的趣味支线，不是审计主线。输入仍然是整图像素，模型先检测人脸，再对裁剪后的脸做{" "}
+        <code>笑雨 / 骐源 / 其他</code> 分类。它与票据数字识别共享“像素 → 多层特征 → 分类概率”的底层逻辑；低置信度会输出「无法确定」。
         {!secureOk && (
           <>
             {" "}

@@ -12,9 +12,9 @@
 | `TrainingLifecycle` | ml | 训练流程 |
 | `NeuronContinuityLab` 等 | nn | ANN 解剖 |
 | `DigitsImageLab` | nn | 像素→数字 |
-| `FacePredictLab` | nn | 真实 ResNet18 人脸：上传/拍照→检测→分类 |
-| `LanguageTrainingShift` / `AttentionLab` | llm | Token / Attention |
-| `AgentBranchLab` | agent | 闭环三分支 |
+| `FacePredictLab` | nn 趣味支线 | 真实 ResNet18 人脸：上传/拍照→检测→分类；解释与票据识别共享的像素处理机制，不作为审计主线证据 |
+| `LanguageTrainingShift` / `AttentionLab` | llm | Token训练；用客户招待、儿童餐、生日蛋糕、CRM等上下文解释Attention |
+| `AgentBranchLab` | agent | BX-42017行程矛盾 / 行程一致 / 工具失败三分支 |
 | `AuditAgentCanvas` | audit（预习 DeepDive） | 设计画布 |
 | `ToyDatasetExplorer` / `CaseMatrix` | audit（预习） | 多表与情形矩阵 |
 | `Quiz` | audit 收束 | 结课自测 |
