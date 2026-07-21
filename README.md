@@ -1,98 +1,119 @@
-# vinext-starter
+# 审计智能体基础课课件
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+从一笔 286 元报销讲起，互动讲解规则、机器学习、神经网络、大模型与智能体。
 
-## Prerequisites
+技术栈：[vinext](https://github.com/cloudflare/vinext)（Next.js App Router）。
+
+## 环境要求
 
 - Node.js `>=22.13.0`
 
-## Quick Start
+## 本地开发
 
 ```bash
 npm install
 npm run dev
-npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+常用命令：
 
-## Included Shape
+| 命令 | 说明 |
+|------|------|
+| `npm run dev` | 本地开发 |
+| `npm run build` | 生产构建 |
+| `npm run start` | 本地启动生产服务 |
+| `npm test` | 构建并校验页面渲染 |
+| `npm run lint` | ESLint 检查 |
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+主要代码在 `app/`，课件素材在 `public/`。
 
-## Workspace Auth Headers
+## 部署到服务器
 
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
+课件与同机上的 fitness 应用（80 端口）互不影响：课件默认走 **8080**，由 PM2 直接对外提供服务。
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+线上地址示例：
 
-Treat the full name as optional and fall back to email when it is absent:
+- 课件：`http://211.159.166.109:8080/`
+- Fitness：`http://211.159.166.109/`（原站点，不改动）
 
-```tsx
-import { headers } from "next/headers";
+### 首次部署
 
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
+1. **确认本机能 SSH 登录服务器**
 
-  const displayName = fullName ?? email;
-  // ...
-}
+   ```bash
+   ssh root@211.159.166.109
+   ```
+
+2. **在腾讯云控制台放行 8080**  
+   云服务器 → 防火墙 / 安全组 → 入站规则新增：`TCP:8080`，来源 `0.0.0.0/0`（或「全部 IPv4」）。
+
+3. **填写部署配置**
+
+   ```bash
+   cp deploy/deploy.env.example deploy/deploy.env
+   ```
+
+   编辑 `deploy/deploy.env`，至少设置：
+
+   - `SERVER_HOST`：服务器 IP
+   - `SERVER_USER`：SSH 用户（如 `root`）
+   - 若需指定密钥：取消注释并填写 `SSH_KEY=...`
+
+4. **一键部署**
+
+   ```bash
+   chmod +x deploy/deploy.sh deploy/remote-deploy.sh
+   ./deploy/deploy.sh
+   ```
+
+   脚本会：同步代码 → 安装依赖并构建 → 用 PM2 在 `8080` 启动 → 做健康检查。
+
+### 以后改了代码怎么更新？
+
+是的，**再次在本机项目根目录执行即可**：
+
+```bash
+./deploy/deploy.sh
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+无需重复配置 `deploy.env` 或重新放行端口（除非你改了端口）。
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+可选参数：
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+```bash
+./deploy/deploy.sh --sync-only   # 只同步代码，不在服务器构建
+./deploy/deploy.sh --setup-only  # 只跑服务器端安装/启动，不同步
+./deploy/deploy.sh -h            # 帮助
+```
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+### 部署相关文件
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
+| 路径 | 作用 |
+|------|------|
+| `deploy/deploy.sh` | 本机一键部署入口 |
+| `deploy/remote-deploy.sh` | 服务器端构建与启动 |
+| `deploy/deploy.env` | 本机私有配置（勿提交密钥） |
+| `deploy/deploy.env.example` | 配置模板 |
+| `deploy/ecosystem.config.cjs` | PM2 进程配置 |
 
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
+### 服务器上常用运维命令
 
-## Useful Commands
+SSH 登录后：
 
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+```bash
+pm2 list                          # 查看进程
+pm2 logs audit-courseware         # 查看日志
+pm2 restart audit-courseware      # 重启课件
+```
 
-## Learn More
+## 项目结构（简要）
+
+- `app/`：页面与互动组件
+- `public/`：静态资源与审计案例数据
+- `deploy/`：一键部署脚本
+- `db/`、`examples/d1/`：可选 D1 / Drizzle 示例（当前课件主流程可不依赖）
+
+## 了解更多
 
 - [vinext Documentation](https://github.com/cloudflare/vinext)
 - [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
