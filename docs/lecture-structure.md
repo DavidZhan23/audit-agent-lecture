@@ -62,7 +62,7 @@ hero（标题居中；三部分路径各自带一句说明，链到 `#part-1/2/3
       → code（两表映射 + 逻辑判断 + Python）
       → ml（弱信号组合 + 历史核实标签 → 新单打分）
       → nn（结构图 MLP/CNN + AnnPixelDemo + DigitsImageLab + 人脸趣味支线）
-      → llm（详稿：缺口→Token→下一Token→Attention/Transformer→生命周期→边界 + 多图示）
+      → llm（七步详稿：定义→文字数字化→Transformer读写→训练→检查点→调用→能力边界）
   → PartTitle #part-2：Agent基础与架构
       → agent（定义 / 区别 / 模块 / 工具反馈循环 / 规范 / 价值 / 边界 / BX-42017演示）
   → PartTitle #part-3：Agent在审计中的应用

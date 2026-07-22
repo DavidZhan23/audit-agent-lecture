@@ -24,7 +24,6 @@ import {
   AttentionHeatmapDiagram,
   CapabilityBoundaryStrip,
   ContextWindowDiagram,
-  ContinuityLadderDiagram,
   GenerationLoopDiagram,
   LlmLifecycleDiagram,
   TokenizeDiagram,
@@ -657,188 +656,201 @@ function ContextEvidenceInbox() {
   );
 }
 
+function LlmChapterRoute() {
+  const steps = [
+    ["01", "它是什么", "先从 ANN 连续推出 LLM"],
+    ["02", "文字怎样进去", "Token、编号、向量、位置"],
+    ["03", "网络怎样读写", "Attention、Transformer、逐 Token 生成"],
+    ["04", "怎样训练", "数据、Loss、反向传播、对齐"],
+    ["05", "训练后剩什么", "配置、Tokenizer、权重张量"],
+    ["06", "怎样调用", "请求、推理服务、响应"],
+    ["07", "会什么、不会什么", "能力、幻觉、Agent 缺口"],
+  ];
+  return (
+    <div className="llm-route" aria-label="本章七步学习路线">
+      <div className="llm-route-head"><span>本章路线</span><strong>不是记名词，而是从上一章的 ANN 亲手搭出一个 LLM</strong></div>
+      <div>{steps.map(([no, title, detail]) => <article key={no}><b>{no}</b><strong>{title}</strong><p>{detail}</p></article>)}</div>
+    </div>
+  );
+}
+
+function LlmTrainingWorkbench() {
+  const [stage, setStage] = useState(0);
+  const states = [
+    { name: "随机初始化", batch: "epoch 0", loss: "3.69", target: "发票", top: "40 个候选接近均匀", note: "权重还是随机数，模型几乎在乱猜。" },
+    { name: "训练开始", batch: "epoch 10", loss: "3.24", target: "发票", top: "正确 Token 的概率开始上升", note: "反向传播已经改变参数，但预测仍不稳定。" },
+    { name: "训练进行中", batch: "epoch 150", loss: "0.59", target: "发票", top: "正确序列已成为高概率候选", note: "总体 Loss 明显下降，但仍需独立评估。" },
+    { name: "形成检查点", batch: "epoch 300", loss: "0.34", target: "发票", top: "参数固定，可用于新输入推理", note: "保存结构、Tokenizer 与训练后的参数；推理时不再改权重。" },
+  ];
+  const current = states[stage];
+  const loop = ["取一批 Token", "前向预测", "计算 Loss", "反向传播", "优化器更新参数", "换下一批"];
+  return (
+    <div className="llm-training-workbench">
+      <div className="training-workbench-head">
+        <div><span>互动 · 训练工作台</span><h3>点击“训练一步”，观察真正改变的是什么</h3></div>
+        <div><button type="button" onClick={() => setStage(0)}>重置</button><button className="primary" type="button" onClick={() => setStage(Math.min(states.length - 1, stage + 1))} disabled={stage === states.length - 1}>训练一步 →</button></div>
+      </div>
+      <div className="training-loop-strip">{loop.map((item, i) => <div key={item} className={i === Math.min(stage + 1, 4) ? "active" : ""}><b>{String(i + 1).padStart(2, "0")}</b><span>{item}</span></div>)}</div>
+      <div className="training-workbench-body">
+        <div><span>训练状态</span><strong>{current.name}</strong><small>{current.batch}</small></div>
+        <div><span>训练样本</span><code>制度规定：报销金额必须与 → ?</code><p>真实答案：<b>{current.target}</b></p></div>
+        <div><span>模型当前预测</span><strong>{current.top}</strong><p>{current.note}</p></div>
+        <div className="loss-meter"><span>总体 Loss</span><strong>{current.loss}</strong><i><b style={{ width: `${18 + (states.length - 1 - stage) * 24}%` }} /></i><small>Loss 下降只说明更贴近训练目标，不自动证明事实可靠。</small></div>
+      </div>
+      <p className="training-workbench-footnote">Loss 数值与下方 Python 教学模型的训练日志保持一致；候选文字用于解释方向，不代表真实生产模型概率。</p>
+    </div>
+  );
+}
+
+function LlmCallLab() {
+  const [step, setStep] = useState(0);
+  const [sent, setSent] = useState(false);
+  const steps = [
+    { title: "应用组织输入", body: "程序把系统要求、用户问题和本案材料整理成 messages。它不是把整台数据库塞进模型。" },
+    { title: "发送一次请求", body: "应用通过 HTTPS 把模型名、messages 和生成参数发给推理服务。密钥应保存在后端，不应写进静态 HTML。" },
+    { title: "服务执行推理", body: "服务加载检查点，Tokenizer 编码文字，Transformer 反复预测下一个 Token；推理阶段通常不更新权重。" },
+    { title: "返回结构化响应", body: "服务返回文本、模型标识、Token 用量和停止原因。应用再显示、保存或交给下一段程序。" },
+  ];
+  const request = `{
+  "model": "enterprise-llm",
+  "messages": [
+    {"role": "system", "content": "只列疑点，不下审计结论"},
+    {"role": "user", "content": "说明：周日客户招待；小票：儿童套餐、生日蛋糕；CRM：无拜访"}
+  ],
+  "temperature": 0.2,
+  "max_output_tokens": 300,
+  "response_format": "json"
+}`;
+  const response = `{
+  "output": {
+    "status": "建议人工复核",
+    "conflicts": ["客户招待与小票内容不一致", "CRM无当天拜访"],
+    "missing_evidence": ["客户名单", "审批附件"]
+  },
+  "usage": {"input_tokens": 92, "output_tokens": 47},
+  "stop_reason": "end"
+}`;
+  return (
+    <div className="llm-call-lab">
+      <div className="llm-call-head"><div><span>互动 · 模型调用实验室</span><h3>网页里的“发送”按钮，背后只是一次程序请求</h3></div><button type="button" className="primary" onClick={() => { setSent(true); setStep(3); }}>发送一次请求</button></div>
+      <div className="llm-call-steps">{steps.map((item, i) => <button type="button" key={item.title} className={step === i ? "active" : ""} onClick={() => setStep(i)}><b>0{i + 1}</b><strong>{item.title}</strong></button>)}</div>
+      <div className="llm-call-detail"><span>当前步骤</span><h4>{steps[step].title}</h4><p>{steps[step].body}</p></div>
+      <div className="llm-call-payloads">
+        <div><span>请求 Request</span><pre>{request}</pre></div>
+        <i>HTTPS →</i>
+        <div className={sent ? "returned" : "waiting"}><span>响应 Response</span><pre>{sent ? response : "点击“发送一次请求”查看返回结果"}</pre></div>
+      </div>
+      <p className="llm-call-note"><b>三种常见部署方式：</b>调用云端模型 API、调用企业内部模型平台、在本机/服务器加载开源模型。对调用方而言，核心都可抽象为“输入请求 → 推理 → 输出响应”。</p>
+    </div>
+  );
+}
+
 function LlmContextDemo() {
   return (
     <div className="task-logic-demo llm-lesson-rich">
       <p className="task-logic-problem">
         <span>审计问题</span>
         报销说明写着「周日接待重要客户」，但小票、CRM、日历放在一起读，语义互相打架。
-        上一章的 ANN 可以帮我们把小票上的字认出来；这一章要回答：怎样把多段语言文字放进同一个「理解装置」里对照。
+        上一章的 ANN 可以把小票上的字认出来；这一章只追问一件事：怎样把这些文字放进神经网络，让它联系上下文并生成说明？
       </p>
 
       <ContextEvidenceInbox />
-      <AnnToLlmGapDiagram />
+      <LlmChapterRoute />
 
-      <div className="content-block">
-        <h3>5.1 为什么必须从 ANN 再走到 LLM？</h3>
-        <p>
-          票据识别解决的是「图上写了什么」。招待目的审查解决的是「这些句子合在一起意味着什么」。
-          后者的输入不再是固定尺寸的像素张量，而是：
-        </p>
-        <ul>
-          <li>长度可变的自然语言（说明可长可短）；</li>
-          <li>多来源拼接（OCR + CRM 文本 + 日历标题 + 制度摘录）；</li>
-          <li>需要跨段落的参照（「客户招待」要去对照「儿童套餐」「无拜访」「家属生日」）；</li>
-          <li>输出常常也是语言（疑点说明、核对清单），而不是 10 类里选 1 类。</li>
-        </ul>
-        <p>
-          若仍用手写规则去穷举「说明含客户且小票含儿童则报警」，例外与措辞组合会爆炸。
-          若只用上一章那种「固定输入维 → 少数类别」的网络，也很难直接吃进任意长的制度与多文档上下文。
-          <b>于是把神经网络的对象，从像素（或表格特征）扩展到 Token 序列——这就是走向大语言模型的关键一步。</b>
-        </p>
-      </div>
-
-      <ContinuityLadderDiagram />
-      <AnnLlmSideBySide />
-
-      <div className="content-block">
-        <h3>5.2 先把定义钉死：LLM 仍然是神经网络</h3>
+      <section className="llm-step-section">
+        <div className="llm-step-title"><span>5.1 · 它是什么</span><h3>第一步：从 ANN 连续地走到 LLM</h3><p>问题不是“ANN 被什么新物种替代”，而是“怎样把神经网络改造成通用的语言预测器”。</p></div>
+        <AnnToLlmGapDiagram />
+        <div className="llm-upgrade-grid">
+          <article><span>保持不变</span><strong>仍然是神经网络</strong><p>仍有层、权重、偏置、前向计算、Loss、反向传播和推理。</p></article>
+          <article><span>改进 01</span><strong>输入改成 Token 序列</strong><p>Tokenizer、Embedding 和位置信息，让文字能够进入网络。</p></article>
+          <article><span>改进 02</span><strong>骨干改成 Transformer</strong><p>Self-Attention 让序列中的每个位置按需要参考其他位置。</p></article>
+          <article><span>改进 03</span><strong>输出改成开放式序列</strong><p>每一步在大词表中预测下一个 Token，循环后形成任意长度文字。</p></article>
+          <article><span>改进 04</span><strong>规模与训练方式扩大</strong><p>海量语料、大量参数、预训练和指令对齐，使一个模型获得多任务能力。</p></article>
+        </div>
+        <AnnLlmSideBySide />
         <Definition
           term="大语言模型（LLM）"
-          simple="在海量文本上训练、根据已有上下文继续生成文字的大规模神经网络（当代主流骨干多为 Transformer）。"
-          precise="通过预训练学习 Token 序列的条件概率分布；再经指令微调与对齐形成更适合问答与任务执行的行为。推理阶段参数基本固定，逐 Token 生成输出。"
+          simple="把文字切成 Token，利用大型神经网络根据上下文不断预测下一个 Token，从而理解和生成语言的模型。"
+          precise="当代主流 LLM 是以 Transformer 为骨干、在大规模 Token 序列上进行自回归预训练，并常经过指令微调和偏好对齐的参数化条件概率模型。"
         />
-        <p>
-          课堂要反复强调的一句话：<b>LLM = 很大的 ANN + 语言序列目标 + 海量数据与算力</b>。
-          它不是另一种魔法；也不是企业业务数据库。
-        </p>
-      </div>
+        <div className="llm-memory-line"><strong>本节必须记住</strong><code>LLM = 神经网络底座 + Token 序列 + Transformer + 下一 Token 目标 + 大规模预训练</code></div>
+      </section>
 
-      <div className="math-explain lecture-board">
-        <div className="math-explain-head">
-          <span>课堂板书 A</span>
-          <h3>从「认数字」到「写下一段话」：目标函数怎么写</h3>
+      <section className="llm-step-section">
+        <div className="llm-step-title"><span>5.2 · 文字怎样进去</span><h3>第二步：计算机不认识“文字”，先把它变成数字</h3><p>一段文本进入模型前依次经历：切分 → 编号 → 查向量表 → 加入位置信息。</p></div>
+        <TokenizeDiagram />
+        <div className="llm-three-concepts">
+          <article><span>Tokenizer</span><strong>切分并编号</strong><p>把文字切成词、字或子词 Token；同一 Token 对应稳定编号。它是编码规则，不负责理解。</p></article>
+          <article><span>Embedding</span><strong>把编号查成向量</strong><p>向量表是可训练参数。模型训练时，相关 Token 的表示逐渐形成可用关系。</p></article>
+          <article><span>Position</span><strong>告诉模型先后顺序</strong><p>“客户招待并非私人聚餐”和“私人聚餐并非客户招待”Token 相近，顺序却改变含义。</p></article>
         </div>
+        <div className="llm-memory-line"><strong>本节必须记住</strong><code>文字 → Token → Token ID → Embedding 向量 + 位置信息</code></div>
+      </section>
 
-        <section>
-          <h4>① 条件概率</h4>
-          <TeX display ariaLabel="next token" math="P(t_{n+1}\mid t_1,t_2,\ldots,t_n)" />
-          <p className="board-line">
-            给定已经出现的 Token，模型为词表中每一个候选给出概率。训练时，正确答案就是语料里真实出现的下一个 Token；
-            预测错了就算 Loss，反向传播更新权重——与 ANN 章完全同一套逻辑。
-          </p>
-        </section>
-
-        <section>
-          <h4>② 一张图 / 一段话，区别在输出头大小</h4>
-          <p className="board-line">
-            数字识别：Softmax 只有 10 维。语言建模：Softmax 维数 = 词表大小 |V|。
-            生成长文 = 把「10 类分类」变成「做成千上万次 |V| 类分类」，每次只留下一个 Token。
-          </p>
-        </section>
-
-        <section>
-          <h4>③ 联合概率的链式展开（帮助建立直觉）</h4>
-          <TeX
-            display
-            ariaLabel="chain rule"
-            math="P(t_1,\ldots,t_T)=\prod_{n=0}^{T-1} P(t_{n+1}\mid t_1,\ldots,t_n)"
-          />
-          <p className="board-line">
-            整段话的「好不好」被拆成每一步「下一个是否合理」。这就是为什么「只会猜下一个词」的目标，理论上能覆盖任意长度文本。
-          </p>
-        </section>
-      </div>
-
-      <TokenizeDiagram />
-
-      <div className="content-block">
-        <h3>5.3 训练答案从哪里来？——错开一位就是样本</h3>
-        <p>
-          图像分类需要人给每张图贴「这是 2」。语言建模几乎「自带标签」：任意一段人类写过的话，都可以切成「上文 → 下一个 Token」。
-          这正是能用到互联网级文本规模的前提。
-        </p>
-      </div>
-      <LanguageTrainingShift />
-      <GenerationLoopDiagram />
-      <TokenLab />
-
-      <WhyNextTokenDiagram />
-
-      <div className="content-block">
-        <h3>5.4 一次前向里发生了什么：五步流水线</h3>
-        <p>
-          下面这张可点选流水线，把「提示词进来 → 字出来」拆开。不必推导矩阵；要能按顺序讲给同事听。
-        </p>
-      </div>
-      <LlmPipeline />
-
-      <div className="math-explain lecture-board">
-        <div className="math-explain-head">
-          <span>课堂板书 B</span>
-          <h3>Attention：为什么「儿童套餐」能压过「重要客户」</h3>
+      <section className="llm-step-section">
+        <div className="llm-step-title"><span>5.3 · 网络怎样读写</span><h3>第三步：Transformer 联系上下文，再逐 Token 写出答案</h3><p>Attention 负责“当前应该重点参考哪里”；Transformer Block 负责反复整合与变换；LM Head 负责给整个词表打分。</p></div>
+        <AttentionHeatmapDiagram />
+        <AttentionLab />
+        <InlinePythonLab example="attention" guide="逐行看Query与每个Key算相似度、Softmax变成权重、再对Value加权求和。重点不是背矩阵，而是理解Attention做的是信息路由；权重高不代表事实已核实。" />
+        <TransformerStackDiagram />
+        <LlmPipeline />
+        <div className="math-explain lecture-board compact-board">
+          <div className="math-explain-head"><span>唯一需要记住的公式</span><h3>给定上文，预测下一个 Token</h3></div>
+          <section><TeX display ariaLabel="next token" math="P(t_{n+1}\mid t_1,t_2,\ldots,t_n)" /><p className="board-line">模型输出的不是一个“答案字符串”，而是词表中每个候选 Token 的概率。选出一个，把它追加到上下文，再运行一次。</p></section>
         </div>
-        <section>
-          <h4>① 平均阅读不够</h4>
-          <p className="board-line">
-            若对上下文每个词一视同仁，长文档里关键信号会被稀释。
-            BX-42519 里，真正改变判断的是少数高冲突片段，而不是「报销」「金额」这类高频但弱区分词。
-          </p>
-        </section>
-        <section>
-          <h4>② 有重点地读</h4>
-          <p className="board-line">
-            Self-Attention 让每个位置去询问：我现在要想清楚一件事，应该更参考上下文里的哪些位置？
-            权重高的位置，其信息被更多地混合进来——这就是「联系语境」的计算实现。
-          </p>
-        </section>
-      </div>
+        <GenerationLoopDiagram />
+        <TokenLab />
+        <div className="llm-memory-line"><strong>本节必须记住</strong><code>读：Attention 联系上下文　｜　写：预测一个 Token，再循环</code></div>
+      </section>
 
-      <AttentionHeatmapDiagram />
-      <AttentionLab />
-      <TransformerStackDiagram />
-
-      <div className="content-block">
-        <h3>5.5 规模：同样的公式，为什么突然「能干很多活」</h3>
-        <p>
-          公式仍是下一 Token。变化来自三件事叠在一起：
-        </p>
-        <ol>
-          <li><b>数据</b>：覆盖制度、合同、邮件、代码、百科式表述等多样文本；</li>
-          <li><b>参数</b>：层数与宽度增加，表示能力变强；</li>
-          <li><b>算力与训练配方</b>：使上述规模真正训得动、训得稳。</li>
-        </ol>
-        <p>
-          于是连续预测在观感上变成：总结、翻译、写邮件、对比矛盾、按提纲输出——
-          <b>能力是涌现的观感，机制仍是条件语言模型。</b>
-          不要把「会写分析段落」误读成「已经连上了你们公司的 CRM」。
-        </p>
-      </div>
-
-      <LlmLifecycleDiagram />
-      <ContextWindowDiagram />
-
-      <div className="content-block">
-        <h3>5.6 业务里常说的四样外挂（仍不是 Agent）</h3>
-        <p>
-          提示词、上下文、RAG、工具调用，都是给「下一 Token 机器」更好的输入或出口。
-          它们很有用，但只有「根据工具结果决定下一步并循环」时，我们才进入下一章的 Agent。
-        </p>
-      </div>
-      <div className="llm-addons">
-        <div>
-          <span>提示词</span>
-          <strong>把任务讲清楚</strong>
-          <p>角色、目标、约束、输出格式。例如：「只列疑点，不下审计结论」。</p>
+      <section className="llm-step-section">
+        <div className="llm-step-title"><span>5.4 · 怎样训练</span><h3>第四步：训练不是灌入答案，而是不断修正预测误差</h3><p>先讲预训练的一次循环，再区分预训练、指令微调/对齐和日常推理。三者不能混为一谈。</p></div>
+        <div className="llm-training-data">
+          <article><b>01</b><strong>收集与治理语料</strong><p>授权文本、网页、书籍、代码等；清洗、去重、过滤并切分。</p></article>
+          <article><b>02</b><strong>自动构造训练答案</strong><p>同一序列错开一位：前面的 Token 是输入，后一个 Token 就是目标。</p></article>
+          <article><b>03</b><strong>前向计算与 Loss</strong><p>模型给候选词概率；用交叉熵衡量真实下一个 Token 得到的概率是否足够高。</p></article>
+          <article><b>04</b><strong>反向传播与优化</strong><p>梯度告诉每个参数怎样微调才能降低 Loss；优化器更新权重。</p></article>
+          <article><b>05</b><strong>重复并保存检查点</strong><p>在大量批次上重复，定期验证、评估并保存模型参数。</p></article>
         </div>
-        <div>
-          <span>上下文</span>
-          <strong>把本案资料贴进去</strong>
-          <p>说明、OCR、CRM、日历——模型只能基于窗口内文字作答。</p>
-        </div>
-        <div>
-          <span>RAG</span>
-          <strong>先检索再回答</strong>
-          <p>从制度库找出相关条款并保留出处，减轻「凭印象写制度」。</p>
-        </div>
-        <div>
-          <span>工具</span>
-          <strong>查与算的出口</strong>
-          <p>发票查验、数据库、计算器。有工具 ≠ 已形成受控 Agent 循环。</p>
-        </div>
-      </div>
+        <LanguageTrainingShift />
+        <LlmTrainingWorkbench />
+        <LlmLifecycleDiagram />
+        <InlinePythonLab example="language" guide="先看初始Loss，再看训练中Loss下降和权重变化，最后看检查点包含什么。这个微型神经语言模型只复现训练逻辑；真实LLM把简单权重矩阵换成多层Transformer。" />
+        <div className="llm-memory-line"><strong>本节必须记住</strong><code>预测 → 算 Loss → 反向传播 → 更新参数 → 重复；训练改变的是参数</code></div>
+      </section>
 
-      <CapabilityBoundaryStrip />
+      <section className="llm-step-section">
+        <div className="llm-step-title"><span>5.5 · 训练后剩什么</span><h3>第五步：打开一个训练好的 LLM，它不是规则库，而是一组文件和巨大矩阵</h3><p>“学会了语言”最终必须落到可保存、可加载的工程制品上。下面直接打开一个教学检查点。</p></div>
+        <LlmCheckpointExplorer />
+        <div className="llm-product-facts">
+          <article><strong>结构不会消失</strong><p>config 说明层数、隐藏维度、注意力头和词表大小。</p></article>
+          <article><strong>知识没有变成中文规则</strong><p>训练结果分布在 Embedding、Q/K/V、MLP、Norm、LM Head 等大量张量中。</p></article>
+          <article><strong>使用前必须加载</strong><p>推理服务把配置、Tokenizer 和权重载入 CPU/GPU，并开放本地接口或网络 API。</p></article>
+          <article><strong>推理通常不改权重</strong><p>本次提示词只进入上下文窗口；它不会因为一次聊天自动完成新的模型训练。</p></article>
+        </div>
+        <div className="llm-memory-line"><strong>本节必须记住</strong><code>训练成品 = Tokenizer + 模型结构配置 + 训练后权重张量（+ 生成默认设置）</code></div>
+      </section>
+
+      <section className="llm-step-section">
+        <div className="llm-step-title"><span>5.6 · 怎样调用</span><h3>第六步：业务程序并不“进入模型”，而是向推理服务发送请求</h3><p>模型先被部署成服务。你的网页、Python 或审计系统提交输入，服务运行推理并返回输出。</p></div>
+        <LlmCallLab />
+        <ContextWindowDiagram />
+        <div className="llm-call-guardrail"><strong>静态 HTML 的关键安全边界</strong><p>教学页面可以演示请求结构，但生产环境的模型密钥不能直接写在浏览器代码里；否则任何打开网页的人都可能读取密钥。真实系统应由受控后端代为调用，并记录访问、输入和输出。</p></div>
+        <InlinePythonLab example="llm_call" guide="运行后依次看 request、模型服务内部四步和 response。这个教学模拟器不访问外部模型，因此无需密钥；真实调用只需把 model_server 函数替换为企业模型平台或云端API。" />
+        <div className="llm-memory-line"><strong>本节必须记住</strong><code>应用 → 请求(messages + 参数) → 推理服务 → Tokenizer/模型生成 → 响应</code></div>
+      </section>
+
+      <section className="llm-step-section">
+        <div className="llm-step-title"><span>5.7 · 会什么、不会什么</span><h3>第七步：能力来自同一个预测目标，边界也来自同一个预测目标</h3><p>下一 Token 训练迫使模型学习语言结构、常见知识关联和长程依赖；规模扩大后，它表现出总结、抽取、问答、改写、分类和代码生成等通用能力。</p></div>
+        <WhyNextTokenDiagram />
+        <CapabilityBoundaryStrip />
+        <div className="llm-case-output">
+          <div><span>输入给模型的材料</span><p>报销说明 + 小票 OCR + CRM 摘录 + 日历标题 + 相关制度</p></div>
+          <i>→</i>
+          <div><span>LLM 可以输出</span><p>矛盾点、缺失证据、建议核对事项和结构化疑点草稿</p></div>
+          <i>≠</i>
+          <div className="limit"><span>不能直接输出</span><p>已经核验的事实、违规认定、舞弊定性或最终审计结论</p></div>
+        </div>
 
       <div className="hallucination">
         <div>
@@ -893,8 +905,9 @@ function LlmContextDemo() {
       </div>
 
       <LessonTakeaway>
-        LLM 是面向语言序列的大规模 ANN：用下一 Token 预测训练，用 Attention 联系语境；它能整理与解释已提供的文字证据，但既不是事实数据库，也不会主动取数。
+        LLM 是以 Transformer 为骨干、在海量 Token 序列上训练的大型神经网络：训练时通过下一 Token 误差更新权重，使用时由推理服务接收上下文并逐 Token 生成；它能理解和生成已提供的语言材料，但不会天然主动取数，也不能替代事实核验与审计判断。
       </LessonTakeaway>
+      </section>
     </div>
   );
 }
@@ -1335,46 +1348,111 @@ print("拼出票面金额 286；金额是否与平台一致，仍交给规则判
 print("提醒：看见数字 ≠ 理解制度，更不是审计结论。")`,
   },
   language: {
-    label: "训练极小语言模型",
-    code: `# 真实运行：训练一个极小的“下一个字符”语言模型
-# 它不是Transformer，但能展示Tokenizer、训练、权重和生成的基本链条
-import random
-random.seed(3)
+    label: "训练一个微型神经语言模型",
+    code: `# 真实运行：用梯度下降训练“根据当前字符预测下一个字符”的神经语言模型
+# 它不是Transformer，但完整保留：Token化 → 前向 → 交叉熵Loss → 反向传播 → 更新权重 → 检查点
+import numpy as np
+np.random.seed(7)
 
-corpus = "报销金额必须与发票查验平台金额一致。不一致时应转人工复核。审计结论需要原始证据。"
+corpus = ("报销金额必须与发票查验平台金额一致。不一致时应转人工复核。"
+          "审计结论需要原始证据。报销说明应与业务事实一致。") * 20
 tokens = sorted(set(corpus))
 token_to_id = {token: i for i, token in enumerate(tokens)}
+id_to_token = {i: token for token, i in token_to_id.items()}
+V = len(tokens)
 
-# 训练：统计每个字符后面出现另一个字符的次数
-counts = [[1 for _ in tokens] for _ in tokens]  # 加1平滑
-for current, following in zip(corpus, corpus[1:]):
-    counts[token_to_id[current]][token_to_id[following]] += 1
+# 训练样本：当前位置x，真实的下一个位置y
+x = np.array([token_to_id[c] for c in corpus[:-1]])
+y = np.array([token_to_id[c] for c in corpus[1:]])
 
-# 归一化后，这张概率表就是这个极小模型训练出的“权重”
-weights = []
-for row in counts:
-    total = sum(row)
-    weights.append([value / total for value in row])
+# 参数矩阵W：每一行给出“当前Token → 所有下一个Token”的分数
+W = np.random.normal(0, 0.02, (V, V))
+learning_rate = 2.0
+
+def forward_and_loss(W):
+    logits = W[x]
+    logits = logits - logits.max(axis=1, keepdims=True)
+    probs = np.exp(logits)
+    probs /= probs.sum(axis=1, keepdims=True)
+    loss = -np.log(probs[np.arange(len(y)), y] + 1e-12).mean()
+    return probs, loss
+
+print("词表大小 V =", V)
+print("初始参数 W shape =", W.shape)
+for epoch in range(301):
+    probs, loss = forward_and_loss(W)
+    if epoch in (0, 1, 10, 50, 150, 300):
+        print(f"epoch={epoch:3d}  loss={loss:.4f}")
+
+    # 交叉熵 + Softmax 的梯度；只更新本批样本涉及的行
+    grad_logits = probs.copy()
+    grad_logits[np.arange(len(y)), y] -= 1
+    grad_logits /= len(y)
+    grad_W = np.zeros_like(W)
+    np.add.at(grad_W, x, grad_logits)
+    W -= learning_rate * grad_W
 
 checkpoint = {
-    "config": {"model_type": "bigram", "vocab_size": len(tokens)},
+    "config": {"model_type": "teaching_bigram_nn", "vocab_size": V},
     "tokenizer": token_to_id,
-    "bigram.weight": weights,
+    "model.weight": W.copy(),
 }
+print("\\n训练后保存：config + tokenizer + model.weight", checkpoint["model.weight"].shape)
+print("权重预览：", np.round(W[:2, :6], 3))
 
-print("Tokenizer：", checkpoint["tokenizer"])
-print("bigram.weight shape =", (len(weights), len(weights[0])))
-print("权重矩阵前两行预览：")
-for row in weights[:2]:
-    print([round(v, 3) for v in row[:8]])
-
+# 推理：参数固定，反复预测概率最高的下一个Token
 text = "报"
 for _ in range(18):
-    row = weights[token_to_id[text[-1]]]
-    next_token = random.choices(tokens, weights=row, k=1)[0]
-    text += next_token
-print("\\n生成结果：", text)
-print("\\n真实LLM用多层Transformer张量替代这张简单概率表。")`,
+    current_id = token_to_id[text[-1]]
+    next_id = int(np.argmax(W[current_id]))
+    text += id_to_token[next_id]
+print("生成结果：", text)
+print("提醒：真实LLM把W换成Embedding、多层Attention/MLP和LM Head等大量张量。")`,
+  },
+  llm_call: {
+    label: "模拟一次完整的大模型调用",
+    code: `# 教学模拟：请求格式与真实模型服务同构，但不访问外网、不需要API密钥
+import json
+
+request = {
+    "model": "enterprise-llm",
+    "messages": [
+        {"role": "system", "content": "只列疑点，不下审计结论；返回JSON。"},
+        {"role": "user", "content": "说明：周日客户招待；小票：儿童套餐、生日蛋糕；CRM：当天无客户拜访。"},
+    ],
+    "temperature": 0.2,
+    "max_output_tokens": 300,
+}
+
+def model_server(payload):
+    # 真实服务在这里：鉴权 → Tokenizer → 加载的模型权重 → 逐Token生成 → 解码
+    print("[服务端 1/4] 鉴权并校验请求")
+    context = "\\n".join(m["content"] for m in payload["messages"])
+    tokens = list(context)  # 教学版Tokenizer：按字符切分
+    print(f"[服务端 2/4] Tokenizer编码：{len(tokens)}个输入Token（教学口径）")
+    print("[服务端 3/4] 已加载的Transformer权重执行前向计算并逐Token生成")
+
+    # 教学版固定输出：只用于观察响应结构，不冒充真实LLM
+    output = {
+        "status": "建议人工复核",
+        "conflicts": ["客户招待与小票内容不一致", "CRM无当天拜访"],
+        "missing_evidence": ["客户名单", "审批附件"],
+        "audit_conclusion": None,
+    }
+    print("[服务端 4/4] 解码并封装响应")
+    return {
+        "model": payload["model"],
+        "output": output,
+        "usage": {"input_tokens": len(tokens), "output_tokens": 47},
+        "stop_reason": "end",
+    }
+
+print("=== 应用发送的REQUEST ===")
+print(json.dumps(request, ensure_ascii=False, indent=2))
+response = model_server(request)
+print("\\n=== 服务返回的RESPONSE ===")
+print(json.dumps(response, ensure_ascii=False, indent=2))
+print("\\n生产提示：API密钥应放在受控后端，不能写进静态HTML。")`,
   },
   attention: {
     label: "计算一次微型Attention",
@@ -2142,10 +2220,6 @@ export default function Home() {
         <section id="llm" className="lesson">
           <SectionTitle no="05" time="第一部分 · 约30分钟（可压缩）" title="从 ANN 到 LLM" />
           <LlmContextDemo />
-          <InlinePythonLab
-            example="language"
-            guide="极小字符模型：把「下一个 Token 预测」跑出来。真实 LLM 是同一思路的超大规模 Transformer——Token 化、条件概率、逐个生成。"
-          />
           <Bridge
             from="LLM 的边界"
             problem="模型可以建议核对航班、酒店和 CRM，也可以把已提供的文字证据整理成疑点草稿；但关键资料分散在不同系统，下一步该查什么还取决于刚刚查到的结果——这超出了「只在窗口里生成文字」的能力。"
@@ -2153,10 +2227,10 @@ export default function Home() {
           />
           <TeacherNote
             time="完整稿约30分钟；可压到18—20分钟"
-            question="如果不把 CRM 和日历资料提供给模型，它能凭语言能力知道吗？Attention 权重高是否等于事实已核实？"
-            misconception="语言流畅不是证据；LLM 不是数据库；下一 Token 不是魔法推理引擎。"
-            mustSay="钉死：LLM = 大规模 ANN；训练目标是 P(下一Token|上文)；Attention 负责联系语境；窗口外未知；流畅≠结论。"
-            canSkip="链式法则板书、Transformer SVG 细节、TokenLab 全流程、Lifecycle 中指令微调段；时间紧时保留：缺口图 + 下一Token + AttentionLab + 幻觉条 + Bridge。"
+            question="请学员不用术语复述：一段文字怎样进入模型、怎样训练、训练后留下什么、程序又怎样调用它？"
+            misconception="LLM不是另一种魔法；训练不是把答案存进数据库；一次聊天不是重新训练；Attention权重不是证据。"
+            mustSay="按七步路线讲：定义→数字化→Transformer→训练→检查点→调用→能力边界；每一步结束都复述绿色记忆条。"
+            canSkip="时间紧时可跳过AttentionLab的数值细节和Python训练日志，但不能跳过检查点解剖与调用流程——它们正是初学者建立完整心智模型的关键。"
           />
         </section>
 
