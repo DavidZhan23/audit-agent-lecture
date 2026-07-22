@@ -1,22 +1,28 @@
-# 02 · code — ① 通俗逻辑与规则
+# 02 · code — 基于任务逻辑的编程
 
+- **部分大标题：** `#part-1` · 第一部分 · 大模型和智能体的技术基础（导言之后、本章之前）
 - **锚点：** `#code`
-- **侧栏：** 通俗逻辑与规则（10′）
-- **课纲定位：** 解决最简单、边界清晰的问题
+- **侧栏：** 基于任务逻辑的编程（10′）
+- **标题：** 基于任务逻辑的编程
 
 ## 教学目标
 
-- 明确条件优先用规则
-- 说清优势（可解释、稳定）与劣势（写不尽、无图像）
+- 用两张表的映射与确定性逻辑解决明确审计问题
+- 展示对应 Python，强调「能写清就不必上模型」
+- **例子必须依赖映射**：只看单表发现不了疑点
 
 ## 内容块
 
-1. `Definition` — 规则 / 通俗逻辑程序
-2. `DatasetAnchor` — BX-41610 / BX-41902 发票号、金额、日期完全匹配
-3. 四格：变量/条件/循环/函数
-4. `InlinePythonLab` rule：构造复合键并确定性找出重复
-5. `CapabilityBoundary` + 优劣势双栏
-6. `LessonTakeaway` / `Bridge` → ML
+1. `SectionTitle` — 仅 `02`
+2. `TaskLogicDemo` — 报销金额 vs 开票金额（BX-42306：286 vs 86）；Excel 双表 + 映射键 + 判断
+3. `InlinePythonLab` rule — 按发票号映射后比较金额
+4. `Bridge` → 经典机器学习 / `TeacherNote`
+
+已移除：Definition、DatasetAnchor、四格概念、CapabilityBoundary、优劣势双栏、LessonTakeaway。
+
+## 对应代码
+
+`app/page.tsx` → `PartTitle#part-1` 之后的 `section#code`
 
 ## 对应代码
 

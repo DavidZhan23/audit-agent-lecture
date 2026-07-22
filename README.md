@@ -1,6 +1,6 @@
 # 审计智能体基础课课件
 
-**课程标题：** LLM，Agent基础、架构以及其在审计中的应用  
+**课程标题：** LLM 与 Agent：基础、架构及审计应用  
 
 课程采用三部分架构：① 大模型和智能体的技术基础（规则 → ML → ANN → LLM）；② Agent基础与架构（核心长章）；③ Agent在审计中的应用（占位待设计）。
 
@@ -36,7 +36,7 @@ pip install -r requirements.txt
 python server.py
 ```
 
-然后浏览器打开课程「超多特征与 ANN」中的「真实 ANN 演示」：上传照片、手机「拍照上传」，或（HTTPS/localhost 下）「打开摄像头」。  
+然后浏览器打开课程「ANN」中的「真实 ANN 演示」：上传照片、手机「拍照上传」，或（HTTPS/localhost 下）「打开摄像头」。  
 详情与 curl 示例见 [`services/face-predict/README.md`](services/face-predict/README.md)。
 
 常用命令：

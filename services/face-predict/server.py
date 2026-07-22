@@ -40,11 +40,29 @@ def warmup() -> None:
 @app.get("/health")
 def health() -> Dict[str, Any]:
     ckpt = config.DEFAULT_CHECKPOINT
-    return {
+    payload: Dict[str, Any] = {
         "ok": ckpt.exists(),
         "checkpoint": str(ckpt),
         "checkpoint_exists": ckpt.exists(),
+        "image_size_default": config.IMAGE_SIZE,
+        "threshold": config.UNKNOWN_CONFIDENCE_THRESHOLD,
+        "classes": config.CLASS_NAMES,
     }
+    try:
+        predictor = get_predictor()
+        payload.update(
+            {
+                "ok": True,
+                "loaded": True,
+                "device": str(predictor.device),
+                "image_size": predictor.image_size,
+                "threshold": predictor.confidence_threshold,
+            }
+        )
+    except Exception as exc:  # noqa: BLE001
+        payload["loaded"] = False
+        payload["load_error"] = str(exc)
+    return payload
 
 
 @app.post("/api/face-predict")
@@ -75,11 +93,12 @@ async def face_predict(image: UploadFile = File(...)) -> Dict[str, Any]:
             detail=result.get("message", "无法完成预测"),
         )
 
-    # 对外契约：label / probs / confidence
+    # 对外契约：label / probs / confidence / threshold
     return {
         "label": result["label"],
         "probs": result["probs"],
         "confidence": result["confidence"],
+        "threshold": result["threshold"],
     }
 
 

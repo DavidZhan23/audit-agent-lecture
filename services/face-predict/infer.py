@@ -92,10 +92,12 @@ class FacePredictor:
         self.model = model
         self.image_size = int(checkpoint.get("image_size", config.IMAGE_SIZE))
         logger.info(
-            "FacePredictor ready device=%s ckpt=%s threshold=%.2f",
+            "FacePredictor ready device=%s ckpt=%s image_size=%s threshold=%.2f dropout=%s",
             self.device,
             self.checkpoint_path,
+            self.image_size,
             self.confidence_threshold,
+            dropout,
         )
 
     def predict_pil(self, image: Image.Image) -> Dict[str, Any]:

@@ -1,24 +1,21 @@
-# 01 · problem — 从问题出发
+# 01 · problem — 导言（Introduction）
 
 - **锚点：** `#problem`
-- **侧栏：** 从问题出发（8′）
-- **标题：** 整堂课如何组织：先基础，再Agent，再审计应用
+- **侧栏：** 导言（5′）— 置于「第一部分」标签之上，与正文结构一致
+- **标题：** 导言
 
 ## 教学目标
 
-- 建立三部分顶层架构
-- 明确第一部分讲技术基础、第二部分讲Agent通用架构、第三部分讲审计应用
-- 将递进案例严格限定为第一部分内部的教学线索
+- 用 Abstract 交代课程主题、三部分分工
+- 用「主要收获」明确学完后应带走的判断能力
+- 自然过渡到「基于任务逻辑的编程」
 
 ## 内容块
 
-1. `CourseArchitecture`：三部分总体架构
-2. `FoundationCaseLadder`：第一部分内部的四级问题递进
-3. 「本课路线图」双栏（能力递进 / 不变的交付）
-4. `CapabilityChain`
-5. `LessonTakeaway` / `Bridge` → 通俗逻辑 / `TeacherNote`
-
-第一部分案例：重复发票 → 拆分报销 → 票据修改 → 招待语义矛盾。行程矛盾BX-42017只在第二部分末尾作为Agent反馈循环演示。
+1. `SectionTitle` — 导言（无副标题 intro）
+2. `lesson-abstract` — Abstract + 三部分条目列表
+3. `content-block.lesson-takeaways` — 「主要收获」四格（无小标题）
+4. `Bridge` → 基于任务逻辑的编程 / `TeacherNote`
 
 ## 对应代码
 

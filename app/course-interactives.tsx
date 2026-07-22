@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { digitSamples } from "./digit-samples";
+import { DIGIT_SIZE, digitSamples } from "./digit-samples";
 
 const sigmoid = (value: number) => 1 / (1 + Math.exp(-value));
 
@@ -123,22 +123,174 @@ export function NeuronContinuityLab() {
   </div>;
 }
 
-const digitConfidence: Record<number, number> = { 2: 99.5, 8: 75.0, 6: 99.8 };
+const digitConfidence: Record<number, number> = {
+  0: 98.2,
+  1: 97.6,
+  2: 99.5,
+  3: 96.8,
+  4: 98.9,
+  5: 95.4,
+  6: 99.8,
+  7: 97.1,
+  8: 94.2,
+  9: 96.5,
+};
+
+type TrainPhase = "before" | "during" | "after";
+
+/** 示意 Softmax：训练前均匀 → 训练中略乱且真数字稍高 → 训练后峰值对准 */
+function demoSoftmax(digit: number, phase: TrainPhase): number[] {
+  if (phase === "before") {
+    return Array.from({ length: 10 }, () => 0.1);
+  }
+  if (phase === "during") {
+    // 接近原先「训练前」的略不均匀，但真数字再抬一点
+    const raw = Array.from({ length: 10 }, (_, i) => {
+      const base = 0.7 + ((digit * 5 + i * 11) % 9) * 0.08;
+      return i === digit ? base * 2.4 : base;
+    });
+    const sum = raw.reduce((a, b) => a + b, 0);
+    return raw.map((v) => v / sum);
+  }
+  const peak = digitConfidence[digit] / 100;
+  const rest = (1 - peak) / 9;
+  return Array.from({ length: 10 }, (_, i) => (i === digit ? peak : rest));
+}
+
+const trainPhaseMeta: Record<TrainPhase, { label: string; caption: string; note: (guess: number, p: number) => React.ReactNode }> = {
+  before: {
+    label: "训练前",
+    caption: "输出：10 类概率（训练前）",
+    note: () => <>十类几乎均匀摊开，模型还什么都没学到。</>,
+  },
+  during: {
+    label: "训练中",
+    caption: "输出：10 类概率（训练中）",
+    note: (guess, p) => (
+      <>
+        真数字 <strong>{guess}</strong> 开始抬起（约 {(p * 100).toFixed(0)}%），但还不够稳。
+      </>
+    ),
+  },
+  after: {
+    label: "训练后",
+    caption: "输出：10 类概率（训练后）",
+    note: (guess, p) => (
+      <>
+        峰值落在 <strong>{guess}</strong>，置信度约 {(p * 100).toFixed(1)}% —— 票面可据此拼出金额数字。
+      </>
+    ),
+  },
+};
 
 export function DigitsImageLab() {
-  const [selected, setSelected] = useState(0);
-  const [trained, setTrained] = useState(true);
+  const [selected, setSelected] = useState(2); // 默认选本课金额里的「2」
+  const [phase, setPhase] = useState<TrainPhase>("after");
   const sample = digitSamples[selected];
-  return <div className="digits-lab interactive">
-    <div className="interactive-head"><div><span>核心互动 · 经典图像识别</span><h3>64个像素，怎样变成一个数字？</h3></div><button onClick={() => { setSelected(0); setTrained(true); }}>重置</button></div>
-    <div className="digit-controls" role="group" aria-label="选择手写数字样本">{digitSamples.map((item, index) => <button key={item.digit} className={selected === index ? "active" : ""} aria-pressed={selected === index} onClick={() => setSelected(index)}>票据数字 {item.digit}</button>)}<button className={trained ? "active" : ""} onClick={() => setTrained(!trained)}>{trained ? "查看训练前" : "查看训练后"}</button></div>
-    <div className="digit-layout">
-      <div><span className="digit-caption">原始输入：8×8像素</span><div className="digit-grid" role="img" aria-label={`手写数字${sample.digit}的8乘8像素图`}>{sample.pixels.map((value, index) => <i key={index} style={{ opacity: .08 + value / 17 }}><span>{value}</span></i>)}</div><small>每个格子是0—16的亮度；网络输入的是64个数，不是“{sample.digit}”这个概念。</small></div>
-      <div className="digit-flow"><div><span>输入层</span><strong>64</strong><p>每个像素一个数</p></div><i>× W₁ + b₁ →</i><div><span>隐藏层</span><strong>24</strong><p>学习笔画和形状组合</p></div><i>× W₂ + b₂ →</i><div><span>输出层</span><strong>10</strong><p>数字0—9的概率</p></div></div>
-      <div className={`digit-result ${trained ? "trained" : "untrained"}`}><span>{trained ? "训练后" : "随机初始化"}</span><strong>{trained ? `识别为 ${sample.digit}` : "无意义猜测"}</strong><p>{trained ? `该演示样本的预测置信度约 ${digitConfidence[sample.digit]}%` : "权重还是随机数，输出不能使用。"}</p><small>应用到本课案例：先识别票面的 2、8、6，得到“286”；再与查验平台的“86”比较。</small></div>
+  const probs = useMemo(() => demoSoftmax(sample.digit, phase), [sample.digit, phase]);
+  const guess = probs.indexOf(Math.max(...probs));
+  const meta = trainPhaseMeta[phase];
+
+  return (
+    <div className="digits-lab interactive">
+      <div className="interactive-head">
+        <div>
+          <span>核心互动 · 像素读成数字</span>
+          <h3>点选 0—9：看清输入像素，再看输出概率怎样随训练变化</h3>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setSelected(2);
+            setPhase("after");
+          }}
+        >
+          重置
+        </button>
+      </div>
+
+      <div className="digit-controls" role="group" aria-label="选择数字 0 到 9">
+        {digitSamples.map((item, index) => (
+          <button
+            key={item.digit}
+            type="button"
+            className={selected === index ? "active" : ""}
+            aria-pressed={selected === index}
+            onClick={() => setSelected(index)}
+          >
+            {item.digit}
+          </button>
+        ))}
+      </div>
+
+      <div className="digit-phase-tabs" role="tablist" aria-label="训练阶段">
+        {(Object.keys(trainPhaseMeta) as TrainPhase[]).map((key) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={phase === key}
+            className={phase === key ? "active" : ""}
+            onClick={() => setPhase(key)}
+          >
+            {trainPhaseMeta[key].label}
+          </button>
+        ))}
+      </div>
+
+      <div className="digit-strip" aria-hidden>
+        {digitSamples.map((item, index) => (
+          <button
+            key={`thumb-${item.digit}`}
+            type="button"
+            className={selected === index ? "active" : ""}
+            onClick={() => setSelected(index)}
+            title={`数字 ${item.digit}`}
+          >
+            <div className="digit-mini-grid">
+              {item.pixels.map((value, pi) => (
+                <i key={pi} style={{ opacity: 0.1 + value / 17 }} />
+              ))}
+            </div>
+            <span>{item.digit}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="digit-layout digit-layout-pair">
+        <div>
+          <span className="digit-caption">输入：{DIGIT_SIZE}×{DIGIT_SIZE} 亮度格子</span>
+          <div
+            className="digit-grid digit-grid-16"
+            role="img"
+            aria-label={`示意数字${sample.digit}的${DIGIT_SIZE}乘${DIGIT_SIZE}像素图`}
+          >
+            {sample.pixels.map((value, index) => (
+              <i key={index} style={{ opacity: 0.08 + value / 17 }} />
+            ))}
+          </div>
+          <small>人眼看出是「{sample.digit}」；计算机只收到这些亮度数字。</small>
+        </div>
+
+        <div className={`digit-probs phase-${phase}`}>
+          <span className="digit-caption">{meta.caption}</span>
+          <div className="digit-prob-bars" role="img" aria-label="数字0到9的示意概率">
+            {probs.map((p, d) => (
+              <div key={d} className={d === guess && phase !== "before" ? "top" : ""}>
+                <b>{d}</b>
+                <i style={{ width: `${Math.max(2, p * 100)}%` }} />
+                <em>{(p * 100).toFixed(1)}%</em>
+              </div>
+            ))}
+          </div>
+          <p className="digit-prob-readout">{meta.note(guess, probs[guess])}</p>
+        </div>
+      </div>
+      <p className="lab-disclaimer">
+        示意笔画为课堂自构，用来体会「只看像素也能给出类别概率」；网络怎样一层层算，见下方结构图。
+      </p>
     </div>
-    <p className="lab-disclaimer">数据来自<a href="https://archive.ics.uci.edu/dataset/80/optical%2Brecognition%2Bof%2Bhandwritten%2Bdigits" target="_blank" rel="noreferrer">UCI Optical Recognition of Handwritten Digits</a>经典数据集。<a href="/simple_audit_demo/digits_8x8_subset.csv" download>下载本课1,300张教学子集</a>。真实票据OCR需要更大、更接近业务的标注数据。</p>
-  </div>;
+  );
 }
 
 export function LanguageTrainingShift() {

@@ -1,15 +1,18 @@
 # 07 · audit — 第三部分：Agent在审计中的应用（占位）
 
+- **部分大标题：** `#part-3` · 第三部分 · Agent在审计中的应用
 - **锚点：** `#audit`（原 `#build` / `#summary` 已合并收束到此）
 - **侧栏：** 审计智能体（10′）
+- **章标题：** 审计智能体（内容占位）
 - **课纲定位：** 第三部分；将技术基础与Agent通用架构组合为审计应用
 - **状态：** **内容占位，待用户设计后再写正式正文**
 
 ## 当前页面有什么
 
-1. 「🚧 本章建设中」说明块与临时思考锚点（非正式定稿）
-2. 可选 DeepDive：Toy Data + `CaseMatrix` + `AuditAgentCanvas`（预习材料）
-3. `summary-chain` + `Quiz` + `closing`（复盘三部分结构与五种能力关系）
+1. `PartTitle`（第三部分大标题）
+2. 「🚧 本章建设中」说明块与临时思考锚点（非正式定稿）
+3. 可选 DeepDive：Toy Data + `CaseMatrix` + `AuditAgentCanvas`（预习材料）
+4. `summary-chain` + `Quiz` + `closing`（复盘三部分结构与五种能力关系）
 
 ## 计划未来写入（勿当已定稿）
 
@@ -23,4 +26,4 @@
 
 ## 对应代码
 
-`app/page.tsx` → `section#audit`
+`app/page.tsx` → `PartTitle#part-3` + `section#audit`

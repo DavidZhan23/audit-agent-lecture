@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type Probs = { 笑雨: number; 骐源: number; 其他: number };
-type PredictOk = { label: string; probs: Probs; confidence: number };
+type PredictOk = { label: string; probs: Probs; confidence: number; threshold?: number };
 
 const LABELS: Array<keyof Probs> = ["笑雨", "骐源", "其他"];
 
@@ -215,22 +215,6 @@ export function FacePredictLab() {
         </button>
       </div>
 
-      <p className="face-lab-lead">
-        这是神经网络章节的趣味支线，不是审计主线。输入仍然是整图像素，模型先检测人脸，再对裁剪后的脸做{" "}
-        <code>笑雨 / 骐源 / 其他</code>{" "}
-        分类。与票据数字识别共享“像素 → 多层特征 → 分类概率”的底层逻辑；低置信度会输出「无法确定」。
-        「上传照片」任意环境可用；「拍照上传（手机）」在手机上调系统相机；电脑网页内实时预览请用「打开摄像头」，需访问{" "}
-        <code>https://IP:8443/</code>
-        （自签名证书，首次点继续访问）。
-        {!secureOk && (
-          <>
-            {" "}
-            <strong>当前不是 HTTPS</strong>，实时摄像头不可用——请改开{" "}
-            <code>{httpsHintUrl()}</code>。
-          </>
-        )}
-      </p>
-
       <div className="face-lab-actions">
         <button type="button" className="primary" disabled={busy} onClick={() => fileRef.current?.click()}>
           上传照片
@@ -294,7 +278,12 @@ export function FacePredictLab() {
               <div className="face-lab-label">
                 <small>预测标签</small>
                 <strong>{result.label}</strong>
-                <em>最大置信度 {(result.confidence * 100).toFixed(1)}%</em>
+                <em>
+                  最大置信度 {(result.confidence * 100).toFixed(1)}%
+                  {typeof result.threshold === "number"
+                    ? ` · 拒识阈值 ${(result.threshold * 100).toFixed(0)}%`
+                    : ""}
+                </em>
               </div>
               <div className="face-lab-probs" aria-label="三类概率">
                 {LABELS.map((name) => {

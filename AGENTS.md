@@ -5,6 +5,6 @@
 1. [`docs/README.md`](docs/README.md)
 2. [`docs/lecture-structure.md`](docs/lecture-structure.md)
 
-课件标题：**LLM，Agent基础、架构以及其在审计中的应用**。  
+课件标题：**LLM 与 Agent：基础、架构及审计应用**。  
 结构以 `app/page.tsx` 的 `export default function Home` 为准；`#audit` 为占位章。  
 任何教学结构变更后，必须同步更新 `docs/`（见 `.cursor/rules/lecture-docs.mdc`）。

@@ -16,6 +16,9 @@ import {
   TrainingLifecycle,
 } from "./course-interactives";
 import { FacePredictLab } from "./face-predict-lab";
+import { CrossEntropyPlot, ReluPlot, SigmoidPlot } from "./math-plots";
+import { NetworkComparePanel } from "./nn-diagrams";
+import { TeX } from "./tex";
 
 type StageKey = "code" | "ml" | "nn" | "llm" | "agent";
 type CaseState = "发现" | "提示" | "遗漏" | "误报" | "排除误报";
@@ -36,10 +39,10 @@ const stages: Array<{
 ];
 
 const nav = [
-  ["problem", "从问题出发", "8′"],
-  ["code", "通俗逻辑与规则", "10′"],
-  ["ml", "特征拟合 ML", "15′"],
-  ["nn", "超多特征与 ANN", "15′"],
+  ["problem", "导言", "5′"],
+  ["code", "基于任务逻辑的编程", "10′"],
+  ["ml", "经典机器学习", "15′"],
+  ["nn", "ANN", "15′"],
   ["llm", "从 ANN 到 LLM", "18′"],
   ["agent", "Agent + LLM", "40′"],
   ["audit", "审计智能体", "10′"],
@@ -49,22 +52,22 @@ const courseParts = [
   {
     no: "第一部分",
     title: "大模型和智能体的技术基础",
-    range: "01—05",
-    href: "#problem",
+    range: "02—05",
+    href: "#part-1",
     description: "讲清规则、ML、ANN和LLM为什么逐层出现。",
   },
   {
     no: "第二部分 · 核心",
     title: "Agent基础与架构",
     range: "06",
-    href: "#agent",
+    href: "#part-2",
     description: "集中讲Agent的定义、架构、工具循环与规范。",
   },
   {
     no: "第三部分 · 待设计",
     title: "Agent在审计中的应用",
     range: "07",
-    href: "#audit",
+    href: "#part-3",
     description: "落到审计智能体。",
   },
 ];
@@ -102,11 +105,46 @@ const auditCases: Array<{
   },
 ];
 
-function SectionTitle({ no, time, title, intro }: { no: string; time: string; title: string; intro: string }) {
+function SectionTitle({ no, time, title, intro }: { no: string; time: string; title?: string; intro?: string }) {
   return (
     <header className="section-title">
-      <div><span>{no}</span><small>{time}</small></div>
-      <div><h2>{title}</h2><p>{intro}</p></div>
+      <div>
+        <span>{no}</span>
+        <small className="section-time">{time}</small>
+      </div>
+      {(title || intro) && (
+        <div>
+          {title ? <h2>{title}</h2> : null}
+          {intro ? <p>{intro}</p> : null}
+        </div>
+      )}
+    </header>
+  );
+}
+
+function PartTitle({
+  id,
+  no,
+  title,
+  lead,
+  chapters,
+}: {
+  id: string;
+  no: string;
+  title: string;
+  lead: string;
+  chapters: string;
+}) {
+  return (
+    <header id={id} className="part-title">
+      <div className="part-title-meta">
+        <span>{no}</span>
+        <small>{chapters}</small>
+      </div>
+      <div className="part-title-body">
+        <h2>{title}</h2>
+        <p>{lead}</p>
+      </div>
     </header>
   );
 }
@@ -123,10 +161,10 @@ function Definition({ term, simple, precise }: { term: string; simple: string; p
   );
 }
 
-function Bridge({ from, problem, to }: { from: string; problem: string; to: string }) {
+function Bridge({ from, problem, to, lead = "所以，我们需要引入：" }: { from: string; problem: string; to: string; lead?: string }) {
   return (
     <div className="bridge">
-      <span>{from}</span><p>{problem}</p><strong>所以，我们需要引入：{to} →</strong>
+      <span>{from}</span><p>{problem}</p><strong>{lead}{to} →</strong>
     </div>
   );
 }
@@ -206,6 +244,463 @@ function ToyDatasetExplorer() {
 
 function DatasetAnchor({ caseId, claimIds, files, task }: { caseId: string; claimIds: string; files: string[]; task: string }) {
   return <div className="dataset-anchor"><span>本章难度案例</span><strong>情形 {caseId} · {claimIds}</strong><p>{task}</p><div>{files.map(file => <code key={file}>{file}</code>)}</div></div>;
+}
+
+function ExcelSheet({
+  name,
+  columns,
+  rows,
+  highlightRows,
+  encodeToggle = false,
+}: {
+  name: string;
+  columns: string[];
+  rows: string[][];
+  highlightRows?: number[];
+  /** 显示「编码」按钮：是/否 ↔ 1/0；正常/确认异常 ↔ 0/1 */
+  encodeToggle?: boolean;
+}) {
+  const [encoded, setEncoded] = useState(false);
+  const marked = new Set(highlightRows ?? []);
+
+  const displayCell = (cell: string) => {
+    if (!encoded) return cell;
+    if (cell === "是") return "1";
+    if (cell === "否") return "0";
+    if (cell === "正常") return "0";
+    if (cell === "确认异常") return "1";
+    return cell;
+  };
+
+  return (
+    <div className="excel-sheet">
+      <div className="excel-sheet-bar">
+        <div className="excel-sheet-tab">{name}</div>
+        {encodeToggle && (
+          <button
+            type="button"
+            className={`excel-encode-btn${encoded ? " on" : ""}`}
+            onClick={() => setEncoded((v) => !v)}
+          >
+            {encoded ? "还原" : "编码"}
+          </button>
+        )}
+      </div>
+      <table className="excel-table">
+        <thead>
+          <tr>
+            <th className="excel-index" />
+            {columns.map((column, index) => (
+              <th key={column}>
+                <span>{String.fromCharCode(65 + index)}</span>
+                {column}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, rowIndex) => (
+            <tr key={`${name}-${rowIndex}`} className={marked.has(rowIndex) ? "highlight" : undefined}>
+              <th className="excel-index">{rowIndex + 1}</th>
+              {row.map((cell, cellIndex) => (
+                <td key={`${rowIndex}-${cellIndex}`}>{displayCell(cell)}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function TaskLogicDemo() {
+  return (
+    <div className="task-logic-demo">
+      <p className="task-logic-problem">
+        <span>审计问题</span>
+        给出报销明细和发票台账，检查报销单上的金额，是否与发票台账里的开票金额一致。
+      </p>
+      <div className="excel-pair">
+        <ExcelSheet
+          name="报销明细.xlsx"
+          columns={["报销号", "员工", "发票号", "报销金额", "日期"]}
+          rows={[
+            ["BX-42306", "E1004", "INV-Q-286", "286", "2026-05-21"],
+            ["BX-41004", "E1002", "INV-41004", "420", "2026-05-07"],
+            ["BX-41610", "E1001", "INV-77821", "1280", "2026-05-16"],
+          ]}
+          highlightRows={[0]}
+        />
+        <ExcelSheet
+          name="发票台账.xlsx"
+          columns={["发票号", "开票金额", "开票日期", "状态"]}
+          rows={[
+            ["INV-Q-286", "86", "2026-05-21", "有效"],
+            ["INV-41004", "420", "2026-05-07", "有效"],
+            ["INV-77821", "1280", "2026-05-16", "有效"],
+          ]}
+          highlightRows={[0]}
+        />
+      </div>
+      <div className="task-logic-map">
+        <span>映射键</span>
+        <code>发票号</code>
+        <span>判断</span>
+        <strong>映射成功后：报销金额 ≠ 开票金额 → 疑点（本例：286 vs 86）</strong>
+      </div>
+    </div>
+  );
+}
+
+function FeatureFittingDemo() {
+  return (
+    <div className="task-logic-demo">
+      <p className="task-logic-problem">
+        <span>审计问题</span>
+        根据已经核实过的历史报销，估计新单 NEW 是否更值得重点核查。
+      </p>
+      <ExcelSheet
+        name="历史核实样本.xlsx"
+        encodeToggle
+        columns={["单号", "贴近审批线", "首次合作商户", "周末发生", "整数金额", "核实结果"]}
+        rows={[
+          ["H01", "否", "否", "否", "否", "正常"],
+          ["H02", "否", "是", "是", "是", "确认异常"],
+          ["H03", "否", "否", "否", "是", "正常"],
+          ["H04", "是", "否", "是", "是", "确认异常"],
+          ["H05", "否", "否", "是", "否", "正常"],
+          ["H06", "是", "是", "否", "否", "确认异常"],
+          ["H07", "否", "是", "否", "否", "正常"],
+          ["H08", "是", "是", "否", "是", "确认异常"],
+          ["H09", "是", "否", "否", "否", "正常"],
+          ["H10", "是", "是", "是", "否", "确认异常"],
+          ["H11", "否", "否", "是", "是", "正常"],
+          ["H12", "否", "是", "是", "否", "正常"],
+          ["NEW", "是", "否", "否", "是", "？"],
+        ]}
+        highlightRows={[12]}
+      />
+
+      <div className="task-logic-map">
+        <span>为何上 ML</span>
+        <strong>四列二元特征共 16 种组合；这里用 12 条已核实样本学习，再估计未出现过的 NEW。</strong>
+      </div>
+
+      <div className="math-explain lecture-board">
+        <div className="math-explain-head">
+          <span>课堂板书</span>
+          <h3>逻辑回归：三步走</h3>
+        </div>
+
+        <section>
+          <h4>① 编码</h4>
+          <p>
+            「是/否」→ 0/1；核实结果 → <TeX math="y\in\{0,1\}" />（1=异常）。
+            一行样本变成 <TeX math="x=(x_1,x_2,x_3,x_4)" />。
+          </p>
+        </section>
+
+        <section>
+          <h4>② 先打分，再变概率</h4>
+          <TeX display ariaLabel="线性得分" math="z = w^{\top}x + b" />
+          <TeX display ariaLabel="sigmoid" math="p=\sigma(z)=\dfrac{1}{1+e^{-z}}\in(0,1)" />
+          <p className="board-line">
+            <TeX math="z" /> 大 → 更像异常；<TeX math="p" /> 当作 <TeX math="P(y=1\mid x)" />。
+          </p>
+          <SigmoidPlot />
+        </section>
+
+        <section>
+          <h4>③ Loss：跟历史标签对齐</h4>
+          <TeX display ariaLabel="bernoulli" math="P(y\mid x)=p^{y}(1-p)^{1-y}" />
+          <p className="board-line">极大似然 → 取负对数 → 交叉熵：</p>
+          <TeX
+            display
+            ariaLabel="nll"
+            math="\ell(p,y)=-\bigl[y\log p+(1-y)\log(1-p)\bigr]"
+          />
+          <CrossEntropyPlot />
+          <p className="board-line">整表平均：</p>
+          <TeX
+            display
+            ariaLabel="mean loss"
+            math="L(w,b)=\dfrac{1}{n}\sum_{i=1}^{n}\ell(p_i,y_i),\quad p_i=\sigma(w^{\top}x_i+b)"
+          />
+          <p className="board-line">
+            调 <TeX math="w,b" /> 让 <TeX math="L" /> 下降，再给 NEW 出分——<b>只用于排队</b>。
+          </p>
+        </section>
+      </div>
+
+      <div className="task-logic-map">
+        <span>板书收束</span>
+        <code>x → z → p=σ(z) → 最小化 L → NEW 的 p</code>
+        <span>提醒</span>
+        <strong>概率 ≠ 审计结论</strong>
+      </div>
+    </div>
+  );
+}
+
+function NewSampleInferenceBoard() {
+  return (
+    <div className="inference-board">
+      <div className="inference-board-head">
+        <span>代入 NEW</span>
+        <strong>把训好的参数填进 σ，算出核查概率</strong>
+      </div>
+      <div className="inference-steps">
+        <div>
+          <span>1 · 12 条历史样本训练得到的参数</span>
+          <TeX display math="w=[7.191,\ 6.348,\ 1.010,\ 5.848],\quad b=-10.252" />
+        </div>
+        <div>
+          <span>2 · NEW 的特征（未出现在上面 12 条中）</span>
+          <TeX display math="x_{\mathrm{NEW}}=(1,0,0,1)" />
+          <p className="inference-feature-note">贴近审批线=是，首次合作商户=否，周末发生=否，整数金额=是</p>
+        </div>
+        <div>
+          <span>3 · 先算线性得分</span>
+          <TeX
+            display
+            math="z=w^{\top}x+b=7.191\cdot 1+6.348\cdot 0+1.010\cdot 0+5.848\cdot 1-10.252=2.787"
+          />
+        </div>
+        <div>
+          <span>4 · 再过 Sigmoid</span>
+          <TeX display math="p=\sigma(z)=\dfrac{1}{1+e^{-2.787}}\approx 0.942" />
+        </div>
+      </div>
+      <div className="inference-result">
+        <div>
+          <small>NEW 样本异常概率</small>
+          <strong>94.2%</strong>
+        </div>
+        <p>课堂读法：NEW 是训练集没见过的组合；模型仍给出高排队分——只用于优先核查，不是定性。</p>
+      </div>
+    </div>
+  );
+}
+
+function ReceiptImageInbox() {
+  const receipts = [
+    { id: "BX-42306", tip: "出租车票 · 金额区", focus: true },
+    { id: "BX-41004", tip: "餐饮小票 · 金额区", focus: false },
+    { id: "BX-41610", tip: "交通票 · 金额区", focus: false },
+    { id: "BX-41881", tip: "住宿发票 · 金额区", focus: false },
+    { id: "…", tip: "还有大量扫描件", focus: false },
+  ];
+  return (
+    <div className="receipt-inbox">
+      <div className="receipt-inbox-bar">
+        <span>receipts/</span>
+        <strong>待识别票据图片（扫描件 / 拍照件）</strong>
+        <em>不是 Excel 数字表</em>
+      </div>
+      <div className="receipt-inbox-grid">
+        {receipts.map((item) => (
+          <article key={item.id} className={item.focus ? "focus" : ""}>
+            <div className="receipt-thumb" aria-hidden>
+              <i />
+              <i />
+              <b className="receipt-amount-zone">
+                {item.focus ? (
+                  <>
+                    <span>2</span>
+                    <span>8</span>
+                    <span>6</span>
+                  </>
+                ) : (
+                  <span>···</span>
+                )}
+              </b>
+              <small>金额在这里</small>
+            </div>
+            <strong>{item.id}</strong>
+            <p>{item.tip}</p>
+            <em>{item.focus ? "重点样例" : "待识别"}</em>
+          </article>
+        ))}
+      </div>
+      <div className="receipt-inbox-pain">
+        <div>
+          <span>人来看</span>
+          <strong>一张一张读数字</strong>
+          <p>慢，且容易看错、看漏。</p>
+        </div>
+        <i>→</i>
+        <div>
+          <span>希望计算机做</span>
+          <strong>从图片像素迅速认出金额数字</strong>
+          <p>例如先认出 2、8、6，拼成票面 286。</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AnnPixelDemo() {
+  return (
+    <div className="task-logic-demo">
+      <p className="task-logic-problem">
+        <span>审计问题</span>
+        手里是一堆票据图片。金额数字藏在图里；人一张一张看很慢，希望用计算机迅速识别其中的数字。
+      </p>
+
+      <ReceiptImageInbox />
+
+      <DigitsImageLab />
+
+      <div className="math-explain lecture-board">
+        <div className="math-explain-head">
+          <span>课堂板书</span>
+          <h3>神经网络：结构 · 计算 · 训练</h3>
+        </div>
+
+        <section>
+          <h4>① 它是什么</h4>
+          <p>
+            神经网络把「输入 → 预测」拆成很多层：每一层都是加权求和再加一点非线性。
+            参数（权重）一开始是随机的；用带标签的样本训练，让预测越来越接近正确答案。
+          </p>
+          <NetworkComparePanel />
+        </section>
+
+        <section>
+          <h4>② 编码：像素变成向量</h4>
+          <p>
+            上方示意用 16×16 图：每个格子亮度 0—16，整图拉成
+            <TeX math="x\in\mathbb{R}^{256}" />。
+            输入里没有「这是数字 2」这个概念，只有 256 个数。
+          </p>
+        </section>
+
+        <section>
+          <h4>③ 多层：先表示，再分类</h4>
+          <TeX display ariaLabel="hidden" math="h^{(\ell)}=\mathrm{ReLU}\!\left(W^{(\ell)} h^{(\ell-1)}+b^{(\ell)}\right),\quad \ell=1,\ldots,L" />
+          <TeX display ariaLabel="softmax" math="p=\mathrm{softmax}\!\left(W^{(L+1)} h^{(L)}+b^{(L+1)}\right)\in\mathbb{R}^{10}" />
+          <p className="board-line">
+            结构对齐：<b>256 → 隐藏层×L → 10</b>。隐藏层学笔画组合；输出是数字 0—9 的概率。可切换 CNN，对比「保留邻域」与「一次拉平」。
+          </p>
+          <ReluPlot />
+        </section>
+
+        <section>
+          <h4>④ Loss：跟标签对齐</h4>
+          <TeX display ariaLabel="ce" math="\ell=-\log p_y" />
+          <p className="board-line">整表平均后，反向传播微调各层权重，让正确类别的概率升高。</p>
+          <p className="board-line">
+            下方 Python 为便于当场跑通，用更小的 8×8（64→24→10）子集；层数逻辑与上面示意相同。
+          </p>
+        </section>
+      </div>
+
+      <div className="task-logic-map">
+        <span>板书收束</span>
+        <code>16×16（256）→ 隐藏层×L → Softmax（10）</code>
+        <span>提醒</span>
+        <strong>看见数字 ≠ 理解制度</strong>
+      </div>
+    </div>
+  );
+}
+
+function ContextEvidenceInbox() {
+  const cards = [
+    { src: "报销说明", text: "周日接待重要客户", tone: "claim" },
+    { src: "小票 OCR", text: "儿童套餐 · 生日蛋糕", tone: "warn" },
+    { src: "CRM", text: "当天无客户拜访", tone: "warn" },
+    { src: "员工日历", text: "家属生日聚餐", tone: "warn" },
+  ];
+  return (
+    <div className="context-inbox">
+      <div className="context-inbox-bar">
+        <span>BX-42519</span>
+        <strong>同一笔招待：多段文字证据</strong>
+        <em>单看任一字段都不够</em>
+      </div>
+      <div className="context-inbox-grid">
+        {cards.map((card) => (
+          <article key={card.src} className={card.tone}>
+            <span>{card.src}</span>
+            <strong>{card.text}</strong>
+          </article>
+        ))}
+      </div>
+      <div className="context-inbox-pain">
+        <div>
+          <span>ANN 能做的</span>
+          <strong>认出小票上的字</strong>
+          <p>「儿童套餐」「生日蛋糕」可以被读出来。</p>
+        </div>
+        <i>→</i>
+        <div>
+          <span>还缺的</span>
+          <strong>把多段文字放在业务语境里对照</strong>
+          <p>说明、小票、CRM、日历合起来是否自洽。</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LlmContextDemo() {
+  return (
+    <div className="task-logic-demo">
+      <p className="task-logic-problem">
+        <span>审计问题</span>
+        报销说明写着「周日接待重要客户」，但小票、CRM、日历放在一起读，语义互相打架。这不是像素识别，而是语言与业务语境。
+      </p>
+
+      <ContextEvidenceInbox />
+      <LanguageTrainingShift />
+
+      <div className="math-explain lecture-board">
+        <div className="math-explain-head">
+          <span>课堂板书</span>
+          <h3>LLM：仍是 ANN，对象换成 Token 序列</h3>
+        </div>
+
+        <section>
+          <h4>① 连续关系</h4>
+          <p>
+            ML 拟合表格特征 → ANN 拟合高维像素 → LLM 用超大 ANN 拟合语言序列。
+            不变的是：用损失训练参数，再用参数做预测。
+          </p>
+        </section>
+
+        <section>
+          <h4>② 训练任务：预测下一个 Token</h4>
+          <TeX display ariaLabel="next token" math="P(t_{n+1}\mid t_1,\ldots,t_n)" />
+          <p className="board-line">
+            上文已知时，模型给词表里每个候选一个概率；选一个写下去，再继续——生成就是反复做这件事。
+          </p>
+        </section>
+
+        <section>
+          <h4>③ 读语境时在看什么</h4>
+          <p className="board-line">
+            Attention 让模型在生成或判断时，重点参考上下文里更相关的 Token（如「儿童套餐」「家属生日」），而不是平均对待每一个词。
+          </p>
+          <AttentionLab />
+        </section>
+
+        <section>
+          <h4>④ 边界</h4>
+          <p className="board-line">
+            语言流畅 <b>≠</b> 事实正确 <b>≠</b> 证据充分。模型不会天然进入企业系统取数；没贴进提示词的 CRM/日历，它并不「知道」。
+          </p>
+        </section>
+      </div>
+
+      <div className="task-logic-map">
+        <span>板书收束</span>
+        <code>Token 序列 → 预测下一个 → 生成解释</code>
+        <span>提醒</span>
+        <strong>流畅 ≠ 审计结论</strong>
+      </div>
+    </div>
+  );
 }
 
 function CourseArchitecture() {
@@ -565,55 +1060,52 @@ function LlmCheckpointExplorer() {
 
 const kernelExamples = {
   ml: {
-    label: "用300笔独立历史案例训练拆分报销模型",
-    code: `# 真实运行：历史训练数据与本期待审数据严格分离
-import csv, math
+    label: "用12条历史核实样本拟合 NEW",
+    code: `# 四列二元特征共16种组合；这里用12条带标签样本训练，估计未见过的 NEW
+import math
 
-rows = list(csv.DictReader(open("/data/ml_training_examples.csv", encoding="utf-8")))
-feature_names = [
-    "amount_ratio_to_threshold", "claims_48h", "same_vendor_share",
-    "description_similarity", "valid_exception_approval"
+# 特征顺序：贴近审批线, 首次合作商户, 周末发生, 整数金额
+history = [
+    ([0, 0, 0, 0], 0),  # H01 正常
+    ([0, 1, 1, 1], 1),  # H02 确认异常
+    ([0, 0, 0, 1], 0),  # H03 正常
+    ([1, 0, 1, 1], 1),  # H04 确认异常
+    ([0, 0, 1, 0], 0),  # H05 正常
+    ([1, 1, 0, 0], 1),  # H06 确认异常
+    ([0, 1, 0, 0], 0),  # H07 正常
+    ([1, 1, 0, 1], 1),  # H08 确认异常
+    ([1, 0, 0, 0], 0),  # H09 正常
+    ([1, 1, 1, 0], 1),  # H10 确认异常
+    ([0, 0, 1, 1], 0),  # H11 正常
+    ([0, 1, 1, 0], 0),  # H12 正常
 ]
-
-def vector(row):
-    # 将48小时笔数缩放到0—1，其余字段本来就在相近范围
-    values = [float(row[name]) for name in feature_names]
-    values[1] /= 6.0
-    return values
-
-train = [(vector(r), int(r["confirmed_focus_review"])) for r in rows if r["split"] == "train"]
-validation = [(vector(r), int(r["confirmed_focus_review"])) for r in rows if r["split"] == "validation"]
 
 def sigmoid(z):
     return 1 / (1 + math.exp(-max(-30, min(30, z))))
 
-weights, bias, learning_rate = [0.0] * len(feature_names), 0.0, 0.8
-print(f"数据边界：{len(train)}笔训练，{len(validation)}笔独立验证")
-print("初始参数：", weights, "bias=", bias)
-
-for epoch in range(601):
-    predictions = [sigmoid(sum(w*v for w,v in zip(weights,x)) + bias) for x,y in train]
-    loss = sum(-(y*math.log(p+1e-9)+(1-y)*math.log(1-p+1e-9)) for p,(x,y) in zip(predictions,train))/len(train)
-    if epoch in (0, 10, 50, 200, 600):
+weights, bias, lr = [0.0] * 4, 0.0, 1.1
+for epoch in range(800):
+    preds = [sigmoid(sum(w * x for w, x in zip(weights, xv)) + bias) for xv, _ in history]
+    loss = sum(-(y * math.log(p + 1e-9) + (1 - y) * math.log(1 - p + 1e-9)) for p, (_, y) in zip(preds, history)) / len(history)
+    if epoch in (0, 100, 300, 799):
         print(f"epoch={epoch:3d}  loss={loss:.4f}")
-    gradients = [sum((p-y)*x[j] for p,(x,y) in zip(predictions,train))/len(train) for j in range(len(weights))]
-    weights = [w-learning_rate*g for w,g in zip(weights,gradients)]
-    bias -= learning_rate * sum(p-y for p,(x,y) in zip(predictions,train))/len(train)
+    grads = [sum((p - y) * xv[j] for p, (xv, y) in zip(preds, history)) / len(history) for j in range(4)]
+    weights = [w - lr * g for w, g in zip(weights, grads)]
+    bias -= lr * sum(p - y for p, (_, y) in zip(preds, history)) / len(history)
 
-validation_predictions = [sigmoid(sum(w*v for w,v in zip(weights,x)) + bias) for x,y in validation]
-validation_accuracy = sum((p >= .5) == bool(y) for p,(x,y) in zip(validation_predictions,validation))/len(validation)
-
-# 本期待审事项C：四笔均接近阈值、48小时共4笔、同商户、说明高度相似、无有效例外审批
-case_c = [0.985, 4/6, 1.0, 0.94, 0.0]
-risk = sigmoid(sum(w*v for w,v in zip(weights,case_c)) + bias)
-print("\\n训练后参数：", [round(w, 3) for w in weights], "bias=", round(bias, 3))
-print("独立验证集准确率：", f"{validation_accuracy:.1%}")
-print("BX-41881—84 重点核查概率：", f"{risk:.1%}")
-print("提醒：概率用于排序，不是证据，也不是违规结论。")`,
+# NEW：贴近审批线=是, 首次商户=否, 周末=否, 整数金额=是（不在上面12条中）
+new_case = [1, 0, 0, 1]
+z = sum(w * x for w, x in zip(weights, new_case)) + bias
+risk = sigmoid(z)
+print("训练后参数：", [round(w, 3) for w in weights], "bias=", round(bias, 3))
+print("NEW 特征 x =", new_case, "  z =", round(z, 3))
+print("NEW 样本异常概率：", f"{risk:.1%}")
+print("提醒：概率用于排序排队，不是违规证据。")
+`,
   },
   neural: {
-    label: "训练8×8手写数字识别网络",
-    code: `# 真实运行：从64个像素学习识别0—9
+    label: "用 1,300 张 8×8 像素训练数字网络",
+    code: `# 真实运行：从64个像素学习识别0—9（对应票面金额数字）
 import csv
 from pathlib import Path
 import numpy as np
@@ -656,7 +1148,8 @@ print("训练完保存的东西：W1", W1.shape, "b1", b1.shape, "W2", W2.shape,
 for digit in (2, 8, 6):
     index = np.where(y_test == digit)[0][0]
     print(f"票面样本 {digit} → 模型识别为 {predictions[index]}")
-print("这一步只识别出票面数字286；它还不知道“金额不一致”在制度上意味什么。")`,
+print("拼出票面金额 286；金额是否与平台一致，仍交给规则判断。")
+print("提醒：看见数字 ≠ 理解制度，更不是审计结论。")`,
   },
   language: {
     label: "训练极小语言模型",
@@ -788,28 +1281,37 @@ print("系统动作：保留来源与不确定性，提交审计人员复核。"
 print("系统禁止：自动认定违规、错报或舞弊。")`,
   },
   rule: {
-    label: "运行普通规则",
-    code: `# 真实运行：对明确字段执行确定性重复检查
+    label: "两表映射与逻辑判断",
+    code: `# 场景：报销金额是否与发票台账一致？
+# 只看报销明细，每笔都“看起来正常”；必须映射到台账后才能发现差额。
+
 claims = [
-    {"claim_id":"BX-41610", "invoice_no":"INV-O-77821", "amount":1280, "date":"2026-05-16"},
-    {"claim_id":"BX-41902", "invoice_no":"INV-O-77821", "amount":1280, "date":"2026-05-16"},
-    {"claim_id":"BX-41004", "invoice_no":"INV-M-41004", "amount":420, "date":"2026-05-07"},
+    {"claim_id": "BX-42306", "emp": "E1004", "invoice_no": "INV-Q-286", "claim_amount": 286, "date": "2026-05-21"},
+    {"claim_id": "BX-41004", "emp": "E1002", "invoice_no": "INV-41004", "claim_amount": 420, "date": "2026-05-07"},
+    {"claim_id": "BX-41610", "emp": "E1001", "invoice_no": "INV-77821", "claim_amount": 1280, "date": "2026-05-16"},
+]
+invoices = [
+    {"invoice_no": "INV-Q-286", "invoice_amount": 86, "date": "2026-05-21", "status": "有效"},
+    {"invoice_no": "INV-41004", "invoice_amount": 420, "date": "2026-05-07", "status": "有效"},
+    {"invoice_no": "INV-77821", "invoice_amount": 1280, "date": "2026-05-16", "status": "有效"},
 ]
 
-seen = {}
-duplicates = []
-for claim in claims:
-    key = (claim["invoice_no"], claim["amount"], claim["date"])
-    if key in seen:
-        duplicates.append((seen[key], claim["claim_id"], key))
-    else:
-        seen[key] = claim["claim_id"]
+# 1) 映射：用发票号把报销单接到发票台账
+invoice_by_no = {row["invoice_no"]: row for row in invoices}
 
-print("规则：发票号、金额、日期全部相同，则标记为疑似重复")
-for first, second, key in duplicates:
-    print(f"发现：{first} 与 {second} 完全匹配，关键字段={key}")
-print("规则的优势：条件明确、结果稳定、可以回到原始字段复核。")
-print("规则的边界：四笔都不相同但组合可疑时，需要另一种方法。")`,
+# 2) 判断：映射成功后，比较报销金额与开票金额
+print("规则：按发票号映射；报销金额 ≠ 开票金额 → 疑点")
+for claim in claims:
+    inv = invoice_by_no.get(claim["invoice_no"])
+    if inv is None:
+        print(f"疑点：{claim['claim_id']} 发票 {claim['invoice_no']} 在台账中不存在")
+        continue
+    if claim["claim_amount"] != inv["invoice_amount"]:
+        print(
+            f"疑点：{claim['claim_id']} 报销金额={claim['claim_amount']}，"
+            f"台账开票金额={inv['invoice_amount']}（发票号={claim['invoice_no']}）"
+        )
+`,
   },
 } as const;
 
@@ -1310,104 +1812,181 @@ export default function Home() {
     <main id="top" className={`view-${mode} ${mode !== "student" ? "show-notes" : ""}`}>
       <Header mode={mode} setMode={setMode} />
       <aside className="sidenav"><div><span>约2小时 · 三部分</span><strong>LLM · Agent · 审计</strong></div><nav>
+        <a href={`#${nav[0][0]}`}><span>01</span><b>{nav[0][1]}</b><small className="nav-time">{nav[0][2]}</small></a>
         <p className="nav-part"><span>第一部分</span>技术基础</p>
-        {nav.slice(0, 5).map((x, i) => <a href={`#${x[0]}`} key={x[0]}><span>{String(i + 1).padStart(2, "0")}</span><b>{x[1]}</b><small>{x[2]}</small></a>)}
+        {nav.slice(1, 5).map((x, i) => <a href={`#${x[0]}`} key={x[0]}><span>{String(i + 2).padStart(2, "0")}</span><b>{x[1]}</b><small className="nav-time">{x[2]}</small></a>)}
         <p className="nav-part core"><span>第二部分</span>Agent基础与架构</p>
-        <a href="#agent"><span>06</span><b>{nav[5][1]}</b><small>{nav[5][2]}</small></a>
+        <a href="#agent"><span>06</span><b>{nav[5][1]}</b><small className="nav-time">{nav[5][2]}</small></a>
         <p className="nav-part"><span>第三部分</span>审计应用</p>
-        <a href="#audit"><span>07</span><b>{nav[6][1]}</b><small>{nav[6][2]}</small></a>
+        <a href="#audit"><span>07</span><b>{nav[6][1]}</b><small className="nav-time">{nav[6][2]}</small></a>
       </nav></aside>
       <div className="page">
         <section className="hero">
           <div className="hero-head">
-            <h1>LLM，Agent基础、架构以及其在审计中的应用</h1>
+            <h1>LLM 与 Agent：基础、架构及审计应用</h1>
           </div>
           <div className="hero-path three-parts">{courseParts.map((part, index) => <a key={part.no} href={part.href}><span>0{index + 1}</span><strong>{part.title}</strong><small>{part.no}</small><p>{part.description}</p></a>)}</div>
-          <a className="hero-start" href="#problem">进入第一部分：技术基础 <span>↓</span></a>
         </section>
 
         <section id="problem" className="lesson">
-          <SectionTitle no="01" time="第一部分 · 0—8分钟" title="整堂课如何组织：先基础，再Agent，再审计应用" intro="先明确三部分总体架构，再从一个具体问题进入技术基础。案例负责帮助理解，不替代课程的顶层结构。" />
-          <CourseArchitecture />
-          <FoundationCaseLadder />
-          <div className="content-block"><h3>本课路线图</h3><div className="two-col"><div><strong>能力递进</strong><ul><li>通俗逻辑：解决最简单、边界清晰的问题</li><li>特征拟合（ML）：解决“写不尽但有历史答案”的问题</li><li>ANN：解决超多特征、难以人工造特征的问题</li><li>LLM：ANN 在语言序列上的规模化发展</li><li>Agent + LLM：让模型能取证、能循环、能受控停止</li></ul></div><div><strong>不变的交付</strong><ul><li>可追溯的事实来源</li><li>可解释的判断路径</li><li>可复核的疑点清单</li><li>不是笼统的“AI风险分”</li></ul></div></div></div>
-          <CapabilityChain />
-          <LessonTakeaway>从问题选方法：每一层技术都有明确功用，也有明确劣势；不要跳过简单层直接上复杂层。</LessonTakeaway>
-          <Bridge from="人工处理的起点" problem="有些判断已经非常明确：例如发票号、金额和日期全部相同。这种关系可以直接写进程序并批量执行。" to="通俗逻辑与规则" />
-          <TeacherNote time="8分钟" question="为什么不能从大模型直接跳到审计智能体？" misconception="LLM和Agent不是同一个层级的概念；Agent也不是一种更大的模型。" mustSay="先讲技术基础；第二部分单独讲Agent系统；第三部分才讨论审计应用。" canSkip="第一部分案例的具体数据字段稍后逐章展开。" />
+          <SectionTitle
+            no="01"
+            time="导言 · 约5分钟"
+            title="导言"
+          />
+          <div className="lesson-abstract">
+            <span>Abstract</span>
+            <p>
+              本课讨论大语言模型（LLM）与智能体（Agent）的基础概念、系统架构，以及它们在审计工作中的可能用法。课程分为三部分：
+            </p>
+            <ul className="abstract-parts">
+              <li>
+                <b>第一部分 · 技术基础</b>
+                <span>从规则、机器学习、神经网络到大模型，说明这些技术为何会逐层出现。</span>
+              </li>
+              <li>
+                <b>第二部分 · Agent 基础与架构</b>
+                <span>讲清 Agent 是什么、由哪些模块组成、如何与工具形成受控闭环。</span>
+              </li>
+              <li>
+                <b>第三部分 · 审计应用</b>
+                <span>讨论如何把上述能力落到审计智能体场景。</span>
+              </li>
+            </ul>
+          </div>
+          <div className="content-block lesson-takeaways">
+            <h3>主要收获</h3>
+            <ol className="takeaway-grid">
+              <li>
+                <b>01</b>
+                <span>能按问题类型选择方法，并分清：基于任务逻辑的编程、经典机器学习、神经网络与大模型——各自能解决什么、解决不了什么。</span>
+              </li>
+              <li>
+                <b>02</b>
+                <span>分得清 LLM 与 Agent：前者擅长理解与生成；后者围绕目标调用工具、根据反馈决策并受控停止。</span>
+              </li>
+              <li>
+                <b>03</b>
+                <span>理解 Agent 的运行逻辑：能说出基本模块与工具反馈循环，并对权限、日志、人在回路等落地约束有初步了解。</span>
+              </li>
+              <li>
+                <b>04</b>
+                <span>独立思考在审计场景下，自己该如何针对性地构建智能体。</span>
+              </li>
+            </ol>
+          </div>
+          <Bridge
+            from="导言之后"
+            problem="许多审计场景里，风险点我们已经想清楚，也可以用简单的逻辑判断、字段匹配等方法直接得到结果。这时不必急着上模型，基于任务逻辑的编程就够用了。"
+            lead="所以，我们首先介绍："
+            to="基于任务逻辑的编程"
+          />
+          <TeacherNote
+            time="5分钟"
+            question="学完这堂课，你最想带走的是一张技术名词表，还是一套选方法的判断习惯？"
+            misconception="导言不是要把三部分讲完；只是建立地图，细节在后续章节展开。"
+            mustSay="三部分分工清楚；主要收获里要分清经典机器学习与神经网络；证据与复核优先于黑箱分数。"
+            canSkip="具体案例编号，后面章节会逐一出现。"
+          />
         </section>
 
+        <PartTitle
+          id="part-1"
+          no="第一部分"
+          title="大模型和智能体的技术基础"
+          chapters="章节 02—05"
+          lead="从规则、机器学习、神经网络到大模型，说明这些技术为何会逐层出现，各自解决什么问题、卡在哪里。"
+        />
+
         <section id="code" className="lesson">
-          <SectionTitle no="02" time="第一部分 · 8—18分钟" title="① 通俗逻辑与规则：解决最明确的问题" intro="当判断关系可以完整写出时，不需要模型。人定义条件，计算机对42,000笔记录批量、稳定、可解释地执行。" />
-          <Definition term="规则 / 通俗逻辑程序" simple="用人已经想清楚的“如果…那么…”来判断：输入固定字段，输出固定结论。" precise="由变量、条件、循环和函数组成；同样的输入和代码通常产生同样的输出，便于审计留痕与复核。" />
-          <DatasetAnchor caseId="A · 明确重复" claimIds="BX-41610 / BX-41902" files={["expense_claims.csv", "invoice_registry.csv"]} task="两张报销单的发票号、金额和日期完全一致。问题一目了然，判断条件也可以完整写出。" />
-          <div className="concept-grid four"><div><span>变量</span><strong>保存数据</strong><p>报销号、发票号、金额和日期。</p></div><div><span>条件</span><strong>进行判断</strong><p>三个关键字段是否全部相同。</p></div><div><span>循环</span><strong>重复处理</strong><p>检查42,000笔报销。</p></div><div><span>函数</span><strong>封装步骤</strong><p>复用“重复发票检查”。</p></div></div>
-          <InlinePythonLab example="rule" guide="运行代码，找到用于识别重复的key。注意：判断逻辑来自审计人员，程序负责稳定地批量执行。" />
-          <CapabilityBoundary method="通俗逻辑 / 规则" input="发票号 + 金额 + 日期" unique="对明确条件进行稳定、可解释、零随机的批量检查" output="发现BX-41610与BX-41902疑似重复" limit="当每笔都不完全相同时，无法自动理解多个弱信号的组合" />
-          <div className="two-col"><div><strong>优势</strong><ul><li>可解释、可复核、成本低</li><li>结果稳定，适合制度硬约束</li><li>易做权限与日志</li></ul></div><div><strong>劣势</strong><ul><li>只能处理人事先写出的情况</li><li>弱信号组合很难穷举</li><li>无法直接处理图像与自由文本</li></ul></div></div>
-          <LessonTakeaway>能写清逻辑的，优先用规则。规则不是“落后”，而是审计场景里最可靠的一层。</LessonTakeaway>
-          <Bridge from="规则的瓶颈" problem="四笔费用各不相同，却都略低于2,000元审批线，并集中在同一员工、同一商户和两天内。单条条件都不够，组合却很可疑。" to="特征拟合（机器学习）" />
-          <TeacherNote time="10分钟" question="如果发票号码只差一位，规则应该算重复吗？谁来决定？" misconception="规则不是落后技术；确定性检查通常最适合规则。" mustSay="人写判断逻辑，计算机执行；数据存在也不等于代码会自动使用。" canSkip="技术语法细节。" />
+          <SectionTitle no="02" time="第一部分 · 约10分钟" title="基于任务逻辑的编程" />
+          <TaskLogicDemo />
+          <InlinePythonLab
+            example="rule"
+            guide="先按发票号把报销单映射到台账，再比较金额。只看报销明细时 286 元看不出问题；映射后才能发现台账是 86 元。"
+          />
+          <Bridge from="任务逻辑编程的边界" problem="若每个字段单独看都既可能正常也可能异常，需要借助历史上已经核实过的结果，学习哪些特征组合更值得优先核查。" to="经典机器学习" />
+          <TeacherNote time="10分钟" question="只看报销明细，你能发现 BX-42306 的问题吗？还缺哪张表？" misconception="能写清的判断不必先上模型；程序只执行人事先写明的逻辑。" mustSay="必须先按发票号映射到台账，再比较金额；单看报销表发现不了 286 vs 86。" canSkip="语法细节。" />
         </section>
 
         <section id="ml" className="lesson">
-          <SectionTitle no="03" time="第一部分 · 18—33分钟" title="② 特征拟合（ML）：让多个弱信号共同说话" intro="关系写不尽、但有历史标签时：人先把案例变成少量特征，再让模型拟合“特征 → 结果”的近似函数。" />
-          <KnownUnknownBridge />
-          <Definition term="机器学习 · 特征拟合" simple="人先把案例变成若干特征数字，再让模型从带答案的历史里找到一组参数，使预测尽量接近真实标签。" precise="估计参数θ，使fθ(X)在训练数据上的损失较小，并用独立验证集检查能否泛化到新事项。" />
-          <DatasetAnchor caseId="C · 弱信号组合" claimIds="BX-41881—BX-41884" files={["classroom_training/ml_training_examples.csv", "expense_claims.csv", "expense_policy.md"]} task="四笔金额为1,960、1,980、1,950和1,990元：同员工、同商户、两天内、说明相似。任何单一信号都不足，组合起来却值得优先核查。" />
-          <div className="notation"><div><span>输入 X</span><strong>人工特征</strong><p>金额接近阈值、48小时笔数、商户集中度、说明相似度。</p></div><i>→</i><div><span>函数 fθ</span><strong>带参数模型</strong><p>训练改变θ。</p></div><i>→</i><div><span>输出 ŷ</span><strong>核查概率</strong><p>用于排序，不是结论。</p></div><div className="label"><span>训练答案</span><strong>历史标签 y</strong><p>过去是否需重点核查。</p></div></div>
-          <FunctionFittingLab />
-          <InlinePythonLab example="ml" guide="代码读取300条独立历史案例：240条训练、60条验证。观察Loss下降、验证结果和事项C的核查概率，注意本期待审数据没有参与训练。" />
-          <ConfusionMatrixLab />
-          <CapabilityBoundary method="特征拟合（ML）" input="表格特征 + 独立历史标签" unique="不需要人写尽每个组合；从案例中拟合出近似关系" output="提高BX-41881—84的核查优先级" limit="特征靠人设计；概率不构成证据，也不能看见票据像素" />
-          <div className="two-col"><div><strong>优势</strong><ul><li>能处理“写不尽”的组合规律</li><li>可用阈值平衡误报与遗漏</li><li>在表格特征上成本相对可控</li></ul></div><div><strong>劣势</strong><ul><li>特征工程依赖业务经验</li><li>特征一多、关系一深就难拟合</li><li>看不见图像等高维原始输入</li></ul></div></div>
-          <DeepDive title="解析解、梯度、交叉熵和过拟合"><p><b>解析解不是机器学习的分界线。</b>有些模型可以直接求参数，复杂模型通常用数值优化逐步逼近。</p><TrainingLifecycle /></DeepDive>
-          <LessonTakeaway>ML 的核心是：用人选的特征去拟合历史。它解决“组合规律”，但不自动解决“特征从哪来”。</LessonTakeaway>
-          <Bridge from="特征拟合的瓶颈" problem="下一笔报销的表格字段看起来正常，真正异常却藏在票据图片中：数字“2”的字体和背景纹理可能被修改。" to="人工神经网络（ANN）" />
-          <TeacherNote time="15分钟" question="模型给出80%概率，这是证据吗？" misconception="机器学习不是自动发现真相，Loss下降也不等于可以上线。" mustSay="训练改变参数；验证检查未见数据；概率只用于排序。" canSkip="梯度和交叉熵。" />
+          <SectionTitle no="03" time="第一部分 · 约15分钟" title="经典机器学习" />
+          <FeatureFittingDemo />
+          <InlinePythonLab
+            example="ml"
+            guide="表中 H01—H12 是训练集；NEW 是未见过的第 13 种组合。运行后对照下方代入板书。"
+          />
+          <NewSampleInferenceBoard />
+          <Bridge from="经典机器学习的边界" problem="下一笔报销的表格特征看起来正常，真正异常却藏在票据图片里：金额数字的像素可能被改过。人工造几个表格特征已经不够。" to="人工神经网络（ANN）" />
+          <TeacherNote time="15分钟" question="模型给出 80% 核查概率，这是证据吗？" misconception="机器学习不是自动发现真相；Loss 下降也不等于可以直接定性。" mustSay="弱信号单独定不了性；用历史核实结果拟合组合权重，给新单排序。" canSkip="梯度公式细节。" />
         </section>
 
         <section id="nn" className="lesson">
-          <SectionTitle no="04" time="第一部分 · 33—48分钟" title="③ 超多特征：用 ANN 直接处理票据像素" intro="当异常藏在像素、波形等高维原始数据中，人工整理少量特征已经不够。神经网络把函数变成多层结构，从数据中学习有用表示。" />
-          <Definition term="人工神经网络（ANN）" simple="许多简单计算单元连成层：高维输入经过逐层加权和非线性变换，最后产生预测。" precise="仍属于机器学习；反向传播计算参数对Loss的影响，优化器据此调整大量权重。变化的是函数结构与参数规模，不变的是用Loss训练。" />
-          <DatasetAnchor caseId="D · 图像异常" claimIds="BX-42306" files={["expense_claims.csv", "invoice_registry.csv", "receipt_ocr.csv"]} task="报销金额和票面都显示286元，发票查验平台却是86元，数字“2”疑似后加。异常不在表格组合里，而在原始票据像素中。" />
-          <div className="equation"><span>为什么需要 ANN</span><strong>特征太多时，人工造特征会失效</strong><code>64个像素 → 24个隐藏神经元 → 10个数字概率</code><p>训练仍是调整权重，让预测与正确标签的差距更小；隐藏层相当于在学习“哪些笔画组合有用”。</p></div>
-          <DigitsImageLab />
-          <div className="fun-demo-frame"><div><span>趣味支线 · 5—7分钟</span><h3>同一种底层机制，为什么既能识别票据数字，也能识别人脸？</h3><p>审计主线先讲“像素→数字”；下面用真实ResNet18展示“像素→面部特征→分类概率”。它只帮助理解神经网络，不作为审计案例证据。</p></div><FacePredictLab /><small>教学边界：置信度高不等于事实正确；真实人脸识别还涉及训练偏差、隐私、授权与使用范围。</small></div>
-          <InlinePythonLab example="neural" guide="代码真正读入1,300张8×8数字图像：1,000张训练64→24→10网络，再用300张未参与训练的图片测试。上方「真实 ANN 演示」则用 ResNet18 对人脸高维像素做迁移分类。" />
-          <div className="training-loop"><span>一次训练循环</span>{[["1", "做预测"], ["2", "与答案比较"], ["3", "计算Loss"], ["4", "反向传播"], ["5", "微调权重"], ["6", "重复多轮"]].map((x, i) => <div key={x[0]}><b>{x[0]}</b><p>{x[1]}</p>{i < 5 && <i>→</i>}</div>)}</div>
-          <div className="content-block"><h3>训练完后到底留下什么？</h3><p>网络结构和四组数字矩阵：<code>W1[64,24]</code>、<code>b1[24]</code>、<code>W2[24,10]</code>、<code>b2[10]</code>。新图片的64个像素流过这些矩阵，得到10个数字概率——这就是“表示学习”的最小课堂版。</p></div>
-          <CapabilityBoundary method="ANN" input="原始8×8像素（高维）" unique="在超多特征上自动学习笔画与形状，不需要人先写“2长什么样”" output="票面金额识别为286" limit="只是“看见”数字，还不理解制度和业务意义" />
-          <div className="two-col"><div><strong>优势</strong><ul><li>适合图像等超多特征输入</li><li>减少手工特征工程</li><li>表达能力强，可拟合复杂边界</li></ul></div><div><strong>劣势</strong><ul><li>需要更多数据与算力</li><li>可解释性通常弱于规则/浅层ML</li><li>识别内容 ≠ 理解制度语境</li></ul></div></div>
-          <DeepDive title="反向传播与小网络解剖"><p>反向传播高效计算每个参数对Loss的影响，优化器再据此调整。</p><NeuronContinuityLab /><NeuralCheckpointExplorer /><NeuralNetworkLab /></DeepDive>
-          <LessonTakeaway>ANN 仍然是“拟合”，只是面向超多特征：它学会了看，但还不会读制度和自己去查系统。</LessonTakeaway>
-          <Bridge from="ANN 的下一步" problem="视觉网络也能从另一张小票识别出“儿童套餐”和“生日蛋糕”，但它不会自然理解这些词为什么与“周日客户招待”、CRM无拜访和家属生日相互矛盾。" to="大语言模型（LLM）" />
-          <TeacherNote time="15分钟" question="识别出286后，网络知道这笔报销有问题吗？" misconception="识别内容不等于理解业务；ANN 不是电子大脑。" mustSay="强调：超多特征 → ANN；ANN仍属机器学习；人脸实验是趣味支线。" canSkip="反向传播推导；时间紧时人脸演示只跑一次。" />
+          <SectionTitle no="04" time="第一部分 · 约15分钟" title="ANN" />
+          <AnnPixelDemo />
+          <InlinePythonLab
+            example="neural"
+            guide="读入 1,300 张 8×8 数字图：1,000 张训练 64→24→10 网络，再用 300 张独立测试集看准确率。"
+          />
+          <div className="fun-demo-frame">
+            <div>
+              <span>趣味支线 · 5—7分钟</span>
+              <h3>同一种底层机制，为什么也能识别人脸？</h3>
+              <p>
+                审计主线是「像素→数字→286」。下面用真实 ResNet18 展示「像素→面部特征→分类概率」。
+                只帮助理解神经网络，不作为审计案例证据。
+              </p>
+            </div>
+            <FacePredictLab />
+            <small>教学边界：置信度高不等于事实正确；真实人脸识别还涉及训练偏差、隐私、授权与使用范围。</small>
+          </div>
+          <Bridge
+            from="ANN 的边界"
+            problem="视觉网络也能从另一张小票识别出「儿童套餐」和「生日蛋糕」，但它不会自然理解这些词为什么与「周日客户招待」、CRM 无拜访和家属生日相互矛盾。"
+            to="大语言模型（LLM）"
+          />
+          <TeacherNote
+            time="15分钟"
+            question="识别出 286 后，网络知道这笔报销有问题吗？"
+            misconception="识别内容不等于理解业务；ANN 不是电子大脑。"
+            mustSay="强调：超多特征 → ANN；ANN 仍属机器学习；人脸实验是趣味支线。"
+            canSkip="反向传播推导；时间紧时人脸演示只跑一次。"
+          />
         </section>
 
         <section id="llm" className="lesson">
-          <SectionTitle no="05" time="第一部分 · 48—66分钟" title="④ 从 ANN 到 LLM：理解语言与业务语境" intro="大语言模型仍然是神经网络。它把训练对象扩展到海量Token序列，从而能够处理制度、说明和多段上下文之间的语言关系。" />
-          <Definition term="大语言模型（LLM）" simple="一个根据前文不断预测下一个Token，并由此生成语言的大型神经网络（ANN）。" precise="通过预训练最小化Token预测损失，再经过指令微调和对齐形成更适合问答与任务指令的行为。它不是数据库，也不会天然访问企业系统。" />
-          <div className="content-block"><h3>和上一章的连续关系</h3><p><b>同一条技术链：</b>ML 拟合参数 → ANN 拟合高维函数 → LLM 用超大 ANN 拟合语言序列。变化的是数据形态、网络规模与任务接口；不变的是“用损失训练参数、用参数做预测”。</p></div>
-          <DatasetAnchor caseId="E · 语义矛盾" claimIds="BX-42519" files={["receipt_ocr.csv", "customer_visits.csv", "employee_calendar.csv", "expense_policy.md"]} task="报销说明为“周日接待重要客户”，但小票含儿童套餐和生日蛋糕，CRM无客户拜访，员工日历为家属生日。问题来自语言和业务语境的共同矛盾。" />
-          <LanguageTrainingShift />
-          <LlmPipeline />
-          <AttentionLab />
-          <InlinePythonLab example="language" guide="这个极小字符模型只负责把“下一个Token预测”运行出来。真实LLM使用巨大的Transformer神经网络。" />
-          <div className="three-stages"><div><span>阶段1</span><strong>预训练</strong><p>在海量文本上反复预测下一个Token。</p></div><div><span>阶段2</span><strong>指令训练与对齐</strong><p>学习按照人的指令回答并遵守约束。</p></div><div><span>阶段3</span><strong>推理使用</strong><p>参数固定，模型逐Token生成当前回答。</p></div></div>
-          <div className="hallucination"><div><strong>为什么会幻觉</strong><p>模型首先生成统计上合理的文字，而不是天然从权威系统取得经核验的事实。</p></div><div><span>语言流畅</span><i>≠</i><span>事实正确</span><i>≠</i><span>证据充分</span><i>≠</i><span>审计结论</span></div></div>
-          <CapabilityBoundary method="LLM" input="票据文字 + 日期 + CRM + 日历 + 制度" unique="处理语言、联系上下文、生成结构化解释" output="说明客户招待目的与多项证据存在不一致" limit="不会天然进入企业系统主动取数；可能幻觉" />
-          <div className="two-col"><div><strong>优势</strong><ul><li>能综合制度与多段证据做解释</li><li>接口灵活（提示词、结构化输出）</li><li>可衔接检索（RAG）与工具调用雏形</li></ul></div><div><strong>劣势</strong><ul><li>可能一本正经地编造</li><li>默认是“单次问答”，不会自己取证</li><li>把证据手工贴进提示词成本高、易漏</li></ul></div></div>
-          <DeepDive title="Token体验、模型张量和微型Attention代码"><TokenLab /><LlmCheckpointExplorer /><InlinePythonLab example="attention" guide="观察Query、Key、Value形成注意力权重，不要把权重当作事实证明。" /></DeepDive>
-          <LessonTakeaway>LLM 是 ANN 在语言上的规模化：擅长理解与生成，但不等于会调查。要把“建议”变成“行动”，需要 Agent。</LessonTakeaway>
-          <Bridge from="LLM 的瓶颈" problem="模型可以建议核对航班、酒店和CRM，但关键资料分散在不同系统，下一步该查什么还取决于刚刚查到的结果。" to="Agent + LLM" />
-          <TeacherNote time="18分钟" question="如果不把CRM和日历资料提供给模型，它能凭语言能力知道吗？" misconception="语言流畅不是证据；LLM不是数据库。" mustSay="明确说：LLM = 大规模ANN；它能解释已提供上下文，但不会天然主动取数。" canSkip="Attention数学代码。" />
+          <SectionTitle no="05" time="第一部分 · 约18分钟" title="从 ANN 到 LLM" />
+          <LlmContextDemo />
+          <InlinePythonLab
+            example="language"
+            guide="极小字符模型：把「下一个 Token 预测」跑出来。真实 LLM 是同一思路的超大规模 Transformer。"
+          />
+          <Bridge
+            from="LLM 的边界"
+            problem="模型可以建议核对航班、酒店和 CRM，但关键资料分散在不同系统，下一步该查什么还取决于刚刚查到的结果。"
+            to="Agent + LLM"
+          />
+          <TeacherNote
+            time="18分钟"
+            question="如果不把 CRM 和日历资料提供给模型，它能凭语言能力知道吗？"
+            misconception="语言流畅不是证据；LLM 不是数据库。"
+            mustSay="明确说：LLM = 大规模 ANN；它能解释已提供上下文，但不会天然主动取数。"
+            canSkip="Attention 数学细节；时间紧时 Python 只演示生成几步。"
+          />
         </section>
 
-        <section id="agent" className="lesson">
-          <SectionTitle no="06" time="第二部分 · 66—106分钟" title="Agent基础与架构：全课的核心章节" intro="第一部分回答了模型怎样理解和生成；第二部分集中回答Agent究竟是什么、由哪些模块组成、怎样使用工具形成反馈循环，以及为什么必须受到约束。" />
+        <PartTitle
+          id="part-2"
+          no="第二部分 · 核心"
+          title="Agent基础与架构"
+          chapters="章节 06 · 约40分钟"
+          lead="第一部分回答了模型怎样理解和生成；本部分集中回答 Agent 是什么、由哪些模块组成、怎样与工具形成受控闭环。"
+        />
 
-          <div className="part-mandate"><span>第二部分 · 40分钟核心章</span><strong>这一章不只是演示一个审计案例，而是建立可迁移到各种行业和任务的Agent通用框架。</strong><p>定义 → LLM与Agent的区别 → 模块组成 → 工具与反馈循环 → 行业规范 → 使用价值 → 自主运行边界。</p></div>
+        <section id="agent" className="lesson">
+          <SectionTitle no="06" time="第二部分 · 约40分钟" title="Agent + LLM" intro="这一章不只是演示一个审计案例，而是建立可迁移到各种行业和任务的 Agent 通用框架。" />
+
+          <div className="part-mandate"><span>本章路线</span><strong>定义 → LLM与Agent的区别 → 模块组成 → 工具与反馈循环 → 行业规范 → 使用价值 → 自主运行边界。</strong><p>规范与架构不是附加题，而是能不能上线的前提。</p></div>
 
           <div className="content-block"><h3>6.1 什么是 Agent？</h3><p>聊天窗口里“问一句答一句”通常只是 LLM 应用；当系统能够<strong>围绕目标选择下一步、调用工具、读取结果、更新状态并在条件满足时停止</strong>，才具备 Agent 能力。</p></div>
           <Definition term="智能体（Agent）" simple="让 LLM 不只回答，还能为了目标判断下一步、调用工具、读取结果并继续，直到达成目标或触发停止条件。" precise="Agent 是包含决策模块（常为 LLM）、工具接口、状态/记忆、编排循环与控制策略的软件系统；LLM 是其中的理解与规划部件，不是系统的全部。" />
@@ -1440,8 +2019,16 @@ export default function Home() {
           <TeacherNote time="40分钟" question="航班工具失败时，Agent能否把“查不到”当作行程一致？" misconception="网页不等于Agent；固定for循环也不等于依据反馈行动。" mustSay="本章是全课核心：定义、LLM与Agent区别、六条规范、六块架构、价值与边界缺一不可。" canSkip="行程一致分支可略讲，但不能压缩Agent定义与架构。" />
         </section>
 
+        <PartTitle
+          id="part-3"
+          no="第三部分 · 待设计"
+          title="Agent在审计中的应用"
+          chapters="章节 07"
+          lead="把前两部分的通用技术与 Agent 架构组合成审计智能体。当前保留设计边界，具体内容由后续逐节确定。"
+        />
+
         <section id="audit" className="lesson">
-          <SectionTitle no="07" time="第三部分 · 106—116分钟" title="Agent在审计中的应用（内容占位）" intro="第三部分将把前两部分的通用技术和Agent架构组合成审计智能体。当前只保留清楚的设计边界，具体内容由后续逐节确定。" />
+          <SectionTitle no="07" time="第三部分 · 约10分钟" title="审计智能体（内容占位）" intro="后续将逐项设计场景、数据与工具连接、可复核证据、自动化边界、人工判断与试点评价。" />
           <div className="content-block" style={{ borderStyle: "dashed" }}>
             <h3>🚧 本章建设中</h3>
             <p>后续将逐项设计：审计智能体要解决什么问题、怎样选择落地场景、如何连接数据制度与工具、怎样形成可复核证据、哪些步骤可自动执行、哪些判断必须由审计人员完成，以及如何试点和评价。</p>
@@ -1459,7 +2046,7 @@ export default function Home() {
           <TeacherNote time="10分钟" question="你最想用 Agent 自动化的审计子任务是什么？" mustSay="本章仅为第三部分占位；具体场景、证据、权限和评价方法将在后续逐节确定。" canSkip="Toy Data 预习。" />
         </section>
 
-        <footer><strong>LLM，Agent基础、架构以及其在审计中的应用</strong><span>从问题出发的能力链：规则 → ML → ANN → LLM → Agent</span><a href="#top">回到顶部 ↑</a></footer>
+        <footer><strong>LLM 与 Agent：基础、架构及审计应用</strong><span>从问题出发的能力链：规则 → ML → ANN → LLM → Agent</span><a href="#top">回到顶部 ↑</a></footer>
       </div>
     </main>
   </PythonKernelProvider>;

@@ -30,16 +30,148 @@
 
 .fitting-lab, .confusion-lab, .neuron-continuity, .shift-lab, .attention-lab, .agent-branch { margin-top: 24px; }
 .digits-lab { margin-top: 24px; }
-.digit-controls { display: flex; gap: 7px; flex-wrap: wrap; padding: 14px 18px; border-bottom: 1px solid var(--line); }
-.digit-controls button { padding: 9px 11px; border: 1px solid var(--line); color: var(--muted); background: white; font-size: 9px; }
-.digit-controls button:last-child { margin-left: auto; }
+.digit-controls { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.digit-controls button { min-width: 36px; padding: 9px 11px; border: 1px solid var(--line); color: var(--muted); background: white; font-size: 13px; font-weight: 700; }
+.digit-controls button.train-toggle { margin-left: auto; font-size: 9px; font-weight: 600; }
 .digit-controls button.active { color: white; border-color: var(--accent); background: var(--accent); }
-.digit-layout { display: grid; grid-template-columns: 210px 1fr 210px; gap: 24px; align-items: center; padding: 22px; }
+.digit-phase-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 0 18px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.digit-phase-tabs button {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: white;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.digit-phase-tabs button.active {
+  color: white;
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.digit-strip {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 8px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line);
+  background: #f7f8f6;
+}
+.digit-strip > button {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  padding: 8px 4px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+}
+.digit-strip > button.active {
+  border-color: var(--accent);
+  background: white;
+}
+.digit-mini-grid {
+  width: 100%;
+  max-width: 52px;
+  aspect-ratio: 1;
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  background: var(--dark);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.digit-mini-grid i { display: block; background: #9be0b8; }
+.digit-strip span { color: var(--muted); font-size: 11px; font-weight: 700; }
+.digit-strip > button.active span { color: var(--accent); }
+@media (max-width: 800px) {
+  .digit-strip { grid-template-columns: repeat(5, 1fr); }
+}
+.digit-layout { display: grid; grid-template-columns: 240px 1fr 210px; gap: 24px; align-items: center; padding: 22px; }
+.digit-layout-pair {
+  grid-template-columns: minmax(200px, 240px) minmax(280px, 1fr);
+  align-items: start;
+}
 .digit-caption { display: block; margin-bottom: 8px; color: var(--accent); font-size: 9px; font-weight: 800; }
-.digit-grid { display: grid; grid-template-columns: repeat(8, 1fr); aspect-ratio: 1; background: var(--dark); }
-.digit-grid i { position: relative; display: block; background: white; }
+.digit-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  aspect-ratio: 1;
+  background: var(--dark);
+  border: 1px solid #2c3834;
+}
+.digit-grid-16 {
+  grid-template-columns: repeat(16, 1fr);
+  width: 100%;
+  max-width: 220px;
+}
+.digit-grid i { position: relative; display: block; background: #9be0b8; min-height: 0; }
 .digit-grid i span { position: absolute; inset: 0; display: grid; place-items: center; color: transparent; font: 6px ui-monospace, monospace; }
 .digit-layout small { display: block; margin-top: 9px; color: var(--muted); font-size: 8px; line-height: 1.6; }
+.digit-probs {
+  padding: 14px 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f4f5f4;
+}
+.digit-probs.phase-during {
+  background: #f8f1eb;
+  border-color: #e2d2c2;
+}
+.digit-probs.phase-after {
+  background: var(--accent-soft);
+  border-color: #c5d7d0;
+}
+.digit-prob-bars {
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+}
+.digit-prob-bars > div {
+  display: grid;
+  grid-template-columns: 18px 1fr 48px;
+  gap: 8px;
+  align-items: center;
+}
+.digit-prob-bars b {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+.digit-prob-bars i {
+  display: block;
+  height: 10px;
+  border-radius: 3px;
+  background: #b8c0bc;
+  transition: width .28s ease, background .28s ease;
+}
+.digit-probs.phase-during .digit-prob-bars i { background: #c5b4a4; }
+.digit-probs.phase-after .digit-prob-bars i { background: #7aa894; }
+.digit-prob-bars > div.top b { color: var(--warm); }
+.digit-probs.phase-during .digit-prob-bars > div.top i { background: var(--warm); }
+.digit-probs.phase-after .digit-prob-bars > div.top b { color: var(--accent); }
+.digit-probs.phase-after .digit-prob-bars > div.top i { background: var(--accent); }
+.digit-prob-bars em {
+  color: var(--muted);
+  font-style: normal;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.digit-prob-bars > div.top em { color: var(--ink); font-weight: 700; }
+.digit-prob-readout {
+  margin: 12px 0 0;
+  color: #3d4744;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.digit-prob-readout strong { color: var(--accent); font-size: 15px; }
 .digit-flow { display: flex; align-items: center; justify-content: center; gap: 9px; }
 .digit-flow > div { min-width: 100px; padding: 14px 9px; border: 1px solid var(--line); text-align: center; }
 .digit-flow span { display: block; color: var(--muted); font-size: 8px; }
@@ -206,8 +338,6 @@
 
 /* —— FacePredictLab（ANN 真实演示） —— */
 .face-lab { margin: 22px 0; border: 1px solid var(--line); background: #fbfbf8; }
-.face-lab-lead { margin: 0; padding: 14px 21px; color: var(--muted); font-size: 12px; line-height: 1.75; border-bottom: 1px solid var(--line); }
-.face-lab-lead code { font-size: 11px; }
 .face-lab-actions { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 21px; border-bottom: 1px solid var(--line); }
 .face-lab-actions button { padding: 8px 12px; border: 1px solid var(--line); background: white; font-size: 11px; cursor: pointer; }
 .face-lab-actions button.primary { color: white; background: var(--accent); border-color: var(--accent); }
