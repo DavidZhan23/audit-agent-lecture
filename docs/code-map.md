@@ -9,6 +9,7 @@
 | `docs/interactives.md` | `app/course-interactives.tsx` + page 内 lab |
 | `docs/data-pack.md` | `public/toy_audit_case/**` |
 | ANN 人脸演示 | `services/face-predict/**` + `app/face-predict-lab.tsx` + `app/api/face-predict/route.ts` |
+| LLM 图示 | `app/llm-diagrams.tsx`（缺口/分词/生成/Attention/Transformer/生命周期等） |
 
 ## 应用壳
 

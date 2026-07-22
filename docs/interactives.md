@@ -15,9 +15,10 @@
 | `NeuronContinuityLab` 等 | 备用（旧版 nn DeepDive） | ANN 解剖 |
 | `DigitsImageLab` | nn（嵌在 AnnPixelDemo） | 自构 16×16 示意像素 → 数字 0—9 |
 | `FacePredictLab` | nn 趣味支线 | 真实 ResNet18（224）人脸：上传/拍照 → 检测裁剪 → 三类概率；低置信拒识 |
-| `LlmContextDemo` | llm | BX-42519 语境证据 + Token 互动 + 板书（内嵌 Attention） |
+| `LlmContextDemo` | llm | BX-42519 动机 + 详稿叙事 + 多图示 + 互动 |
 | `ContextEvidenceInbox` | llm（嵌在 LlmContextDemo） | 说明/小票/CRM/日历多段文字 |
-| `LanguageTrainingShift` / `AttentionLab` | llm（嵌在 LlmContextDemo） | 下一 Token 样本；语境关注哪些词 |
+| `AnnToLlmGapDiagram` 等 | llm（`app/llm-diagrams.tsx`） | 缺口/连续关系/分词/生成循环/Attention/Transformer/生命周期/窗口/边界等图示 |
+| `LanguageTrainingShift` / `AttentionLab` / `TokenLab` / `LlmPipeline` | llm | 下一 Token 样本；语境关注；手选 Token；五步流水线 |
 | `AgentBranchLab` | agent | BX-42017行程矛盾 / 行程一致 / 工具失败三分支 |
 | `AuditAgentCanvas` | audit（预习 DeepDive） | 设计画布 |
 | `ToyDatasetExplorer` / `CaseMatrix` | audit（预习） | 多表与情形矩阵 |

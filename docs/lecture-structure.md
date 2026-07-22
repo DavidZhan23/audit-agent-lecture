@@ -10,7 +10,7 @@
 2. 第二部分把 Agent 作为独立的系统概念，讲清定义、与LLM的区别、组成模块、工具反馈循环、行业规范、价值和自主边界
 3. 第三部分将前两部分组合成审计智能体；当前 `#audit` 为占位，后续逐节设计
 
-开场 `#problem` 为导言（Introduction + Abstract），建立地图后进入技术基础。
+开场 `#problem` 为导言（Introduction + Abstract），并用 `CourseArchitecture` 明确展示三部分总体架构；随后进入技术基础。
 
 ## 侧栏导航（`nav`）
 
@@ -20,7 +20,7 @@
 | 02 | `code` | 基于任务逻辑的编程 | 10′ |
 | 03 | `ml` | 经典机器学习 | 15′ |
 | 04 | `nn` | ANN | 15′ |
-| 05 | `llm` | 从 ANN 到 LLM | 18′ |
+| 05 | `llm` | 从 ANN 到 LLM | 30′（详稿；可压） |
 | 06 | `agent` | Agent + LLM | 40′ |
 | 07 | `audit` | 审计智能体 | 10′（占位） |
 
@@ -56,12 +56,13 @@
 
 ```text
 hero（标题居中；三部分路径各自带一句说明，链到 `#part-1/2/3`）
-  → 导言 #problem（导言 + Abstract 三部分条目 + 主要收获）
+  → 导言 #problem（导言 + Abstract 三部分条目 + CourseArchitecture + 主要收获）
   → PartTitle #part-1：大模型和智能体的技术基础
+      → FoundationCaseLadder（只说明第一部分内部的案例递进，不替代三部分总架构）
       → code（两表映射 + 逻辑判断 + Python）
       → ml（弱信号组合 + 历史核实标签 → 新单打分）
       → nn（结构图 MLP/CNN + AnnPixelDemo + DigitsImageLab + 人脸趣味支线）
-      → llm（BX-42519 语境证据 + Token/Attention 板书 + Python）
+      → llm（详稿：缺口→Token→下一Token→Attention/Transformer→生命周期→边界 + 多图示）
   → PartTitle #part-2：Agent基础与架构
       → agent（定义 / 区别 / 模块 / 工具反馈循环 / 规范 / 价值 / 边界 / BX-42017演示）
   → PartTitle #part-3：Agent在审计中的应用
@@ -78,6 +79,8 @@ hero（标题居中；三部分路径各自带一句说明，链到 `#part-1/2/3
 | LLM | BX-42519 | 客户招待却有儿童餐、生日蛋糕及无拜访记录 | 语言与业务语境 |
 
 BX-42017放在第二部分末尾，用于演示Agent依据工具反馈决定下一步。它不属于第一部分的模型技术阶梯。
+
+源码中不再保留“整堂课只审一笔”的 `SingleCaseProject` / `SingleCaseAnchor` 旧组件，避免后续维护误把单案例线当作顶层课纲。
 
 ## 章节文档
 

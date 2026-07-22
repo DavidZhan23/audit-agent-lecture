@@ -18,6 +18,19 @@ import {
 import { FacePredictLab } from "./face-predict-lab";
 import { CrossEntropyPlot, ReluPlot, SigmoidPlot } from "./math-plots";
 import { NetworkComparePanel } from "./nn-diagrams";
+import {
+  AnnLlmSideBySide,
+  AnnToLlmGapDiagram,
+  AttentionHeatmapDiagram,
+  CapabilityBoundaryStrip,
+  ContextWindowDiagram,
+  ContinuityLadderDiagram,
+  GenerationLoopDiagram,
+  LlmLifecycleDiagram,
+  TokenizeDiagram,
+  TransformerStackDiagram,
+  WhyNextTokenDiagram,
+} from "./llm-diagrams";
 import { TeX } from "./tex";
 
 type StageKey = "code" | "ml" | "nn" | "llm" | "agent";
@@ -43,7 +56,7 @@ const nav = [
   ["code", "基于任务逻辑的编程", "10′"],
   ["ml", "经典机器学习", "15′"],
   ["nn", "ANN", "15′"],
-  ["llm", "从 ANN 到 LLM", "18′"],
+  ["llm", "从 ANN 到 LLM", "30′"],
   ["agent", "Agent + LLM", "40′"],
   ["audit", "审计智能体", "10′"],
 ];
@@ -54,21 +67,21 @@ const courseParts = [
     title: "大模型和智能体的技术基础",
     range: "02—05",
     href: "#part-1",
-    description: "讲清规则、ML、ANN和LLM为什么逐层出现。",
+    description: "从问题出发，讲清规则、ML、ANN和LLM为什么逐层出现。",
   },
   {
     no: "第二部分 · 核心",
     title: "Agent基础与架构",
     range: "06",
     href: "#part-2",
-    description: "集中讲Agent的定义、架构、工具循环与规范。",
+    description: "集中讲Agent的定义、区别、模块、工具反馈循环、规范、价值与边界。",
   },
   {
     no: "第三部分 · 待设计",
     title: "Agent在审计中的应用",
     range: "07",
     href: "#part-3",
-    description: "落到审计智能体。",
+    description: "把通用技术组合成审计智能体；具体内容后续逐节设计。",
   },
 ];
 
@@ -646,59 +659,242 @@ function ContextEvidenceInbox() {
 
 function LlmContextDemo() {
   return (
-    <div className="task-logic-demo">
+    <div className="task-logic-demo llm-lesson-rich">
       <p className="task-logic-problem">
         <span>审计问题</span>
-        报销说明写着「周日接待重要客户」，但小票、CRM、日历放在一起读，语义互相打架。这不是像素识别，而是语言与业务语境。
+        报销说明写着「周日接待重要客户」，但小票、CRM、日历放在一起读，语义互相打架。
+        上一章的 ANN 可以帮我们把小票上的字认出来；这一章要回答：怎样把多段语言文字放进同一个「理解装置」里对照。
       </p>
 
       <ContextEvidenceInbox />
-      <LanguageTrainingShift />
+      <AnnToLlmGapDiagram />
+
+      <div className="content-block">
+        <h3>5.1 为什么必须从 ANN 再走到 LLM？</h3>
+        <p>
+          票据识别解决的是「图上写了什么」。招待目的审查解决的是「这些句子合在一起意味着什么」。
+          后者的输入不再是固定尺寸的像素张量，而是：
+        </p>
+        <ul>
+          <li>长度可变的自然语言（说明可长可短）；</li>
+          <li>多来源拼接（OCR + CRM 文本 + 日历标题 + 制度摘录）；</li>
+          <li>需要跨段落的参照（「客户招待」要去对照「儿童套餐」「无拜访」「家属生日」）；</li>
+          <li>输出常常也是语言（疑点说明、核对清单），而不是 10 类里选 1 类。</li>
+        </ul>
+        <p>
+          若仍用手写规则去穷举「说明含客户且小票含儿童则报警」，例外与措辞组合会爆炸。
+          若只用上一章那种「固定输入维 → 少数类别」的网络，也很难直接吃进任意长的制度与多文档上下文。
+          <b>于是把神经网络的对象，从像素（或表格特征）扩展到 Token 序列——这就是走向大语言模型的关键一步。</b>
+        </p>
+      </div>
+
+      <ContinuityLadderDiagram />
+      <AnnLlmSideBySide />
+
+      <div className="content-block">
+        <h3>5.2 先把定义钉死：LLM 仍然是神经网络</h3>
+        <Definition
+          term="大语言模型（LLM）"
+          simple="在海量文本上训练、根据已有上下文继续生成文字的大规模神经网络（当代主流骨干多为 Transformer）。"
+          precise="通过预训练学习 Token 序列的条件概率分布；再经指令微调与对齐形成更适合问答与任务执行的行为。推理阶段参数基本固定，逐 Token 生成输出。"
+        />
+        <p>
+          课堂要反复强调的一句话：<b>LLM = 很大的 ANN + 语言序列目标 + 海量数据与算力</b>。
+          它不是另一种魔法；也不是企业业务数据库。
+        </p>
+      </div>
 
       <div className="math-explain lecture-board">
         <div className="math-explain-head">
-          <span>课堂板书</span>
-          <h3>LLM：仍是 ANN，对象换成 Token 序列</h3>
+          <span>课堂板书 A</span>
+          <h3>从「认数字」到「写下一段话」：目标函数怎么写</h3>
         </div>
 
         <section>
-          <h4>① 连续关系</h4>
-          <p>
-            ML 拟合表格特征 → ANN 拟合高维像素 → LLM 用超大 ANN 拟合语言序列。
-            不变的是：用损失训练参数，再用参数做预测。
+          <h4>① 条件概率</h4>
+          <TeX display ariaLabel="next token" math="P(t_{n+1}\mid t_1,t_2,\ldots,t_n)" />
+          <p className="board-line">
+            给定已经出现的 Token，模型为词表中每一个候选给出概率。训练时，正确答案就是语料里真实出现的下一个 Token；
+            预测错了就算 Loss，反向传播更新权重——与 ANN 章完全同一套逻辑。
           </p>
         </section>
 
         <section>
-          <h4>② 训练任务：预测下一个 Token</h4>
-          <TeX display ariaLabel="next token" math="P(t_{n+1}\mid t_1,\ldots,t_n)" />
+          <h4>② 一张图 / 一段话，区别在输出头大小</h4>
           <p className="board-line">
-            上文已知时，模型给词表里每个候选一个概率；选一个写下去，再继续——生成就是反复做这件事。
+            数字识别：Softmax 只有 10 维。语言建模：Softmax 维数 = 词表大小 |V|。
+            生成长文 = 把「10 类分类」变成「做成千上万次 |V| 类分类」，每次只留下一个 Token。
           </p>
         </section>
 
         <section>
-          <h4>③ 读语境时在看什么</h4>
+          <h4>③ 联合概率的链式展开（帮助建立直觉）</h4>
+          <TeX
+            display
+            ariaLabel="chain rule"
+            math="P(t_1,\ldots,t_T)=\prod_{n=0}^{T-1} P(t_{n+1}\mid t_1,\ldots,t_n)"
+          />
           <p className="board-line">
-            Attention 让模型在生成或判断时，重点参考上下文里更相关的 Token（如「儿童套餐」「家属生日」），而不是平均对待每一个词。
-          </p>
-          <AttentionLab />
-        </section>
-
-        <section>
-          <h4>④ 边界</h4>
-          <p className="board-line">
-            语言流畅 <b>≠</b> 事实正确 <b>≠</b> 证据充分。模型不会天然进入企业系统取数；没贴进提示词的 CRM/日历，它并不「知道」。
+            整段话的「好不好」被拆成每一步「下一个是否合理」。这就是为什么「只会猜下一个词」的目标，理论上能覆盖任意长度文本。
           </p>
         </section>
       </div>
+
+      <TokenizeDiagram />
+
+      <div className="content-block">
+        <h3>5.3 训练答案从哪里来？——错开一位就是样本</h3>
+        <p>
+          图像分类需要人给每张图贴「这是 2」。语言建模几乎「自带标签」：任意一段人类写过的话，都可以切成「上文 → 下一个 Token」。
+          这正是能用到互联网级文本规模的前提。
+        </p>
+      </div>
+      <LanguageTrainingShift />
+      <GenerationLoopDiagram />
+      <TokenLab />
+
+      <WhyNextTokenDiagram />
+
+      <div className="content-block">
+        <h3>5.4 一次前向里发生了什么：五步流水线</h3>
+        <p>
+          下面这张可点选流水线，把「提示词进来 → 字出来」拆开。不必推导矩阵；要能按顺序讲给同事听。
+        </p>
+      </div>
+      <LlmPipeline />
+
+      <div className="math-explain lecture-board">
+        <div className="math-explain-head">
+          <span>课堂板书 B</span>
+          <h3>Attention：为什么「儿童套餐」能压过「重要客户」</h3>
+        </div>
+        <section>
+          <h4>① 平均阅读不够</h4>
+          <p className="board-line">
+            若对上下文每个词一视同仁，长文档里关键信号会被稀释。
+            BX-42519 里，真正改变判断的是少数高冲突片段，而不是「报销」「金额」这类高频但弱区分词。
+          </p>
+        </section>
+        <section>
+          <h4>② 有重点地读</h4>
+          <p className="board-line">
+            Self-Attention 让每个位置去询问：我现在要想清楚一件事，应该更参考上下文里的哪些位置？
+            权重高的位置，其信息被更多地混合进来——这就是「联系语境」的计算实现。
+          </p>
+        </section>
+      </div>
+
+      <AttentionHeatmapDiagram />
+      <AttentionLab />
+      <TransformerStackDiagram />
+
+      <div className="content-block">
+        <h3>5.5 规模：同样的公式，为什么突然「能干很多活」</h3>
+        <p>
+          公式仍是下一 Token。变化来自三件事叠在一起：
+        </p>
+        <ol>
+          <li><b>数据</b>：覆盖制度、合同、邮件、代码、百科式表述等多样文本；</li>
+          <li><b>参数</b>：层数与宽度增加，表示能力变强；</li>
+          <li><b>算力与训练配方</b>：使上述规模真正训得动、训得稳。</li>
+        </ol>
+        <p>
+          于是连续预测在观感上变成：总结、翻译、写邮件、对比矛盾、按提纲输出——
+          <b>能力是涌现的观感，机制仍是条件语言模型。</b>
+          不要把「会写分析段落」误读成「已经连上了你们公司的 CRM」。
+        </p>
+      </div>
+
+      <LlmLifecycleDiagram />
+      <ContextWindowDiagram />
+
+      <div className="content-block">
+        <h3>5.6 业务里常说的四样外挂（仍不是 Agent）</h3>
+        <p>
+          提示词、上下文、RAG、工具调用，都是给「下一 Token 机器」更好的输入或出口。
+          它们很有用，但只有「根据工具结果决定下一步并循环」时，我们才进入下一章的 Agent。
+        </p>
+      </div>
+      <div className="llm-addons">
+        <div>
+          <span>提示词</span>
+          <strong>把任务讲清楚</strong>
+          <p>角色、目标、约束、输出格式。例如：「只列疑点，不下审计结论」。</p>
+        </div>
+        <div>
+          <span>上下文</span>
+          <strong>把本案资料贴进去</strong>
+          <p>说明、OCR、CRM、日历——模型只能基于窗口内文字作答。</p>
+        </div>
+        <div>
+          <span>RAG</span>
+          <strong>先检索再回答</strong>
+          <p>从制度库找出相关条款并保留出处，减轻「凭印象写制度」。</p>
+        </div>
+        <div>
+          <span>工具</span>
+          <strong>查与算的出口</strong>
+          <p>发票查验、数据库、计算器。有工具 ≠ 已形成受控 Agent 循环。</p>
+        </div>
+      </div>
+
+      <CapabilityBoundaryStrip />
+
+      <div className="hallucination">
+        <div>
+          <strong>为什么会幻觉</strong>
+          <p>
+            目标函数奖励的是「统计上像那么回事的后续 Token」，不是「每句都有系统可核验来源」。
+            资料不足或冲突时，模型仍可能生成语法完美、语气笃定的段落——这正是审计里最危险的错觉。
+          </p>
+        </div>
+        <div>
+          <span>语言流畅</span>
+          <i>≠</i>
+          <span>事实正确</span>
+          <i>≠</i>
+          <span>证据充分</span>
+          <i>≠</i>
+          <span>审计结论</span>
+        </div>
+      </div>
+
+      <div className="three-stages">
+        <div>
+          <span>回到 BX-42519</span>
+          <strong>LLM 可以做什么</strong>
+          <p>在你提供的说明、小票、CRM、日历文本上，指出语义冲突，起草「建议核对项」。</p>
+        </div>
+        <div>
+          <span>仍然缺什么</span>
+          <strong>它不会自己去拉系统</strong>
+          <p>若 CRM 根本没贴进提示词，模型不能「因为懂业务」就变出真实拜访记录。</p>
+        </div>
+        <div>
+          <span>下一章预告</span>
+          <strong>Agent + LLM</strong>
+          <p>把「建议核对」变成「调用航班/酒店/CRM 工具，按反馈决定下一步，并在护栏下停止」。</p>
+        </div>
+      </div>
+
+      <CapabilityBoundary
+        method="大语言模型（LLM）"
+        input="提示词 + 上下文中的 Token 序列（制度、说明、多段证据）"
+        unique="在语言空间里做大规模条件生成与语境对照"
+        output="解释、摘要、疑点草稿、核对清单（文本）"
+        limit="可能幻觉；不会天然访问业务系统；不能替代职业判断"
+      />
 
       <div className="task-logic-map">
         <span>板书收束</span>
-        <code>Token 序列 → 预测下一个 → 生成解释</code>
+        <code>Token 化 → 条件概率 P(下一 Token) → Attention 联语境 → 逐 Token 生成</code>
         <span>提醒</span>
-        <strong>流畅 ≠ 审计结论</strong>
+        <strong>流畅 ≠ 审计结论；窗口外 = 未知</strong>
       </div>
+
+      <LessonTakeaway>
+        LLM 是面向语言序列的大规模 ANN：用下一 Token 预测训练，用 Attention 联系语境；它能整理与解释已提供的文字证据，但既不是事实数据库，也不会主动取数。
+      </LessonTakeaway>
     </div>
   );
 }
@@ -722,19 +918,6 @@ function FoundationCaseLadder() {
     <div className="case-ladder-list">{cases.map(item => <article key={item.no}><b>{item.no}</b><div><span>{item.method} · {item.claim}</span><h4>{item.title}</h4><p>{item.detail}</p></div><small>{item.why}</small></article>)}</div>
     <div className="case-ladder-rule"><strong>第一部分组织原则</strong><p>每一章先提出上一种方法解决不了的具体问题，再引入一个新概念。讲到LLM为止，只回答“模型怎样理解和生成”；Agent的系统架构、工具循环与控制机制留到第二部分集中讲。</p></div>
   </div>;
-}
-
-function SingleCaseProject() {
-  const [revealed, setRevealed] = useState(false);
-  return <div className="single-case-project">
-    <div className="single-case-head"><div><span>整堂课只审这一笔</span><h3>BX-42306 · 出租车费</h3><p>任务：判断是否需要转人工核查，并说清“为什么”。</p></div><button onClick={() => setRevealed(!revealed)}>{revealed ? "收起后续证据" : "查看后续证据"}</button></div>
-    <div className="single-case-facts"><div><span>报销表</span><strong>286元</strong><p>摘要：市内交通</p></div><div><span>现有规则</span><strong>上限300元</strong><p>低于阈值可通过</p></div><div className={revealed ? "revealed" : "covered"}><span>票面图片</span><strong>{revealed ? "看起来是 286" : "尚未查看"}</strong><p>{revealed ? "数字2的笔画可疑" : "原始图像在另一系统"}</p></div><div className={revealed ? "revealed" : "covered"}><span>查验平台</span><strong>{revealed ? "金额 86元" : "尚未查询"}</strong><p>{revealed ? "与报销额差200元" : "需要调用查验工具"}</p></div></div>
-    <div className="single-case-question"><span>课堂问题</span><strong>为什么“286 &lt; 300”的规则没错，但它还是没能解决这笔报销？</strong><p>答案不是“规则落后”，而是它只能使用人事先写进程序的字段和条件。</p></div>
-  </div>;
-}
-
-function SingleCaseAnchor({ step, reads, task }: { step: string; reads: string; task: string }) {
-  return <div className="single-case-anchor"><span>同一笔 BX-42306 · {step}</span><strong>这一步能看见：{reads}</strong><p>{task}</p></div>;
 }
 
 function CapabilityBoundary({ method, input, output, unique, limit }: { method: string; input: string; output: string; unique: string; limit: string }) {
@@ -1854,6 +2037,7 @@ export default function Home() {
               </li>
             </ul>
           </div>
+          <CourseArchitecture />
           <div className="content-block lesson-takeaways">
             <h3>主要收获</h3>
             <ol className="takeaway-grid">
@@ -1897,6 +2081,7 @@ export default function Home() {
           chapters="章节 02—05"
           lead="从规则、机器学习、神经网络到大模型，说明这些技术为何会逐层出现，各自解决什么问题、卡在哪里。"
         />
+        <FoundationCaseLadder />
 
         <section id="code" className="lesson">
           <SectionTitle no="02" time="第一部分 · 约10分钟" title="基于任务逻辑的编程" />
@@ -1955,23 +2140,23 @@ export default function Home() {
         </section>
 
         <section id="llm" className="lesson">
-          <SectionTitle no="05" time="第一部分 · 约18分钟" title="从 ANN 到 LLM" />
+          <SectionTitle no="05" time="第一部分 · 约30分钟（可压缩）" title="从 ANN 到 LLM" />
           <LlmContextDemo />
           <InlinePythonLab
             example="language"
-            guide="极小字符模型：把「下一个 Token 预测」跑出来。真实 LLM 是同一思路的超大规模 Transformer。"
+            guide="极小字符模型：把「下一个 Token 预测」跑出来。真实 LLM 是同一思路的超大规模 Transformer——Token 化、条件概率、逐个生成。"
           />
           <Bridge
             from="LLM 的边界"
-            problem="模型可以建议核对航班、酒店和 CRM，但关键资料分散在不同系统，下一步该查什么还取决于刚刚查到的结果。"
+            problem="模型可以建议核对航班、酒店和 CRM，也可以把已提供的文字证据整理成疑点草稿；但关键资料分散在不同系统，下一步该查什么还取决于刚刚查到的结果——这超出了「只在窗口里生成文字」的能力。"
             to="Agent + LLM"
           />
           <TeacherNote
-            time="18分钟"
-            question="如果不把 CRM 和日历资料提供给模型，它能凭语言能力知道吗？"
-            misconception="语言流畅不是证据；LLM 不是数据库。"
-            mustSay="明确说：LLM = 大规模 ANN；它能解释已提供上下文，但不会天然主动取数。"
-            canSkip="Attention 数学细节；时间紧时 Python 只演示生成几步。"
+            time="完整稿约30分钟；可压到18—20分钟"
+            question="如果不把 CRM 和日历资料提供给模型，它能凭语言能力知道吗？Attention 权重高是否等于事实已核实？"
+            misconception="语言流畅不是证据；LLM 不是数据库；下一 Token 不是魔法推理引擎。"
+            mustSay="钉死：LLM = 大规模 ANN；训练目标是 P(下一Token|上文)；Attention 负责联系语境；窗口外未知；流畅≠结论。"
+            canSkip="链式法则板书、Transformer SVG 细节、TokenLab 全流程、Lifecycle 中指令微调段；时间紧时保留：缺口图 + 下一Token + AttentionLab + 幻觉条 + Bridge。"
           />
         </section>
 
