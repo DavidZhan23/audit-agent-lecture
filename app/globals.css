@@ -57,7 +57,10 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; }
 .hero { min-height: 620px; padding: 90px 74px 55px; background: white; }
 .hero > p { margin: 0 0 24px; color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .12em; }
 .hero h1 { max-width: 930px; margin: 0; font-family: var(--serif); font-size: clamp(44px, 6vw, 76px); font-weight: 600; line-height: 1.25; letter-spacing: -.04em; }
+.hero-head { text-align: center; }
+.hero-head h1 { margin-left: auto; margin-right: auto; }
 .hero-lead { max-width: 760px; margin-top: 27px; color: var(--muted); font-size: 18px; line-height: 1.8; }
+.hero-head .hero-lead { margin-left: auto; margin-right: auto; }
 .hero-lead code { padding: 2px 7px; background: var(--accent-soft); color: var(--accent); font-size: 15px; }
 .hero-scenario { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 42px; border: 1px solid var(--line); }
 .hero-scenario > div { min-height: 132px; padding: 19px; border-right: 1px solid var(--line); background: #fbfbf9; }
@@ -74,8 +77,9 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; }
 .hero-path span { display: block; color: #98a19e; font: 9px ui-monospace, monospace; }
 .hero-path strong { display: block; margin: 15px 0 4px; font-family: var(--serif); font-size: 16px; }
 .hero-path small { color: var(--muted); font-size: 9px; line-height: 1.4; }
+.hero-path p { margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
 .hero-path.three-parts { grid-template-columns: repeat(3, 1fr); }
-.hero-path.three-parts a { min-height: 124px; }
+.hero-path.three-parts a { min-height: 148px; }
 .hero-foot { display: flex; align-items: center; gap: 18px; margin-top: 28px; color: var(--muted); font-size: 11px; }
 .hero-foot i { color: #aab2af; font-style: normal; }
 

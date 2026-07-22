@@ -23,9 +23,11 @@ usage() {
 
 部署完成后课件访问地址（默认）:
   http://211.159.166.109:8080/
+  https://211.159.166.109:8443/   （网页内实时摄像头；需另跑 ./deploy/enable-https.sh）
 
 ANN 人脸演示（第 ③ 章）会随脚本部署：同步 checkpoint、安装 Python 依赖、
 PM2 启动 face-predict（本机 8765），课件经 /api/face-predict 代理。
+HTTP 可用上传/手机拍照；电脑网页内摄像头请用 HTTPS :8443。
 
 fitness 应用不受影响:
   http://211.159.166.109/
@@ -50,6 +52,7 @@ SERVER_HOST="${SERVER_HOST:-211.159.166.109}"
 REMOTE_DIR="${REMOTE_DIR:-/var/www/audit-agent-courseware}"
 APP_PORT="${APP_PORT:-3001}"
 NGINX_PORT="${NGINX_PORT:-8080}"
+HTTPS_PORT="${HTTPS_PORT:-8443}"
 PM2_APP_NAME="${PM2_APP_NAME:-audit-courseware}"
 PM2_FACE_NAME="${PM2_FACE_NAME:-face-predict}"
 ENABLE_FACE_PREDICT="${ENABLE_FACE_PREDICT:-true}"
@@ -122,6 +125,7 @@ run_ssh "$SSH_TARGET" \
   < "$SCRIPT_DIR/remote-deploy.sh"
 
 log "部署完成"
-log "课件:   http://${SERVER_HOST}:${NGINX_PORT}/"
-log "ANN:    打开第 ③ 章「真实 ANN 演示」"
-log "Fitness: http://${SERVER_HOST}/"
+log "课件 HTTP:  http://${SERVER_HOST}:${NGINX_PORT}/"
+log "课件 HTTPS: https://${SERVER_HOST}:${HTTPS_PORT}/  （网页内摄像头；需 ./deploy/enable-https.sh）"
+log "ANN:        第 ③ 章「真实 ANN 演示」→ 上传 / 手机拍照 / HTTPS 下打开摄像头"
+log "Fitness:    http://${SERVER_HOST}/"

@@ -51,21 +51,21 @@ const courseParts = [
     title: "大模型和智能体的技术基础",
     range: "01—05",
     href: "#problem",
-    description: "从问题、规则、ML、ANN一路走到LLM，解释每种技术为什么出现。",
+    description: "讲清规则、ML、ANN和LLM为什么逐层出现。",
   },
   {
     no: "第二部分 · 核心",
     title: "Agent基础与架构",
     range: "06",
     href: "#agent",
-    description: "集中讲定义、模块、工具循环、行业规范、价值与约束。",
+    description: "集中讲Agent的定义、架构、工具循环与规范。",
   },
   {
     no: "第三部分 · 待设计",
     title: "Agent在审计中的应用",
     range: "07",
     href: "#audit",
-    description: "把通用能力组合成审计智能体；当前保留为后续深入设计的占位章。",
+    description: "落到审计智能体。",
   },
 ];
 
@@ -1319,11 +1319,10 @@ export default function Home() {
       </nav></aside>
       <div className="page">
         <section className="hero">
-          <p>LLM，Agent基础、架构以及其在审计中的应用</p>
-          <h1>从技术基础，到Agent架构，<br />再到审计应用。</h1>
-          <div className="hero-lead">整堂课分为三个部分：先讲清规则、ML、ANN和LLM为什么逐层出现；再集中讲Agent的定义、架构、工具循环与规范；最后落到审计智能体。</div>
-          <div className="hero-scenario"><div><span>数据规模</span><strong>42,000笔</strong><small>差旅及招待费报销</small></div><div><span>人力限制</span><strong>4人 × 10天</strong><small>不可能靠人工逐笔深查</small></div><div><span>证据分布</span><strong>9表 + 2文档</strong><small>历史训练数据另行保存</small></div><div><span>最终交付</span><strong>可复核疑点</strong><small>事实、依据、来源与不确定性</small></div></div>
-          <div className="hero-path three-parts">{courseParts.map((part, index) => <a key={part.no} href={part.href}><span>0{index + 1}</span><strong>{part.title}</strong><small>{part.no}</small></a>)}</div>
+          <div className="hero-head">
+            <h1>LLM，Agent基础、架构以及其在审计中的应用</h1>
+          </div>
+          <div className="hero-path three-parts">{courseParts.map((part, index) => <a key={part.no} href={part.href}><span>0{index + 1}</span><strong>{part.title}</strong><small>{part.no}</small><p>{part.description}</p></a>)}</div>
           <a className="hero-start" href="#problem">进入第一部分：技术基础 <span>↓</span></a>
         </section>
 

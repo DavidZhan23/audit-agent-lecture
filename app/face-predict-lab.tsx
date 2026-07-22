@@ -47,6 +47,18 @@ function isSecureForCamera(): boolean {
   return window.isSecureContext === true;
 }
 
+function httpsHintUrl(): string {
+  if (typeof window === "undefined") return "https://服务器IP:8443/";
+  const { hostname, protocol, port } = window.location;
+  if (protocol === "https:") return window.location.href;
+  const host = hostname || "服务器IP";
+  // 常见课堂部署：HTTP 8080 ↔ HTTPS 8443
+  if (port === "8080" || port === "") {
+    return `https://${host}:8443/`;
+  }
+  return `https://${host}:8443/`;
+}
+
 export function FacePredictLab() {
   const [preview, setPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -133,9 +145,8 @@ export function FacePredictLab() {
     setResult(null);
     if (!isSecureForCamera()) {
       setError(
-        "当前页面不是 HTTPS（公网 http://IP 属于非安全上下文），浏览器禁止网页直接调用摄像头。请改用「上传照片」，或在手机上点「拍照上传」（系统相机）。本地 localhost 可用实时摄像头。",
+        `网页内摄像头需要 HTTPS（或本机 localhost）。请打开 ${httpsHintUrl()} （需已运行 ./deploy/enable-https.sh，首次接受自签名证书），或改用「上传照片 / 拍照上传（手机）」。`,
       );
-      captureRef.current?.click();
       return;
     }
     try {
@@ -152,7 +163,7 @@ export function FacePredictLab() {
         }
       });
     } catch {
-      setError("无法打开摄像头，请检查浏览器权限，或改用「上传照片 / 拍照上传」。");
+      setError("无法打开摄像头，请检查浏览器权限，或改用「上传照片 / 拍照上传（手机）」。");
     }
   };
 
@@ -206,14 +217,16 @@ export function FacePredictLab() {
 
       <p className="face-lab-lead">
         这是神经网络章节的趣味支线，不是审计主线。输入仍然是整图像素，模型先检测人脸，再对裁剪后的脸做{" "}
-        <code>笑雨 / 骐源 / 其他</code> 分类。它与票据数字识别共享“像素 → 多层特征 → 分类概率”的底层逻辑；低置信度会输出「无法确定」。
+        <code>笑雨 / 骐源 / 其他</code>{" "}
+        分类。与票据数字识别共享“像素 → 多层特征 → 分类概率”的底层逻辑；低置信度会输出「无法确定」。
+        「上传照片」任意环境可用；「拍照上传（手机）」在手机上调系统相机；电脑网页内实时预览请用「打开摄像头」，需访问{" "}
+        <code>https://IP:8443/</code>
+        （自签名证书，首次点继续访问）。
         {!secureOk && (
           <>
             {" "}
-            <strong>当前为非 HTTPS</strong>
-            ：网页内实时摄像头不可用。请改用本页的「上传照片 / 拍照上传」，或使用{" "}
-            <code>https://服务器IP:8443/</code>
-            （需已运行 <code>./deploy/enable-https.sh</code>，首次接受自签名证书警告）。
+            <strong>当前不是 HTTPS</strong>，实时摄像头不可用——请改开{" "}
+            <code>{httpsHintUrl()}</code>。
           </>
         )}
       </p>
@@ -238,11 +251,11 @@ export function FacePredictLab() {
           onChange={(e) => void onFile(e.target.files?.[0] ?? null)}
         />
         <button type="button" disabled={busy} onClick={() => captureRef.current?.click()}>
-          拍照上传
+          拍照上传（手机）
         </button>
         {!cameraOn ? (
           <button type="button" disabled={busy} onClick={() => void startCamera()}>
-            {secureOk ? "打开摄像头" : "实时摄像头（需 HTTPS）"}
+            {secureOk ? "打开摄像头" : "打开摄像头（需 HTTPS :8443）"}
           </button>
         ) : (
           <>
@@ -265,7 +278,7 @@ export function FacePredictLab() {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={preview} alt="待识别预览" />
           ) : (
-            <div className="face-lab-empty">上传照片或打开摄像头后，预览会出现在这里。</div>
+            <div className="face-lab-empty">上传、手机拍照，或打开摄像头后，预览会出现在这里。</div>
           )}
         </div>
 

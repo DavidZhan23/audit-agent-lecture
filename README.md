@@ -36,7 +36,7 @@ pip install -r requirements.txt
 python server.py
 ```
 
-然后浏览器打开课程「超多特征与 ANN」中的「真实 ANN 演示」：上传照片或摄像头拍照。  
+然后浏览器打开课程「超多特征与 ANN」中的「真实 ANN 演示」：上传照片、手机「拍照上传」，或（HTTPS/localhost 下）「打开摄像头」。  
 详情与 curl 示例见 [`services/face-predict/README.md`](services/face-predict/README.md)。
 
 常用命令：
@@ -94,24 +94,6 @@ python server.py
 
    若暂时不部署 ANN 演示，在 `deploy.env` 设 `ENABLE_FACE_PREDICT=false`。
 
-### 公网使用摄像头（HTTPS）
-
-浏览器要求 **HTTPS**（或 localhost）才能调用摄像头。可一键开自签名 HTTPS（**8443**，PM2 反代，不占用 80，不影响 fitness）：
-
-```bash
-# 先确保课件已在 8080 运行（./deploy/deploy.sh）
-./deploy/enable-https.sh
-```
-
-然后：
-
-1. 腾讯云安全组放行 **TCP 8443**
-2. 打开 `https://211.159.166.109:8443/`
-3. 首次提示证书不受信任 → **高级 → 继续访问**
-4. 即可使用「打开摄像头」
-
-`http://IP:8080` 仍可看课件，但不能开网页摄像头（可用上传/拍照上传）。
-
 ### 后续代码更新
 
 ```bash
@@ -120,6 +102,24 @@ python server.py
 
 无需重复配置 `deploy.env` 或重新放行端口（除非你改了端口）。  
 **说明：** 首次带人脸推理的部署会下载 CPU 版 PyTorch，耗时与磁盘占用较大；之后更新会复用服务器上的 `.venv`（rsync 已排除该目录）。
+
+### 公网网页内摄像头（HTTPS :8443）
+
+电脑浏览器里「打开摄像头」需要 **HTTPS**（或 localhost）。自签名证书走 **8443**（PM2 反代，不占 80，不影响 fitness）：
+
+```bash
+# 先确保课件已在 8080 运行
+./deploy/enable-https.sh
+```
+
+然后：
+
+1. 腾讯云安全组放行 **TCP 8443**
+2. 打开 `https://211.159.166.109:8443/`
+3. 首次提示证书不受信任 → **高级 → 继续访问**
+4. 第 ③ 章点「打开摄像头」→「拍照识别」
+
+`http://IP:8080` 仍可看课件：用「上传照片」或手机「拍照上传」。日常改代码一般只跑 `deploy.sh`；HTTPS 代理常驻后不必每次重开，除非改了 `https-proxy.mjs` 或代理挂了。
 
 可选参数：
 
@@ -137,6 +137,7 @@ python server.py
 | `deploy/remote-deploy.sh` | 服务器端构建与启动（含 Python venv） |
 | `deploy/deploy.env` | 本机私有配置（勿提交密钥） |
 | `deploy/deploy.env.example` | 配置模板 |
+| `deploy/enable-https.sh` | 可选：自签名 HTTPS :8443（网页摄像头） |
 | `deploy/ecosystem.config.cjs` | PM2：课件 + face-predict |
 | `services/face-predict/` | ANN 推理包与 checkpoint |
 
