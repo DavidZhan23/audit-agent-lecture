@@ -121,6 +121,7 @@ test("server-renders the complete audit AI course", async () => {
 test("supports direct and keyboard lecture pagination", async () => {
   const root = new URL("../", import.meta.url);
   const source = await readFile(new URL("app/page.tsx", root), "utf8");
+  const styles = await readFile(new URL("app/globals.css", root), "utf8");
   assert.match(source, /const coursePages:[\s\S]*id: "audit-rollout"/);
   assert.match(source, /"ArrowRight", "PageDown"/);
   assert.match(source, /"ArrowLeft", "PageUp"/);
@@ -130,6 +131,9 @@ test("supports direct and keyboard lecture pagination", async () => {
   assert.match(source, /setSidebarOpen\(value => !value\)/);
   assert.match(source, /matchMedia\("\(max-width: 760px\)"\)/);
   assert.match(source, /<CoursePager activeIndex=\{activePage\} onChange=\{goToPage\}/);
+  assert.match(source, /querySelector<HTMLElement>\("\.paginated-course \.page"\)\?\.scrollTo/);
+  assert.match(styles, /\.paginated-course \.page \{[\s\S]*height: calc\(100vh - 128px\);[\s\S]*overflow-y: auto;/);
+  assert.match(styles, /\.course-pager \{[\s\S]*bottom: 12px;[\s\S]*height: 54px;/);
 });
 
 test("ships the independent training data and downloadable workbook", async () => {

@@ -2326,7 +2326,8 @@ footer a, footer button { margin-left: auto; border: 0; background: transparent;
   --page-glow-alt: rgba(88, 129, 116, .16);
   --page-wash: #edf2ef;
   --page-accent: #1f5c4d;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 .paginated-course.page-group-intro { --page-glow: rgba(36, 93, 78, .17); --page-glow-alt: rgba(179, 138, 96, .14); --page-wash: #edf2ef; }
 .paginated-course.page-group-foundation { --page-glow: rgba(47, 107, 79, .18); --page-glow-alt: rgba(117, 151, 100, .14); --page-wash: #e9f0ec; --page-accent: #2f6b4f; }
@@ -2334,10 +2335,15 @@ footer a, footer button { margin-left: auto; border: 0; background: transparent;
 .paginated-course.page-group-audit { --page-glow: rgba(55, 90, 122, .18); --page-glow-alt: rgba(77, 129, 143, .14); --page-wash: #eaf0f4; --page-accent: #375a7a; }
 .paginated-course .page {
   position: relative;
-  min-height: 100vh;
-  padding-top: 82px;
-  padding-bottom: 92px;
-  overflow: hidden;
+  height: calc(100vh - 128px);
+  min-height: 0;
+  margin-top: 58px;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   background:
     radial-gradient(ellipse at 92% 4%, var(--page-glow), transparent 34%),
     radial-gradient(ellipse at 4% 86%, var(--page-glow-alt), transparent 30%),
@@ -2524,7 +2530,7 @@ footer a, footer button { margin-left: auto; border: 0; background: transparent;
     backdrop-filter: blur(2px);
   }
   .page { margin-left: 0; }
-  .paginated-course .page { padding: 72px 12px 82px; }
+  .paginated-course .page { height: calc(100vh - 128px); margin-top: 58px; padding: 14px 12px 18px; }
   .course-pager,
   .paginated-course.sidebar-collapsed .course-pager { left: 10px; right: 10px; bottom: 8px; grid-template-columns: 58px minmax(0, 1fr) 58px; height: 54px; }
   .pager-direction { justify-content: center !important; padding: 0 8px; }
@@ -2611,7 +2617,8 @@ footer a, footer button { margin-left: auto; border: 0; background: transparent;
 
 @media print {
   .topbar, .sidenav, .timer, .course-pager, button { display: none !important; }
-  .page { margin: 0; padding: 0; }
+  .paginated-course { height: auto; overflow: visible; }
+  .page, .paginated-course .page { height: auto; margin: 0; padding: 0; overflow: visible; }
   .hero, .lesson { padding: 35px 25px; }
   .teacher-note { display: grid; }
   .lesson { break-inside: avoid; }

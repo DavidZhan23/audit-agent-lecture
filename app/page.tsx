@@ -2306,6 +2306,7 @@ export default function Home() {
     setActivePage(bounded);
     const page = coursePages[bounded];
     history.replaceState(null, "", page.id === "cover" ? "#top" : `#${page.id}`);
+    document.querySelector<HTMLElement>(".paginated-course .page")?.scrollTo({ top: 0, behavior: "auto" });
     window.scrollTo({ top: 0, behavior: "auto" });
     if (matchMedia("(max-width: 760px)").matches) setSidebarOpen(false);
   }, []);
