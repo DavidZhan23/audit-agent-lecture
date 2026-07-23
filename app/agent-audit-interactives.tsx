@@ -9,15 +9,26 @@ function ChapterRoute({ label, title, items }: { label: string; title: string; i
 }
 
 export function AgentChapterRoute() {
-  return <ChapterRoute label="第二部分学习路线" title="从一次模型回答，搭出可持续、可控制的行动系统" items={[
-    ["01", "为什么还需要Agent", "LLM只基于当前上下文生成"],
-    ["02", "Agent究竟是什么", "与程序、工作流、LLM分清"],
-    ["03", "系统由什么组成", "目标、模型、工具、状态、循环、控制"],
-    ["04", "工具怎样被调用", "Schema、参数、返回与错误"],
-    ["05", "反馈怎样改变下一步", "状态更新、动态分支、停止"],
-    ["06", "怎样防止失控", "权限、预算、日志与人工关口"],
-    ["07", "怎样评价价值", "完成率、质量、成本与风险"],
+  return <ChapterRoute label="第二部分 · 四章路线" title="从判断是否需要Agent，到搭建、控制和评价完整系统" items={[
+    ["06", "定义与边界", "行动缺口、准确判定、与程序/工作流/LLM区分"],
+    ["07", "运行架构", "六块架构、工具契约、状态、反馈循环与多Agent"],
+    ["08", "可靠性与控制", "风险面、自主度、运行护栏、日志与事故处理"],
+    ["09", "价值、评价与建设", "业务价值、四维评价和从原型到运营"],
   ]} />;
+}
+
+type FitKey = "calculator" | "workflow" | "assistant" | "investigation";
+
+export function AgentFitLab() {
+  const [selected, setSelected] = useState<FitKey>("investigation");
+  const tasks: Record<FitKey, { name: string; facts: string[]; verdict: string; reason: string; build: string }> = {
+    calculator: { name: "差旅标准计算器", facts: ["公式明确", "路径固定", "不需要外部反馈"], verdict: "普通程序", reason: "输入与答案关系可以完整写出，用Agent只会增加成本和不确定性。", build: "函数 + 规则测试" },
+    workflow: { name: "新员工入职办理", facts: ["步骤预先定义", "分支有限", "多系统串联"], verdict: "固定工作流", reason: "虽然连接多个系统，但下一步主要由事先设计的流程图决定。", build: "流程引擎 + API" },
+    assistant: { name: "根据材料起草摘要", facts: ["一次输入输出", "不主动取数", "结果由人使用"], verdict: "LLM应用", reason: "模型只需理解已提供材料并生成文本，没有持续行动与反馈闭环。", build: "检索/提示 + LLM" },
+    investigation: { name: "跨系统调查异常订单", facts: ["路径事前不完整", "查询结果改变下一步", "需要状态与停止条件"], verdict: "适合Agent", reason: "任务需要围绕目标动态选择工具、读取结果并决定继续、改道或停止。", build: "LLM决策 + 工具 + 状态 + 编排 + 控制" },
+  };
+  const item = tasks[selected];
+  return <div className="agent-fit-lab"><div className="fit-options">{(Object.keys(tasks) as FitKey[]).map(key => <button type="button" key={key} className={selected === key ? "active" : ""} onClick={() => setSelected(key)}><strong>{tasks[key].name}</strong><span>{tasks[key].verdict}</span></button>)}</div><section><span>判断练习</span><h3>{item.name}</h3><div className="fit-facts">{item.facts.map(fact => <b key={fact}>{fact}</b>)}</div><p>{item.reason}</p><div><small>推荐实现</small><strong>{item.build}</strong></div><blockquote>判断Agent的关键不是“用了LLM没有”，而是：路径是否需要由新观察动态决定，以及系统是否需要持续保存状态并受控停止。</blockquote></section></div>;
 }
 
 export function AgentArchitectureExplorer() {
@@ -71,15 +82,11 @@ export function AgentControlLab() {
 }
 
 export function AuditChapterRoute() {
-  return <ChapterRoute label="第三部分学习路线" title="从通用Agent，搭出证据可复核、责任不越界的审计智能体" items={[
-    ["01", "定义审计交付", "先说清要形成什么、不允许形成什么"],
-    ["02", "选择窄场景", "判断是否值得且适合使用Agent"],
-    ["03", "组合技术能力", "规则、ML、ANN、LLM各司其职"],
-    ["04", "连接数据与制度", "关联键、来源、版本与权限"],
-    ["05", "设计端到端流程", "筛查、调查、取证、复核"],
-    ["06", "形成证据包", "事实、标准、证据、不确定性、建议"],
-    ["07", "建立治理控制", "权限、注入、隐私、日志与职责"],
-    ["08", "评价并逐步上线", "影子运行、试点、门槛与扩围"],
+  return <ChapterRoute label="第三部分 · 四章路线" title="从审计任务定义，到架构、证据协作和受控上线" items={[
+    ["10", "任务与场景", "定义可复核交付，筛选窄而有价值的任务"],
+    ["11", "系统与数据架构", "组合五种能力，连接九表两制度并跑通流程"],
+    ["12", "证据与人机协作", "形成五字段证据包，明确机器与人的交接点"],
+    ["13", "治理、评价与试点", "控制六类风险，以四阶段门槛逐步上线"],
   ]} />;
 }
 
@@ -114,6 +121,20 @@ export function EvidencePackageLab() {
   ];
   const item = parts[active];
   return <div className="evidence-package-lab"><div className="package-tabs">{parts.map((part, index) => <button type="button" key={part.name} className={active === index ? "active" : ""} onClick={() => setActive(index)}><b>0{index + 1}</b><span>{part.name}</span></button>)}</div><section><span>BX-42017 · 证据包 {active + 1}/5</span><h3>{item.name}</h3><strong>{item.value}</strong><div><small>来源/状态</small><p>{item.source}</p></div><blockquote><b>复核检查</b><p>{item.check}</p></blockquote><button type="button" onClick={() => setActive((active + 1) % parts.length)}>{active === parts.length - 1 ? "重新检查" : "检查下一项 →"}</button></section></div>;
+}
+
+export function AuditResponsibilityLab() {
+  const [active, setActive] = useState(0);
+  const steps = [
+    { name: "数据完整性检查", system: "自动检查字段、主键、日期范围和关联失败", human: "确认检查范围与容忍阈值", handoff: "异常数据清单 + 规则版本", reason: "判断逻辑明确、重复量大，适合确定性代码。" },
+    { name: "疑点优先级排序", system: "规则与模型给出风险信号、概率和触发原因", human: "根据审计目标调整阈值与资源分配", handoff: "排序结果 + 模型版本 + 触发特征", reason: "模型可以帮助排序，但概率本身不是证据。" },
+    { name: "跨系统取证", system: "Agent在白名单内查询航班、酒店、CRM和制度", human: "批准扩围、高敏数据和任何写操作", handoff: "原始返回 + 参数 + 时间 + 失败记录", reason: "动态查询适合Agent，但权限和范围必须由人预设。" },
+    { name: "证据评价", system: "并列事实、冲突、来源和缺失项", human: "评价证据是否充分、适当、可靠并处理矛盾", handoff: "证据包 + 未解决问题", reason: "证据质量评价涉及专业标准与具体情境。" },
+    { name: "访谈与沟通", system: "生成问题清单和资料请求草稿", human: "实施访谈、观察反应并开展追问", handoff: "经确认的访谈记录", reason: "沟通包含语境、责任和职业怀疑，不能由系统替代。" },
+    { name: "定性与报告", system: "按模板整理事实与引用，不签发结论", human: "形成发现、判断影响、批准底稿与报告", handoff: "责任人签署的审计工作产品", reason: "重大职业判断和审计责任必须由具名人员承担。" },
+  ];
+  const item = steps[active];
+  return <div className="audit-responsibility-lab"><div className="responsibility-steps">{steps.map((step, index) => <button type="button" key={step.name} className={active === index ? "active" : ""} onClick={() => setActive(index)}><b>{String(index + 1).padStart(2, "0")}</b><span>{step.name}</span></button>)}</div><section><span>人机协作步骤 {active + 1}/6</span><h3>{item.name}</h3><div className="responsibility-columns"><div><small>系统负责</small><p>{item.system}</p></div><div><small>审计人员负责</small><p>{item.human}</p></div></div><div className="responsibility-handoff"><small>交接时必须留下</small><strong>{item.handoff}</strong></div><blockquote>{item.reason}</blockquote><button type="button" onClick={() => setActive((active + 1) % steps.length)}>{active === steps.length - 1 ? "重新查看" : "下一环节 →"}</button></section></div>;
 }
 
 export function AuditEvaluationLab() {
