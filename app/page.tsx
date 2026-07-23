@@ -233,7 +233,7 @@ function Bridge({ from, problem, to, lead = "所以，我们需要引入：" }: 
 
 type ViewMode = "student" | "teacher" | "appendix";
 
-function Header({ mode, setMode, progressOverride, onHome }: { mode: ViewMode; setMode: (v: ViewMode) => void; progressOverride?: number; onHome?: () => void }) {
+function Header({ mode, setMode, progressOverride, onHome, sidebarOpen, onToggleSidebar }: { mode: ViewMode; setMode: (v: ViewMode) => void; progressOverride?: number; onHome?: () => void; sidebarOpen?: boolean; onToggleSidebar?: () => void }) {
   const [progress, setProgress] = useState(0);
   const [timerOpen, setTimerOpen] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -259,9 +259,10 @@ function Header({ mode, setMode, progressOverride, onHome }: { mode: ViewMode; s
         <a href="#top" className="brand" onClick={onHome ? (event) => { event.preventDefault(); onHome(); } : undefined}>LLM · Agent · 审计应用</a>
         <div className="top-progress"><i style={{ width: `${progressOverride ?? progress}%` }} /></div>
         <div className="top-actions">
-          <button className={mode === "student" ? "on" : ""} onClick={() => setMode("student")}>学员视图</button>
-          <button className={mode === "teacher" ? "on" : ""} onClick={() => setMode("teacher")}>讲师视图</button>
-          <button className={mode === "appendix" ? "on" : ""} onClick={() => setMode("appendix")}>附录视图</button>
+          {onToggleSidebar && <button className="sidebar-toggle" type="button" onClick={onToggleSidebar} aria-expanded={sidebarOpen} aria-controls="course-sidebar"><span aria-hidden="true">☰</span><b>{sidebarOpen ? "隐藏侧栏" : "显示侧栏"}</b></button>}
+          <button className={`view-mode-button view-mode-student ${mode === "student" ? "on" : ""}`} onClick={() => setMode("student")}>学员视图</button>
+          <button className={`view-mode-button ${mode === "teacher" ? "on" : ""}`} onClick={() => setMode("teacher")}>讲师视图</button>
+          <button className={`view-mode-button ${mode === "appendix" ? "on" : ""}`} onClick={() => setMode("appendix")}>附录视图</button>
           <button onClick={() => setTimerOpen(!timerOpen)}>计时</button>
           <button onClick={() => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.()}>全屏</button>
         </div>
@@ -2298,6 +2299,7 @@ function ComplexHome() {
 export default function Home() {
   const [mode, setMode] = useState<ViewMode>("student");
   const [activePage, setActivePage] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const activeCoursePage = coursePages[activePage];
   const goToPage = useCallback((index: number) => {
     const bounded = Math.max(0, Math.min(coursePages.length - 1, index));
@@ -2305,16 +2307,22 @@ export default function Home() {
     const page = coursePages[bounded];
     history.replaceState(null, "", page.id === "cover" ? "#top" : `#${page.id}`);
     window.scrollTo({ top: 0, behavior: "auto" });
+    if (matchMedia("(max-width: 760px)").matches) setSidebarOpen(false);
   }, []);
 
   useEffect(() => {
     const requested = location.hash.replace("#", "");
     const index = coursePages.findIndex(page => page.id === requested);
     if (index >= 0) setActivePage(index);
+    if (matchMedia("(max-width: 760px)").matches) setSidebarOpen(false);
   }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && sidebarOpen) {
+        setSidebarOpen(false);
+        return;
+      }
       const target = event.target as HTMLElement | null;
       if (target?.closest("input, textarea, select, button, [contenteditable='true']")) return;
       if (["ArrowRight", "PageDown"].includes(event.key)) {
@@ -2336,7 +2344,7 @@ export default function Home() {
     };
     addEventListener("keydown", onKeyDown);
     return () => removeEventListener("keydown", onKeyDown);
-  }, [activePage, goToPage]);
+  }, [activePage, goToPage, sidebarOpen]);
 
   const goToId = (id: string) => {
     const index = coursePages.findIndex(page => page.id === id);
@@ -2344,9 +2352,10 @@ export default function Home() {
   };
 
   return <PythonKernelProvider>
-    <main id="top" className={`paginated-course page-group-${activeCoursePage.group} view-${mode} ${mode !== "student" ? "show-notes" : ""}`}>
-      <Header mode={mode} setMode={setMode} progressOverride={Math.round(activePage / (coursePages.length - 1) * 100)} onHome={() => goToPage(0)} />
-      <aside className="sidenav"><div><span>约2小时 · 三部分</span><strong>LLM · Agent · 审计</strong></div><nav>
+    <main id="top" className={`paginated-course page-group-${activeCoursePage.group} ${sidebarOpen ? "sidebar-open" : "sidebar-collapsed"} view-${mode} ${mode !== "student" ? "show-notes" : ""}`}>
+      <Header mode={mode} setMode={setMode} progressOverride={Math.round(activePage / (coursePages.length - 1) * 100)} onHome={() => goToPage(0)} sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(value => !value)} />
+      {sidebarOpen && <button type="button" className="sidebar-scrim" aria-label="关闭章节侧栏" onClick={() => setSidebarOpen(false)} />}
+      <aside id="course-sidebar" className="sidenav" aria-hidden={!sidebarOpen}><div><span>约2小时 · 三部分</span><strong>LLM · Agent · 审计</strong></div><nav>
         <button type="button" className={activeCoursePage.id === nav[0][0] ? "active" : ""} onClick={() => goToId(nav[0][0])}><span>01</span><b>{nav[0][1]}</b><small className="nav-time">{nav[0][2]}</small></button>
         <p className="nav-part"><span>第一部分</span>技术基础</p>
         {nav.slice(1, 5).map((x, i) => <button type="button" className={activeCoursePage.id === x[0] ? "active" : ""} onClick={() => goToId(x[0])} key={x[0]}><span>{String(i + 2).padStart(2, "0")}</span><b>{x[1]}</b><small className="nav-time">{x[2]}</small></button>)}

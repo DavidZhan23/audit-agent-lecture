@@ -19,6 +19,10 @@ test("server-renders the complete audit AI course", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   const html = await response.text();
   assert.match(html, /aria-label="课件翻页"/);
+  assert.match(html, /aria-controls="course-sidebar"/);
+  assert.match(html, /隐藏侧栏/);
+  assert.match(html, /id="course-sidebar"/);
+  assert.match(html, /sidebar-open/);
   assert.match(html, /01<!-- --> \/ <!-- -->17/);
   assert.match(html, /上一页/);
   assert.match(html, /下一页/);
@@ -122,6 +126,9 @@ test("supports direct and keyboard lecture pagination", async () => {
   assert.match(source, /"ArrowLeft", "PageUp"/);
   assert.match(source, /event\.key === "Home"/);
   assert.match(source, /event\.key === "End"/);
+  assert.match(source, /event\.key === "Escape"/);
+  assert.match(source, /setSidebarOpen\(value => !value\)/);
+  assert.match(source, /matchMedia\("\(max-width: 760px\)"\)/);
   assert.match(source, /<CoursePager activeIndex=\{activePage\} onChange=\{goToPage\}/);
 });
 
