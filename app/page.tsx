@@ -758,7 +758,7 @@ function LlmContextDemo() {
       <LlmChapterRoute />
 
       <section className="llm-step-section">
-        <div className="llm-step-title"><span>5.1 · 它是什么</span><h3>第一步：从 ANN 连续地走到 LLM</h3><p>问题不是“ANN 被什么新物种替代”，而是“怎样把神经网络改造成通用的语言预测器”。</p></div>
+        <div className="llm-step-title"><span>5.1 · 它是什么</span><h3>从 ANN 连续地走到 LLM</h3><p>不是新物种，而是把神经网络改造成通用的语言预测器。</p></div>
         <AnnToLlmGapDiagram />
         <div className="llm-upgrade-grid">
           <article><span>保持不变</span><strong>仍然是神经网络</strong><p>仍有层、权重、偏置、前向计算、Loss、反向传播和推理。</p></article>
@@ -777,7 +777,7 @@ function LlmContextDemo() {
       </section>
 
       <section className="llm-step-section">
-        <div className="llm-step-title"><span>5.2 · 文字怎样进去</span><h3>第二步：计算机不认识“文字”，先把它变成数字</h3><p>一段文本进入模型前依次经历：切分 → 编号 → 查向量表 → 加入位置信息。</p></div>
+        <div className="llm-step-title"><span>5.2 · 文字怎样进去</span><h3>计算机不认识“文字”，先把它变成数字</h3><p>切分 → 编号 → 查向量表 → 加入位置信息。</p></div>
         <TokenizeDiagram />
         <div className="llm-three-concepts">
           <article><span>Tokenizer</span><strong>切分并编号</strong><p>把文字切成词、字或子词 Token；同一 Token 对应稳定编号。它是编码规则，不负责理解。</p></article>
@@ -788,10 +788,9 @@ function LlmContextDemo() {
       </section>
 
       <section className="llm-step-section">
-        <div className="llm-step-title"><span>5.3 · 网络怎样读写</span><h3>第三步：Transformer 联系上下文，再逐 Token 写出答案</h3><p>Attention 负责“当前应该重点参考哪里”；Transformer Block 负责反复整合与变换；LM Head 负责给整个词表打分。</p></div>
+        <div className="llm-step-title"><span>5.3 · 网络怎样读写</span><h3>Transformer 联系上下文，再逐 Token 写出答案</h3><p>Attention 负责“当前应该重点参考哪里”；Transformer Block 负责反复整合与变换；LM Head 负责给整个词表打分。</p></div>
         <AttentionHeatmapDiagram />
         <AttentionLab />
-        <InlinePythonLab example="attention" guide="逐行看Query与每个Key算相似度、Softmax变成权重、再对Value加权求和。重点不是背矩阵，而是理解Attention做的是信息路由；权重高不代表事实已核实。" />
         <TransformerStackDiagram />
         <LlmPipeline />
         <div className="math-explain lecture-board compact-board">
@@ -804,7 +803,7 @@ function LlmContextDemo() {
       </section>
 
       <section className="llm-step-section">
-        <div className="llm-step-title"><span>5.4 · 怎样训练</span><h3>第四步：训练不是灌入答案，而是不断修正预测误差</h3><p>先讲预训练的一次循环，再区分预训练、指令微调/对齐和日常推理。三者不能混为一谈。</p></div>
+        <div className="llm-step-title"><span>5.4 · 怎样训练</span><h3>训练不是灌入答案，而是不断修正预测误差</h3><p>先讲预训练的一次循环，再区分预训练、指令微调/对齐和日常推理。</p></div>
         <div className="llm-training-data">
           <article><b>01</b><strong>收集与治理语料</strong><p>授权文本、网页、书籍、代码等；清洗、去重、过滤并切分。</p></article>
           <article><b>02</b><strong>自动构造训练答案</strong><p>同一序列错开一位：前面的 Token 是输入，后一个 Token 就是目标。</p></article>
@@ -820,7 +819,7 @@ function LlmContextDemo() {
       </section>
 
       <section className="llm-step-section">
-        <div className="llm-step-title"><span>5.5 · 训练后剩什么</span><h3>第五步：打开一个训练好的 LLM，它不是规则库，而是一组文件和巨大矩阵</h3><p>“学会了语言”最终必须落到可保存、可加载的工程制品上。下面直接打开一个教学检查点。</p></div>
+        <div className="llm-step-title"><span>5.5 · 训练后剩什么</span><h3>训练成品不是规则库，而是一组文件和巨大矩阵</h3><p>“学会了语言”最终必须落到可保存、可加载的工程制品上。</p></div>
         <LlmCheckpointExplorer />
         <div className="llm-product-facts">
           <article><strong>结构不会消失</strong><p>config 说明层数、隐藏维度、注意力头和词表大小。</p></article>
@@ -832,7 +831,7 @@ function LlmContextDemo() {
       </section>
 
       <section className="llm-step-section">
-        <div className="llm-step-title"><span>5.6 · 怎样调用</span><h3>第六步：业务程序并不“进入模型”，而是向推理服务发送请求</h3><p>模型先被部署成服务。你的网页、Python 或审计系统提交输入，服务运行推理并返回输出。</p></div>
+        <div className="llm-step-title"><span>5.6 · 怎样调用</span><h3>业务程序并不“进入模型”，而是向推理服务发送请求</h3><p>模型先被部署成服务。你的网页、Python 或审计系统提交输入，服务运行推理并返回输出。</p></div>
         <LlmCallLab />
         <ContextWindowDiagram />
         <div className="llm-call-guardrail"><strong>静态 HTML 的关键安全边界</strong><p>教学页面可以演示请求结构，但生产环境的模型密钥不能直接写在浏览器代码里；否则任何打开网页的人都可能读取密钥。真实系统应由受控后端代为调用，并记录访问、输入和输出。</p></div>
@@ -841,7 +840,7 @@ function LlmContextDemo() {
       </section>
 
       <section className="llm-step-section">
-        <div className="llm-step-title"><span>5.7 · 会什么、不会什么</span><h3>第七步：能力来自同一个预测目标，边界也来自同一个预测目标</h3><p>下一 Token 训练迫使模型学习语言结构、常见知识关联和长程依赖；规模扩大后，它表现出总结、抽取、问答、改写、分类和代码生成等通用能力。</p></div>
+        <div className="llm-step-title"><span>5.7 · 会什么、不会什么</span><h3>能力与边界来自同一个预测目标</h3><p>下一 Token 训练迫使模型学习语言结构、常见知识关联和长程依赖；规模扩大后表现出通用能力。</p></div>
         <WhyNextTokenDiagram />
         <CapabilityBoundaryStrip />
         <div className="llm-case-output">
@@ -851,62 +850,31 @@ function LlmContextDemo() {
           <i>≠</i>
           <div className="limit"><span>不能直接输出</span><p>已经核验的事实、违规认定、舞弊定性或最终审计结论</p></div>
         </div>
-
-      <div className="hallucination">
-        <div>
-          <strong>为什么会幻觉</strong>
-          <p>
-            目标函数奖励的是「统计上像那么回事的后续 Token」，不是「每句都有系统可核验来源」。
-            资料不足或冲突时，模型仍可能生成语法完美、语气笃定的段落——这正是审计里最危险的错觉。
-          </p>
+        <div className="hallucination">
+          <div>
+            <strong>为什么会幻觉</strong>
+            <p>目标函数奖励的是「统计上像那么回事的后续 Token」，不是「每句都有系统可核验来源」。资料不足或冲突时，模型仍可能生成语法完美、语气笃定的段落。</p>
+          </div>
+          <div>
+            <span>语言流畅</span><i>≠</i><span>事实正确</span><i>≠</i><span>证据充分</span><i>≠</i><span>审计结论</span>
+          </div>
         </div>
-        <div>
-          <span>语言流畅</span>
-          <i>≠</i>
-          <span>事实正确</span>
-          <i>≠</i>
-          <span>证据充分</span>
-          <i>≠</i>
-          <span>审计结论</span>
+        <CapabilityBoundary
+          method="大语言模型（LLM）"
+          input="提示词 + 上下文中的 Token 序列（制度、说明、多段证据）"
+          unique="在语言空间里做大规模条件生成与语境对照"
+          output="解释、摘要、疑点草稿、核对清单（文本）"
+          limit="可能幻觉；不会天然访问业务系统；不能替代职业判断"
+        />
+        <div className="task-logic-map">
+          <span>板书收束</span>
+          <code>Token 化 → 条件概率 P(下一 Token) → Attention 联语境 → 逐 Token 生成</code>
+          <span>提醒</span>
+          <strong>流畅 ≠ 审计结论；窗口外 = 未知</strong>
         </div>
-      </div>
-
-      <div className="three-stages">
-        <div>
-          <span>回到 BX-42519</span>
-          <strong>LLM 可以做什么</strong>
-          <p>在你提供的说明、小票、CRM、日历文本上，指出语义冲突，起草「建议核对项」。</p>
-        </div>
-        <div>
-          <span>仍然缺什么</span>
-          <strong>它不会自己去拉系统</strong>
-          <p>若 CRM 根本没贴进提示词，模型不能「因为懂业务」就变出真实拜访记录。</p>
-        </div>
-        <div>
-          <span>下一章预告</span>
-          <strong>Agent + LLM</strong>
-          <p>把「建议核对」变成「调用航班/酒店/CRM 工具，按反馈决定下一步，并在护栏下停止」。</p>
-        </div>
-      </div>
-
-      <CapabilityBoundary
-        method="大语言模型（LLM）"
-        input="提示词 + 上下文中的 Token 序列（制度、说明、多段证据）"
-        unique="在语言空间里做大规模条件生成与语境对照"
-        output="解释、摘要、疑点草稿、核对清单（文本）"
-        limit="可能幻觉；不会天然访问业务系统；不能替代职业判断"
-      />
-
-      <div className="task-logic-map">
-        <span>板书收束</span>
-        <code>Token 化 → 条件概率 P(下一 Token) → Attention 联语境 → 逐 Token 生成</code>
-        <span>提醒</span>
-        <strong>流畅 ≠ 审计结论；窗口外 = 未知</strong>
-      </div>
-
-      <LessonTakeaway>
-        LLM 是以 Transformer 为骨干、在海量 Token 序列上训练的大型神经网络：训练时通过下一 Token 误差更新权重，使用时由推理服务接收上下文并逐 Token 生成；它能理解和生成已提供的语言材料，但不会天然主动取数，也不能替代事实核验与审计判断。
-      </LessonTakeaway>
+        <LessonTakeaway>
+          LLM 是以 Transformer 为骨干、在海量 Token 序列上训练的大型神经网络：训练时通过下一 Token 误差更新权重，使用时由推理服务接收上下文并逐 Token 生成；它能理解和生成已提供的语言材料，但不会天然主动取数，也不能替代事实核验与审计判断。
+        </LessonTakeaway>
       </section>
     </div>
   );
@@ -2090,51 +2058,24 @@ export default function Home() {
         </section>
 
         <section id="problem" className="lesson">
-          <SectionTitle
-            no="01"
-            time="导言 · 约5分钟"
-            title="导言"
-          />
+          <SectionTitle no="01" time="导言 · 约5分钟" title="导言" />
           <div className="lesson-abstract">
             <span>Abstract</span>
-            <p>
-              本课讨论大语言模型（LLM）与智能体（Agent）的基础概念、系统架构，以及它们在审计工作中的可能用法。课程分为三部分：
-            </p>
+            <p>本课讨论大语言模型（LLM）与智能体（Agent）的基础概念、系统架构，以及它们在审计工作中的可能用法。课程分为三部分：</p>
             <ul className="abstract-parts">
-              <li>
-                <b>第一部分 · 技术基础</b>
-                <span>从规则、机器学习、神经网络到大模型，说明这些技术为何会逐层出现。</span>
-              </li>
-              <li>
-                <b>第二部分 · Agent 基础与架构</b>
-                <span>讲清 Agent 是什么、由哪些模块组成、如何与工具形成受控闭环。</span>
-              </li>
-              <li>
-                <b>第三部分 · 审计应用</b>
-                <span>讨论如何把上述能力落到审计智能体场景。</span>
-              </li>
+              <li><b>第一部分 · 技术基础</b><span>从规则、机器学习、神经网络到大模型，说明这些技术为何会逐层出现。</span></li>
+              <li><b>第二部分 · Agent 基础与架构</b><span>讲清 Agent 是什么、由哪些模块组成、如何与工具形成受控闭环。</span></li>
+              <li><b>第三部分 · 审计应用</b><span>讨论如何把上述能力落到审计智能体场景。</span></li>
             </ul>
           </div>
           <CourseArchitecture />
           <div className="content-block lesson-takeaways">
             <h3>主要收获</h3>
             <ol className="takeaway-grid">
-              <li>
-                <b>01</b>
-                <span>能按问题类型选择方法，并分清：基于任务逻辑的编程、经典机器学习、神经网络与大模型——各自能解决什么、解决不了什么。</span>
-              </li>
-              <li>
-                <b>02</b>
-                <span>分得清 LLM 与 Agent：前者擅长理解与生成；后者围绕目标调用工具、根据反馈决策并受控停止。</span>
-              </li>
-              <li>
-                <b>03</b>
-                <span>理解 Agent 的运行逻辑：能说出基本模块与工具反馈循环，并对权限、日志、人在回路等落地约束有初步了解。</span>
-              </li>
-              <li>
-                <b>04</b>
-                <span>独立思考在审计场景下，自己该如何针对性地构建智能体。</span>
-              </li>
+              <li><b>01</b><span>能按问题类型选择方法，并分清：基于任务逻辑的编程、经典机器学习、神经网络与大模型——各自能解决什么、解决不了什么。</span></li>
+              <li><b>02</b><span>分得清 LLM 与 Agent：前者擅长理解与生成；后者围绕目标调用工具、根据反馈决策并受控停止。</span></li>
+              <li><b>03</b><span>理解 Agent 的运行逻辑：能说出基本模块与工具反馈循环，并对权限、日志、人在回路等落地约束有初步了解。</span></li>
+              <li><b>04</b><span>独立思考在审计场景下，自己该如何针对性地构建智能体。</span></li>
             </ol>
           </div>
           <Bridge
@@ -2196,7 +2137,7 @@ export default function Home() {
               <span>趣味支线 · 5—7分钟</span>
               <h3>同一种底层机制，为什么也能识别人脸？</h3>
               <p>
-                审计主线是「像素→数字→286」。下面用真实 ResNet18 展示「像素→面部特征→分类概率」。
+                审计主线是「像素→数字→286」。下面用真实 ResNet34 展示「像素→面部特征→分类概率」。
                 只帮助理解神经网络，不作为审计案例证据。
               </p>
             </div>

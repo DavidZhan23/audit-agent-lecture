@@ -14,7 +14,7 @@
 | `KnownUnknownBridge` / `FunctionFittingLab` / `ConfusionMatrixLab` | 备用（当前 Home 的 ml 已精简） | 旧版 ML 互动 |
 | `NeuronContinuityLab` 等 | 备用（旧版 nn DeepDive） | ANN 解剖 |
 | `DigitsImageLab` | nn（嵌在 AnnPixelDemo） | 自构 16×16 示意像素 → 数字 0—9 |
-| `FacePredictLab` | nn 趣味支线 | 真实 ResNet18（224）人脸：上传/拍照 → 检测裁剪 → 三类概率；低置信拒识 |
+| `FacePredictLab` | nn 趣味支线 | 真实 ResNet34（224，head_hidden=512）人脸：上传/拍照 → 检测裁剪 → 三类概率；阈值 0.70 拒识 |
 | `LlmContextDemo` / `LlmChapterRoute` | llm | BX-42519 动机 + 七步连续主线；明确本章学习顺序 |
 | `ContextEvidenceInbox` | llm（嵌在 LlmContextDemo） | 说明/小票/CRM/日历多段文字 |
 | `AnnToLlmGapDiagram` 等 | llm（`app/llm-diagrams.tsx`） | 缺口/连续关系/分词/生成循环/Attention/Transformer/生命周期/窗口/边界等图示 |

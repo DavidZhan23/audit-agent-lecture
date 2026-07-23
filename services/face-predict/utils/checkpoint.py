@@ -56,6 +56,8 @@ def save_checkpoint(
             "dropout": config.DROPOUT,
             "weight_decay": config.WEIGHT_DECAY,
             "use_class_weights": config.USE_CLASS_WEIGHTS,
+            "backbone": getattr(config, "TRANSFER_BACKBONE", "resnet34"),
+            "head_hidden": int(getattr(config, "TRANSFER_HEAD_HIDDEN", 512)),
         },
     }
     if extra:

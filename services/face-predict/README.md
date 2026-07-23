@@ -1,16 +1,20 @@
 # 人脸推理服务（ANN 课堂演示）
 
-从「认出笑雨」项目抽取的**最小推理包**：ResNet18 迁移学习 checkpoint + 人脸检测裁剪 + HTTP API。
+从「认出笑雨」项目抽取的**最小推理包**：ResNet34 迁移学习 checkpoint + 人脸检测裁剪 + HTTP API。
 
 ## 模型
 
 | 项 | 值 |
 |----|-----|
-| 类型 | `transfer_resnet18`（ImageNet 预训练 ResNet18） |
+| 类型 | `transfer_resnet34`（ImageNet 预训练 ResNet34 + 双层分类头） |
+| 分类头 | `Dropout → Linear(512) → ReLU → Dropout → Linear(3)`（`head_hidden=512`） |
+| 参数量 | 约 **2157 万** |
 | 输入尺寸 | **224×224**（以 checkpoint 内 `image_size` 为准） |
 | 训练类别 | `笑雨` / `骐源` / `其他` |
-| 展示标签 | `笑雨` / `骐源` / `其他人物` / `无法确定`（置信度 &lt; 0.70） |
-| 权重 | `checkpoints/transfer/best.pt`（约 123MB） |
+| 展示标签 | `笑雨` / `骐源` / `其他人物` / `无法确定`（置信度 &lt; **0.70**） |
+| 拒识阈值 | **0.70**（`UNKNOWN_CONFIDENCE_THRESHOLD`） |
+| 权重 | `checkpoints/transfer/best.pt`（文件约 **247MB**，含优化器；推理权重约 82MB） |
+| 加载方式 | `build_transfer_from_checkpoint()`（按 checkpoint 自动选 backbone / head） |
 | 设备 | Apple Silicon 优先 **MPS**，否则 CUDA / CPU |
 
 ## 目录
@@ -21,10 +25,10 @@ services/face-predict/
 ├── infer.py                 # 核心推理（懒加载单例）
 ├── server.py                # FastAPI：POST /api/face-predict
 ├── requirements.txt
-├── models/transfer_model.py
+├── models/transfer_model.py # 含 ResNet34 + build_transfer_from_checkpoint
 ├── utils/{face_detection,checkpoint,device}.py
 ├── assets/haarcascade_frontalface_default.xml
-└── checkpoints/transfer/best.pt   # ~123MB，勿删
+└── checkpoints/transfer/best.pt   # ~247MB，勿删
 ```
 
 ## 安装与启动

@@ -1,4 +1,4 @@
-"""核心推理：人脸检测裁剪 → ResNet18 分类 → JSON 友好结果。"""
+"""核心推理：人脸检测裁剪 → ResNet34 分类 → JSON 友好结果。"""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import io
 import logging
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 
 import torch
 import torch.nn.functional as F
@@ -14,8 +14,8 @@ from PIL import Image, ImageOps
 from torchvision import transforms
 
 import config
-from models.transfer_model import build_transfer_model
-from utils.checkpoint import load_checkpoint
+from models.transfer_model import build_transfer_from_checkpoint
+from utils.checkpoint import count_parameters, load_checkpoint
 from utils.device import get_device
 from utils.face_detection import crop_face, get_default_face_detector
 
@@ -80,24 +80,23 @@ class FacePredictor:
         self.device = get_device()
         self.detector = get_default_face_detector(min_size=config.FACE_MIN_SIZE)
         checkpoint = load_checkpoint(self.checkpoint_path, device=self.device)
-        dropout = checkpoint.get("config", {}).get("dropout", config.DROPOUT)
-        if checkpoint["model_name"] != "transfer_resnet18":
-            raise ValueError(
-                f"期望 transfer_resnet18，实际 {checkpoint['model_name']}"
-            )
-        model = build_transfer_model(dropout=dropout, pretrained=False)
-        model.load_state_dict(checkpoint["model_state_dict"])
-        model.to(self.device)
-        model.eval()
+        # 按 checkpoint 推断 backbone + head_hidden，避免 ResNet18 旧头结构不匹配
+        model = build_transfer_from_checkpoint(checkpoint, self.device)
         self.model = model
         self.image_size = int(checkpoint.get("image_size", config.IMAGE_SIZE))
+        params = count_parameters(model)
+        cfg = checkpoint.get("config") or {}
         logger.info(
-            "FacePredictor ready device=%s ckpt=%s image_size=%s threshold=%.2f dropout=%s",
+            "FacePredictor ready device=%s ckpt=%s model=%s image_size=%s "
+            "threshold=%.2f backbone=%s head_hidden=%s params=%s",
             self.device,
             self.checkpoint_path,
+            checkpoint.get("model_name"),
             self.image_size,
             self.confidence_threshold,
-            dropout,
+            getattr(model, "backbone_name", cfg.get("backbone")),
+            getattr(model, "head_hidden", cfg.get("head_hidden")),
+            params["total"],
         )
 
     def predict_pil(self, image: Image.Image) -> Dict[str, Any]:

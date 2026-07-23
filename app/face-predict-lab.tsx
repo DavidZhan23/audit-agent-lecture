@@ -197,7 +197,7 @@ export function FacePredictLab() {
     <div className="face-lab interactive">
       <div className="interactive-head">
         <div>
-          <span>趣味实验 · 真实 ANN · ResNet18 迁移学习</span>
+          <span>趣味实验 · 真实 ANN · ResNet34 迁移学习</span>
           <h3>同样是像素：网络怎样从数字识别扩展到人脸特征？</h3>
         </div>
         <button

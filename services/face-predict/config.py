@@ -18,6 +18,8 @@ DEFAULT_CHECKPOINT: Path = TRANSFER_CHECKPOINT_DIR / "best.pt"
 
 IMAGE_SIZE: int = 224
 DROPOUT: float = 0.35
+TRANSFER_BACKBONE: str = "resnet34"
+TRANSFER_HEAD_HIDDEN: int = 512
 
 FACE_EXPAND_RATIO: float = 0.30
 FACE_MIN_SIZE: int = 40
@@ -25,5 +27,6 @@ FACE_MIN_SIZE: int = 40
 IMAGENET_MEAN: List[float] = [0.485, 0.456, 0.406]
 IMAGENET_STD: List[float] = [0.229, 0.224, 0.225]
 
+# 课件演示默认拒识阈值（与产品约定一致）
 UNKNOWN_CONFIDENCE_THRESHOLD: float = 0.70
 LOG_LEVEL: str = "INFO"

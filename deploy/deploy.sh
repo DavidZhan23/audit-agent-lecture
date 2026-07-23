@@ -92,7 +92,7 @@ log "人脸推理:   ENABLE_FACE_PREDICT=$ENABLE_FACE_PREDICT ($FACE_PREDICT_URL
 if [[ "$ENABLE_FACE_PREDICT" == "true" ]]; then
   local_ckpt="$PROJECT_ROOT/services/face-predict/checkpoints/transfer/best.pt"
   if [[ ! -f "$local_ckpt" ]]; then
-    fail "本机缺少模型权重 $local_ckpt（约 123MB），无法部署 ANN 演示。可设 ENABLE_FACE_PREDICT=false 仅部署课件。"
+    fail "本机缺少模型权重 $local_ckpt（约 247MB），无法部署 ANN 演示。可设 ENABLE_FACE_PREDICT=false 仅部署课件。"
   fi
   log "检测到 checkpoint: $(du -h "$local_ckpt" | awk '{print $1}')"
 fi

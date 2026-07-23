@@ -173,7 +173,7 @@ setup_face_predict() {
   fi
 
   [[ -d "$FACE_DIR" ]] || fail "缺少人脸推理目录: $FACE_DIR（请确认 rsync 已同步 services/face-predict）"
-  [[ -f "$FACE_DIR/checkpoints/transfer/best.pt" ]] || fail "缺少模型权重: $FACE_DIR/checkpoints/transfer/best.pt（约 123MB，请确认本机有该文件且未被 rsync 排除）"
+  [[ -f "$FACE_DIR/checkpoints/transfer/best.pt" ]] || fail "缺少模型权重: $FACE_DIR/checkpoints/transfer/best.pt（约 247MB，请确认本机有该文件且未被 rsync 排除）"
   [[ -f "$FACE_DIR/server.py" ]] || fail "缺少 $FACE_DIR/server.py"
 
   cd "$FACE_DIR"
