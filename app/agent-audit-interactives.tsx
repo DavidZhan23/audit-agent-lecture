@@ -9,11 +9,11 @@ function ChapterRoute({ label, title, items }: { label: string; title: string; i
 }
 
 export function AgentChapterRoute() {
-  return <ChapterRoute label="第二部分 · 四章路线" title="从判断是否需要Agent，到搭建、控制和评价完整系统" items={[
-    ["06", "定义与边界", "行动缺口、准确判定、与程序/工作流/LLM区分"],
-    ["07", "运行架构", "六块架构、工具契约、状态、反馈循环与多Agent"],
-    ["08", "可靠性与控制", "风险面、自主度、运行护栏、日志与事故处理"],
-    ["09", "价值、评价与建设", "业务价值、四维评价和从原型到运营"],
+  return <ChapterRoute label="第二部分 · 学习路线" title="定义 → 运行 → 控制 → 建设" items={[
+    ["06", "什么是Agent", "从一次回答到行动—反馈闭环"],
+    ["07", "Agent怎样运行", "模块、工具、状态与反馈循环"],
+    ["08", "Agent怎样受控", "风险、自主度与控制生命周期"],
+    ["09", "Agent怎样落地", "价值、评价与建设顺序"],
   ]} />;
 }
 
@@ -28,7 +28,7 @@ export function AgentFitLab() {
     investigation: { name: "跨系统调查异常订单", facts: ["路径事前不完整", "查询结果改变下一步", "需要状态与停止条件"], verdict: "适合Agent", reason: "任务需要围绕目标动态选择工具、读取结果并决定继续、改道或停止。", build: "LLM决策 + 工具 + 状态 + 编排 + 控制" },
   };
   const item = tasks[selected];
-  return <div className="agent-fit-lab"><div className="fit-options">{(Object.keys(tasks) as FitKey[]).map(key => <button type="button" key={key} className={selected === key ? "active" : ""} onClick={() => setSelected(key)}><strong>{tasks[key].name}</strong><span>{tasks[key].verdict}</span></button>)}</div><section><span>判断练习</span><h3>{item.name}</h3><div className="fit-facts">{item.facts.map(fact => <b key={fact}>{fact}</b>)}</div><p>{item.reason}</p><div><small>推荐实现</small><strong>{item.build}</strong></div><blockquote>判断Agent的关键不是“用了LLM没有”，而是：路径是否需要由新观察动态决定，以及系统是否需要持续保存状态并受控停止。</blockquote></section></div>;
+  return <div className="agent-fit-lab"><div className="fit-options">{(Object.keys(tasks) as FitKey[]).map(key => <button type="button" key={key} className={selected === key ? "active" : ""} onClick={() => setSelected(key)}><strong>{tasks[key].name}</strong><span>{tasks[key].verdict}</span></button>)}</div><section><span>判断练习</span><h3>{item.name}</h3><div className="fit-facts">{item.facts.map(fact => <b key={fact}>{fact}</b>)}</div><p>{item.reason}</p><div><small>推荐实现</small><strong>{item.build}</strong></div><blockquote><b>判定依据：</b>新观察是否改变路径；是否需要持续状态与受控停止。</blockquote></section></div>;
 }
 
 export function AgentArchitectureExplorer() {
@@ -82,11 +82,11 @@ export function AgentControlLab() {
 }
 
 export function AuditChapterRoute() {
-  return <ChapterRoute label="第三部分 · 四章路线" title="先看审计功能全景，再深入智能问数与报告生成，最后落到共性底座" items={[
-    ["10", "功能全景与选择", "问数、筛查、取证、底稿、报告和持续监控"],
-    ["11", "智能问数", "自然语言问题 → 受控查询 → 可信数字与来源"],
-    ["12", "智能报告生成", "已确认证据 → 发现结构 → 可复核草稿与审批"],
-    ["13", "共性底座与治理", "数据语义、证据链、权限、人机责任和试点评价"],
+  return <ChapterRoute label="第三部分 · 应用路线" title="定功能 → 做问数 → 写报告 → 建底座" items={[
+    ["10", "定义审计功能", "先定工作产品，再选技术"],
+    ["11", "智能问数", "问题 → 口径 → 查询 → 可信数字"],
+    ["12", "智能报告", "冻结发现 → 草稿 → 校验 → 审批"],
+    ["13", "底座与上线", "证据链、治理、评价与试点"],
   ]} />;
 }
 

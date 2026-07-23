@@ -34,8 +34,6 @@
 | `AuditCapabilityMap` | audit | 六类审计智能功能的输入、输出、技术组合与边界 |
 | `AskDataLab` | audit-architecture | 指标查询、多表追问、口径不清、越权请求四种问数分支 |
 | `ReportGenerationLab` | audit-evidence | 证据完整、原因缺失、数字冲突三种报告生成状态 |
-| `InlinePythonLab(audit_ask_data)` | audit-architecture | 口径契约、权限、确定性汇总复算与证据化回答 |
-| `InlinePythonLab(audit_report)` | audit-evidence | 报告生成质量门、缺失占位和冲突阻断 |
 | `AuditScenarioSelector` | audit | 对四类任务进行五维适配诊断 |
 | `AuditEvidenceMap` | audit | 九表两制度到能力层与证据包的来源链 |
 | `EvidencePackageLab` | audit | BX-42017五字段证据包逐项复核 |
@@ -43,7 +41,6 @@
 | `AuditEvaluationLab` | audit | 离线、影子、试点、扩围四阶段门槛 |
 | `AuditAgentCanvas` | audit | 六步设计画布 |
 | `CaseMatrix` | audit（折叠扩展） | 六类事项在五种技术下的结果差异 |
-| `InlinePythonLab(audit_pipeline)` | audit | 规则→语义结构化→动态取证→证据包→人工关口 |
 | `Quiz` | audit 收束 | 九题自测，新增智能问数与报告生成边界 |
 
-第二、第三部分新增互动集中在 `app/agent-audit-interactives.tsx`；正文、治理清单与Python示例入口在 `app/page.tsx`。
+第二、第三部分互动集中在 `app/agent-audit-interactives.tsx`，正文与治理图示在 `app/page.tsx`；这两部分不展示代码栏。

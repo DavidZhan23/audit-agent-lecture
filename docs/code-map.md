@@ -14,7 +14,7 @@
 | Agent四章 / 审计四章 | `app/page.tsx`（Agent定义/运行/控制/建设；审计功能/问数/报告/治理） |
 | Agent与审计互动 | `app/agent-audit-interactives.tsx` |
 | Agent分支 / 审计画布 | `app/course-interactives.tsx` |
-| Agent与审计Python | `app/page.tsx` → `kernelExamples.agent` / `audit_pipeline` / `audit_ask_data` / `audit_report` |
+| 第一部分Python代码实验 | `app/page.tsx` → 当前 `Home` 中 `InlinePythonLab`；第二、第三部分不展示代码栏 |
 
 ## 应用壳
 
