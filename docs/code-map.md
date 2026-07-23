@@ -12,6 +12,7 @@
 | ANN 人脸演示 | `services/face-predict/**` + `app/face-predict-lab.tsx` + `app/api/face-predict/route.ts` |
 | LLM 七步详稿 | `app/page.tsx`（`LlmContextDemo` / `LlmTrainingWorkbench` / `LlmCheckpointExplorer` / `LlmCallLab` / 两段Python） |
 | LLM 图示 | `app/llm-diagrams.tsx`（缺口/分词/生成/Attention/Transformer/生命周期等） |
+| Transformer 论文原图 | `app/page.tsx`（`TransformerReferenceFigure`）+ `public/images/transformer-encoder-decoder-architecture.png` |
 | Agent四章 / 审计四章 | `app/page.tsx`（Agent定义/运行/控制/建设；审计功能/问数/报告/治理） |
 | Agent与审计互动 | `app/agent-audit-interactives.tsx` |
 | Agent分支 / 审计画布 | `app/course-interactives.tsx` |

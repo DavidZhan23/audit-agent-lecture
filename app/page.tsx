@@ -876,6 +876,7 @@ function LlmContextDemo() {
         <AttentionHeatmapDiagram />
         <AttentionLab />
         <TransformerStackDiagram />
+        <TransformerReferenceFigure />
         <LlmPipeline />
         <div className="math-explain lecture-board compact-board">
           <div className="math-explain-head"><span>唯一需要记住的公式</span><h3>给定上文，预测下一个 Token</h3></div>
@@ -961,6 +962,56 @@ function LlmContextDemo() {
         </LessonTakeaway>
       </section>
     </div>
+  );
+}
+
+function TransformerReferenceFigure() {
+  return (
+    <figure className="transformer-reference-figure">
+      <header>
+        <div>
+          <span>论文原图 · 2017</span>
+          <h4>把简化图放回完整 Transformer 架构</h4>
+        </div>
+        <p>不要求记住每个方框。沿着输入到输出看一遍，抓住 Attention、前馈网络和层层堆叠三件事。</p>
+      </header>
+      <div className="transformer-reference-body">
+        <div className="transformer-reference-media">
+          {/* The source image has fixed scholarly artwork; keep it unmodified and locally cached. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/transformer-encoder-decoder-architecture.png"
+            alt="Attention Is All You Need 论文中的 Transformer 编码器—解码器完整架构图"
+          />
+        </div>
+        <ol className="transformer-reading-guide">
+          <li>
+            <b>01</b>
+            <div><strong>先看左边：Encoder 读输入</strong><p>输入 Token 变成向量并加入位置信息，再经过多层 Self-Attention 与前馈网络。</p></div>
+          </li>
+          <li>
+            <b>02</b>
+            <div><strong>再看右边：Decoder 逐步写输出</strong><p>生成到当前位置时只能参考已经出现的 Token，因此要使用 Masked Self-Attention。</p></div>
+          </li>
+          <li>
+            <b>03</b>
+            <div><strong>看重复模块：同一种 Block 堆叠很多层</strong><p>每层都包含 Attention、Feed Forward、残差连接与归一化；训练改变的是其中的参数。</p></div>
+          </li>
+          <li>
+            <b>04</b>
+            <div><strong>联系今天的 LLM</strong><p>原图用于机器翻译；许多生成式 LLM 采用 Decoder-only：保留带掩码自注意力的自回归生成骨架，不再设置左侧独立 Encoder 与跨注意力层。</p></div>
+          </li>
+        </ol>
+      </div>
+      <figcaption>
+        图源：Vaswani 等，
+        <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noreferrer">《Attention Is All You Need》</a>
+        （2017），经
+        <a href="https://commons.wikimedia.org/wiki/File:Attention_Is_All_You_Need_-_Encoder-decoder_Architecture.png" target="_blank" rel="noreferrer"> Wikimedia Commons</a>
+        提供；原图未修改，许可为
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer"> CC BY-SA 4.0</a>。
+      </figcaption>
+    </figure>
   );
 }
 

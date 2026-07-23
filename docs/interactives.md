@@ -19,6 +19,7 @@
 | `LlmContextDemo` / `LlmChapterRoute` | llm | BX-42519 动机 + 七步连续主线；明确本章学习顺序 |
 | `ContextEvidenceInbox` | llm（嵌在 LlmContextDemo） | 说明/小票/CRM/日历多段文字 |
 | `AnnToLlmGapDiagram` 等 | llm（`app/llm-diagrams.tsx`） | 缺口/连续关系/分词/生成循环/Attention/Transformer/生命周期/窗口/边界等图示 |
+| `TransformerReferenceFigure` | llm 5.3（`app/page.tsx`） | 本地展示《Attention Is All You Need》原始架构图，并提供四步中文读图顺序与完整来源/许可说明 |
 | `LanguageTrainingShift` / `AttentionLab` / `TokenLab` / `LlmPipeline` | llm | 下一 Token 样本；语境关注；手选 Token；五步流水线 |
 | `LlmTrainingWorkbench` | llm | 四个训练状态；同步观察预测、Loss与参数更新 |
 | `LlmCheckpointExplorer` | llm | 打开 config/tokenizer/权重文件；浏览真实同类张量名称与形状 |

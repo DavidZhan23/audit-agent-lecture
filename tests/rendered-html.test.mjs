@@ -61,6 +61,10 @@ test("server-renders the complete audit AI course", async () => {
   assert.match(html, /下一个Token|下一 Token|P\(t_\{n\+1\}/);
   assert.match(html, /LLM：仍是 ANN|大规模 ANN|条件概率/);
   assert.match(html, /Attention|Transformer/);
+  assert.match(html, /把简化图放回完整 Transformer 架构/);
+  assert.match(html, /transformer-encoder-decoder-architecture\.png/);
+  assert.match(html, /Attention Is All You Need/);
+  assert.match(html, /CC BY-SA 4\.0/);
   assert.match(html, /随机初始化/);
   assert.match(html, /反向传播/);
   assert.match(html, /config\.json/);
@@ -157,4 +161,11 @@ test("ships the classic handwritten digits teaching subset", async () => {
   assert.equal(rows.filter((row) => row.includes(",train,")).length, 1000);
   assert.equal(rows.filter((row) => row.includes(",test,")).length, 300);
   assert.match(rows[0], /pixel_00.*pixel_63/);
+});
+
+test("ships the locally cached Transformer reference figure", async () => {
+  const imageUrl = new URL("../public/images/transformer-encoder-decoder-architecture.png", import.meta.url);
+  const image = await readFile(imageUrl);
+  assert.ok(image.byteLength > 100_000);
+  assert.deepEqual([...image.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
 });

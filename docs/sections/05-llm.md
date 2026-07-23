@@ -48,6 +48,7 @@
 - `AttentionHeatmapDiagram` + `AttentionLab`：有重点地联系上下文，但关联权重不是事实证据
 - `InlinePythonLab(attention)`：直接计算一次 Query/Key 相似度、Softmax 权重和 Value 加权汇总
 - `TransformerStackDiagram`：Attention + MLP + 残差/归一化，堆叠为骨干
+- `TransformerReferenceFigure`：在中文简化图之后展示论文原始编码器—解码器架构，并用四步导读区分 Encoder、Decoder、重复 Block 与现代生成式 LLM；图片本地保存，图注保留论文、Wikimedia Commons 与 CC BY-SA 4.0 许可链接
 - `LlmPipeline`：Token 到 LM Head 的五步前向流程
 - 唯一主线公式：`P(t_{n+1} | t_1...t_n)`
 - `GenerationLoopDiagram` + `TokenLab`：选一个 Token、追加、再预测
