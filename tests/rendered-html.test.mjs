@@ -18,6 +18,13 @@ test("server-renders the complete audit AI course", async () => {
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   const html = await response.text();
+  assert.match(html, /aria-label="课件翻页"/);
+  assert.match(html, /01<!-- --> \/ <!-- -->17/);
+  assert.match(html, /上一页/);
+  assert.match(html, /下一页/);
+  assert.match(html, /打开目录/);
+  assert.match(html, /class="hero course-slide"/);
+  assert.match(html, /id="problem" class="lesson course-slide" hidden/);
   assert.match(html, /大模型和智能体的技术基础/);
   assert.match(html, /id="part-1"/);
   assert.match(html, /id="part-2"/);
@@ -105,6 +112,17 @@ test("server-renders the complete audit AI course", async () => {
   assert.match(html, /审计负责人.*产品 \/ 流程负责人.*数据负责人.*技术与模型团队.*安全与合规/s);
   assert.doesNotMatch(html, /运行一次受控智能问数|运行报告生成前质量门|运行完整审计流水线/);
   assert.doesNotMatch(html, /Your site is taking shape|codex-preview/);
+});
+
+test("supports direct and keyboard lecture pagination", async () => {
+  const root = new URL("../", import.meta.url);
+  const source = await readFile(new URL("app/page.tsx", root), "utf8");
+  assert.match(source, /const coursePages:[\s\S]*id: "audit-rollout"/);
+  assert.match(source, /"ArrowRight", "PageDown"/);
+  assert.match(source, /"ArrowLeft", "PageUp"/);
+  assert.match(source, /event\.key === "Home"/);
+  assert.match(source, /event\.key === "End"/);
+  assert.match(source, /<CoursePager activeIndex=\{activePage\} onChange=\{goToPage\}/);
 });
 
 test("ships the independent training data and downloadable workbook", async () => {

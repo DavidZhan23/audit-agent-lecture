@@ -4,6 +4,7 @@
 
 | 组件 | 主要章节 | 作用 |
 |------|----------|------|
+| `CoursePager` | 全课 | 17页课件翻页；上一页/下一页、完整目录、页码与键盘导航 |
 | `TaskLogicDemo` | code | Excel 双表：报销金额 vs 开票金额（映射+判断） |
 | `FeatureFittingDemo` | ml | 单表：弱信号 + 历史核实标签 → 预测 NEW；讲义板书 |
 | `AnnPixelDemo` | nn | 票据图片收件箱 + DigitsImageLab + 结构图/公式板书 |

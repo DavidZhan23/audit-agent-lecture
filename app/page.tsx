@@ -83,6 +83,33 @@ const nav = [
   ["audit-rollout", "底座、治理与上线", "6′"],
 ];
 
+type CoursePage = {
+  id: string;
+  title: string;
+  group: "intro" | "foundation" | "agent" | "audit";
+  label: string;
+};
+
+const coursePages: CoursePage[] = [
+  { id: "cover", title: "课程封面", group: "intro", label: "首页" },
+  { id: "problem", title: "导言", group: "intro", label: "导言" },
+  { id: "part-1", title: "技术基础路线", group: "foundation", label: "第一部分" },
+  { id: "code", title: "基于任务逻辑的编程", group: "foundation", label: "02" },
+  { id: "ml", title: "经典机器学习", group: "foundation", label: "03" },
+  { id: "nn", title: "ANN", group: "foundation", label: "04" },
+  { id: "llm", title: "从 ANN 到 LLM", group: "foundation", label: "05" },
+  { id: "part-2", title: "Agent基础与架构路线", group: "agent", label: "第二部分" },
+  { id: "agent", title: "从回答到任务", group: "agent", label: "06" },
+  { id: "agent-architecture", title: "Agent怎样运行", group: "agent", label: "07" },
+  { id: "agent-control", title: "Agent怎样受控", group: "agent", label: "08" },
+  { id: "agent-evaluation", title: "Agent怎样落地", group: "agent", label: "09" },
+  { id: "part-3", title: "审计应用路线", group: "audit", label: "第三部分" },
+  { id: "audit", title: "定义审计功能", group: "audit", label: "10" },
+  { id: "audit-architecture", title: "智能问数", group: "audit", label: "11" },
+  { id: "audit-evidence", title: "智能报告生成", group: "audit", label: "12" },
+  { id: "audit-rollout", title: "底座、治理与上线", group: "audit", label: "13" },
+];
+
 const courseParts = [
   {
     no: "第一部分",
@@ -206,7 +233,7 @@ function Bridge({ from, problem, to, lead = "所以，我们需要引入：" }: 
 
 type ViewMode = "student" | "teacher" | "appendix";
 
-function Header({ mode, setMode }: { mode: ViewMode; setMode: (v: ViewMode) => void }) {
+function Header({ mode, setMode, progressOverride, onHome }: { mode: ViewMode; setMode: (v: ViewMode) => void; progressOverride?: number; onHome?: () => void }) {
   const [progress, setProgress] = useState(0);
   const [timerOpen, setTimerOpen] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -229,8 +256,8 @@ function Header({ mode, setMode }: { mode: ViewMode; setMode: (v: ViewMode) => v
   return (
     <>
       <header className="topbar">
-        <a href="#top" className="brand">LLM · Agent · 审计应用</a>
-        <div className="top-progress"><i style={{ width: `${progress}%` }} /></div>
+        <a href="#top" className="brand" onClick={onHome ? (event) => { event.preventDefault(); onHome(); } : undefined}>LLM · Agent · 审计应用</a>
+        <div className="top-progress"><i style={{ width: `${progressOverride ?? progress}%` }} /></div>
         <div className="top-actions">
           <button className={mode === "student" ? "on" : ""} onClick={() => setMode("student")}>学员视图</button>
           <button className={mode === "teacher" ? "on" : ""} onClick={() => setMode("teacher")}>讲师视图</button>
@@ -241,6 +268,39 @@ function Header({ mode, setMode }: { mode: ViewMode; setMode: (v: ViewMode) => v
       </header>
       {timerOpen && <div className="timer"><button className="timer-x" onClick={() => setTimerOpen(false)}>×</button><span>课堂计时</span><strong>{String(Math.floor(seconds / 60)).padStart(2, "0")}:{String(seconds % 60).padStart(2, "0")}</strong><div><button onClick={() => setRunning(!running)}>{running ? "暂停" : "开始"}</button><button onClick={() => { setSeconds(0); setRunning(false); }}>归零</button></div></div>}
     </>
+  );
+}
+
+function CoursePager({ activeIndex, onChange }: { activeIndex: number; onChange: (index: number) => void }) {
+  const [outlineOpen, setOutlineOpen] = useState(false);
+  const current = coursePages[activeIndex];
+  const previous = coursePages[activeIndex - 1];
+  const next = coursePages[activeIndex + 1];
+  const choose = (index: number) => {
+    setOutlineOpen(false);
+    onChange(index);
+  };
+
+  return (
+    <nav className="course-pager" aria-label="课件翻页">
+      {outlineOpen && (
+        <div className="pager-outline" role="dialog" aria-label="课件目录">
+          <div><span>课件目录</span><button type="button" onClick={() => setOutlineOpen(false)} aria-label="关闭目录">×</button></div>
+          <section>{coursePages.map((page, index) => <button type="button" key={page.id} className={index === activeIndex ? "active" : ""} onClick={() => choose(index)}><small>{page.label}</small><strong>{page.title}</strong></button>)}</section>
+        </div>
+      )}
+      <button type="button" className="pager-direction previous" disabled={!previous} onClick={() => previous && onChange(activeIndex - 1)} aria-label={previous ? `上一页：${previous.title}` : "已经是第一页"}>
+        <span>←</span><div><small>上一页</small><strong>{previous?.title ?? "首页"}</strong></div>
+      </button>
+      <button type="button" className="pager-current" onClick={() => setOutlineOpen(value => !value)} aria-expanded={outlineOpen}>
+        <span>{String(activeIndex + 1).padStart(2, "0")} / {String(coursePages.length).padStart(2, "0")}</span>
+        <strong>{current.title}</strong>
+        <small>{outlineOpen ? "收起目录" : "打开目录"}</small>
+      </button>
+      <button type="button" className="pager-direction next" disabled={!next} onClick={() => next && onChange(activeIndex + 1)} aria-label={next ? `下一页：${next.title}` : "已经是最后一页"}>
+        <div><small>下一页</small><strong>{next?.title ?? "课程结束"}</strong></div><span>→</span>
+      </button>
+    </nav>
   );
 }
 
@@ -2237,27 +2297,73 @@ function ComplexHome() {
 
 export default function Home() {
   const [mode, setMode] = useState<ViewMode>("student");
+  const [activePage, setActivePage] = useState(0);
+  const activeCoursePage = coursePages[activePage];
+  const goToPage = useCallback((index: number) => {
+    const bounded = Math.max(0, Math.min(coursePages.length - 1, index));
+    setActivePage(bounded);
+    const page = coursePages[bounded];
+    history.replaceState(null, "", page.id === "cover" ? "#top" : `#${page.id}`);
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
+
+  useEffect(() => {
+    const requested = location.hash.replace("#", "");
+    const index = coursePages.findIndex(page => page.id === requested);
+    if (index >= 0) setActivePage(index);
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, button, [contenteditable='true']")) return;
+      if (["ArrowRight", "PageDown"].includes(event.key)) {
+        event.preventDefault();
+        goToPage(activePage + 1);
+      }
+      if (["ArrowLeft", "PageUp"].includes(event.key)) {
+        event.preventDefault();
+        goToPage(activePage - 1);
+      }
+      if (event.key === "Home") {
+        event.preventDefault();
+        goToPage(0);
+      }
+      if (event.key === "End") {
+        event.preventDefault();
+        goToPage(coursePages.length - 1);
+      }
+    };
+    addEventListener("keydown", onKeyDown);
+    return () => removeEventListener("keydown", onKeyDown);
+  }, [activePage, goToPage]);
+
+  const goToId = (id: string) => {
+    const index = coursePages.findIndex(page => page.id === id);
+    if (index >= 0) goToPage(index);
+  };
+
   return <PythonKernelProvider>
-    <main id="top" className={`view-${mode} ${mode !== "student" ? "show-notes" : ""}`}>
-      <Header mode={mode} setMode={setMode} />
+    <main id="top" className={`paginated-course page-group-${activeCoursePage.group} view-${mode} ${mode !== "student" ? "show-notes" : ""}`}>
+      <Header mode={mode} setMode={setMode} progressOverride={Math.round(activePage / (coursePages.length - 1) * 100)} onHome={() => goToPage(0)} />
       <aside className="sidenav"><div><span>约2小时 · 三部分</span><strong>LLM · Agent · 审计</strong></div><nav>
-        <a href={`#${nav[0][0]}`}><span>01</span><b>{nav[0][1]}</b><small className="nav-time">{nav[0][2]}</small></a>
+        <button type="button" className={activeCoursePage.id === nav[0][0] ? "active" : ""} onClick={() => goToId(nav[0][0])}><span>01</span><b>{nav[0][1]}</b><small className="nav-time">{nav[0][2]}</small></button>
         <p className="nav-part"><span>第一部分</span>技术基础</p>
-        {nav.slice(1, 5).map((x, i) => <a href={`#${x[0]}`} key={x[0]}><span>{String(i + 2).padStart(2, "0")}</span><b>{x[1]}</b><small className="nav-time">{x[2]}</small></a>)}
+        {nav.slice(1, 5).map((x, i) => <button type="button" className={activeCoursePage.id === x[0] ? "active" : ""} onClick={() => goToId(x[0])} key={x[0]}><span>{String(i + 2).padStart(2, "0")}</span><b>{x[1]}</b><small className="nav-time">{x[2]}</small></button>)}
         <p className="nav-part core"><span>第二部分</span>Agent基础与架构</p>
-        {nav.slice(5, 9).map((x, i) => <a href={`#${x[0]}`} key={x[0]}><span>{String(i + 6).padStart(2, "0")}</span><b>{x[1]}</b><small className="nav-time">{x[2]}</small></a>)}
+        {nav.slice(5, 9).map((x, i) => <button type="button" className={activeCoursePage.id === x[0] ? "active" : ""} onClick={() => goToId(x[0])} key={x[0]}><span>{String(i + 6).padStart(2, "0")}</span><b>{x[1]}</b><small className="nav-time">{x[2]}</small></button>)}
         <p className="nav-part"><span>第三部分</span>审计应用</p>
-        {nav.slice(9, 13).map((x, i) => <a href={`#${x[0]}`} key={x[0]}><span>{String(i + 10).padStart(2, "0")}</span><b>{x[1]}</b><small className="nav-time">{x[2]}</small></a>)}
+        {nav.slice(9, 13).map((x, i) => <button type="button" className={activeCoursePage.id === x[0] ? "active" : ""} onClick={() => goToId(x[0])} key={x[0]}><span>{String(i + 10).padStart(2, "0")}</span><b>{x[1]}</b><small className="nav-time">{x[2]}</small></button>)}
       </nav></aside>
       <div className="page">
-        <section className="hero">
+        <section className="hero course-slide" hidden={activeCoursePage.id !== "cover"}>
           <div className="hero-head">
             <h1>LLM 与 Agent：基础、架构及审计应用</h1>
           </div>
-          <div className="hero-path three-parts">{courseParts.map((part, index) => <a key={part.no} href={part.href}><span>0{index + 1}</span><strong>{part.title}</strong><small>{part.no}</small><p>{part.description}</p></a>)}</div>
+          <div className="hero-path three-parts">{courseParts.map((part, index) => <a key={part.no} href={part.href} onClick={(event) => { event.preventDefault(); goToId(part.href.slice(1)); }}><span>0{index + 1}</span><strong>{part.title}</strong><small>{part.no}</small><p>{part.description}</p></a>)}</div>
         </section>
 
-        <section id="problem" className="lesson">
+        <section id="problem" className="lesson course-slide" hidden={activeCoursePage.id !== "problem"}>
           <SectionTitle no="01" time="导言 · 约5分钟" title="导言" />
           <div className="lesson-abstract">
             <span>Abstract</span>
@@ -2293,16 +2399,18 @@ export default function Home() {
           />
         </section>
 
-        <PartTitle
-          id="part-1"
-          no="第一部分"
-          title="大模型和智能体的技术基础"
-          chapters="章节 02—05"
-          lead="从规则、机器学习、神经网络到大模型，说明这些技术为何会逐层出现，各自解决什么问题、卡在哪里。"
-        />
-        <FoundationCaseLadder />
+        <div className="part-overview course-slide" hidden={activeCoursePage.id !== "part-1"}>
+          <PartTitle
+            id="part-1"
+            no="第一部分"
+            title="大模型和智能体的技术基础"
+            chapters="章节 02—05"
+            lead="从规则、机器学习、神经网络到大模型，说明这些技术为何会逐层出现，各自解决什么问题、卡在哪里。"
+          />
+          <FoundationCaseLadder />
+        </div>
 
-        <section id="code" className="lesson">
+        <section id="code" className="lesson course-slide" hidden={activeCoursePage.id !== "code"}>
           <SectionTitle no="02" time="第一部分 · 约8分钟" title="基于任务逻辑的编程" />
           <TaskLogicDemo />
           <InlinePythonLab
@@ -2313,7 +2421,7 @@ export default function Home() {
           <TeacherNote time="8分钟" question="只看报销明细，你能发现 BX-42306 的问题吗？还缺哪张表？" misconception="能写清的判断不必先上模型；程序只执行人事先写明的逻辑。" mustSay="必须先按发票号映射到台账，再比较金额；单看报销表发现不了 286 vs 86。" canSkip="语法细节。" />
         </section>
 
-        <section id="ml" className="lesson">
+        <section id="ml" className="lesson course-slide" hidden={activeCoursePage.id !== "ml"}>
           <SectionTitle no="03" time="第一部分 · 约10分钟" title="经典机器学习" />
           <FeatureFittingDemo />
           <InlinePythonLab
@@ -2325,7 +2433,7 @@ export default function Home() {
           <TeacherNote time="10分钟" question="模型给出 80% 核查概率，这是证据吗？" misconception="机器学习不是自动发现真相；Loss 下降也不等于可以直接定性。" mustSay="弱信号单独定不了性；用历史核实结果拟合组合权重，给新单排序。" canSkip="梯度公式细节。" />
         </section>
 
-        <section id="nn" className="lesson">
+        <section id="nn" className="lesson course-slide" hidden={activeCoursePage.id !== "nn"}>
           <SectionTitle no="04" time="第一部分 · 约12分钟" title="ANN" />
           <AnnPixelDemo />
           <InlinePythonLab
@@ -2358,7 +2466,7 @@ export default function Home() {
           />
         </section>
 
-        <section id="llm" className="lesson">
+        <section id="llm" className="lesson course-slide" hidden={activeCoursePage.id !== "llm"}>
           <SectionTitle no="05" time="第一部分 · 约20分钟" title="从 ANN 到 LLM" />
           <LlmContextDemo />
           <Bridge
@@ -2375,16 +2483,18 @@ export default function Home() {
           />
         </section>
 
-        <PartTitle
-          id="part-2"
-          no="第二部分 · 核心"
-          title="Agent基础与架构"
-          chapters="章节 06—09 · 主线约35分钟"
-          lead="LLM能够理解和生成，但不能独自完成跨系统任务。下面依次回答：什么是Agent、Agent怎样运行、怎样控制、怎样评价。"
-        />
-        <div className="part-route-wrap"><AgentChapterRoute /></div>
+        <div className="part-overview course-slide" hidden={activeCoursePage.id !== "part-2"}>
+          <PartTitle
+            id="part-2"
+            no="第二部分 · 核心"
+            title="Agent基础与架构"
+            chapters="章节 06—09 · 主线约35分钟"
+            lead="LLM能够理解和生成，但不能独自完成跨系统任务。下面依次回答：什么是Agent、Agent怎样运行、怎样控制、怎样评价。"
+          />
+          <div className="part-route-wrap"><AgentChapterRoute /></div>
+        </div>
 
-        <section id="agent" className="lesson">
+        <section id="agent" className="lesson course-slide" hidden={activeCoursePage.id !== "agent"}>
           <SectionTitle no="06" time="第二部分 · 约8分钟" title="Agent：从回答问题到完成任务" />
           <section className="chapter-step"><div className="chapter-step-head"><span>6.1 · LLM留下的缺口</span><h3>“建议查询航班”不等于已经查到航班</h3><p>LLM完成一次输入与输出；任务系统还要执行查询、保存结果并决定下一步。</p></div>
             <div className="model-system"><div><span>LLM调用</span><strong>一次输入，一次输出</strong><p>可以解释、计划、生成工具参数；默认不会自己进入系统。</p></div><i>+</i><div><span>运行系统</span><strong>工具、状态、循环、控制</strong><p>把语言决策变成受控行动，并把结果送回下一轮。</p></div></div>
@@ -2403,7 +2513,7 @@ export default function Home() {
           <TeacherNote time="8分钟" question="固定顺序查询五个系统的程序，是Agent吗？如果航班结果会改变后续查询呢？" misconception="带聊天框、联网、调用一次工具或模型参数更多，都不自动等于Agent。" mustSay="Agent的本质是围绕目标，根据观察动态选择行动并受控停止。" canSkip="时间紧时只切换Agent判定练习中的工作流和调查任务。" />
         </section>
 
-        <section id="agent-architecture" className="lesson">
+        <section id="agent-architecture" className="lesson course-slide" hidden={activeCoursePage.id !== "agent-architecture"}>
           <SectionTitle no="07" time="第二部分 · 约14分钟" title="Agent怎样运行" />
           <section className="chapter-step"><div className="chapter-step-head"><span>7.1 · 组成</span><h3>六个模块构成完整运行系统</h3><p>目标、决策、工具、状态、编排、控制分别承担不同责任。</p></div>
             <AgentArchitectureExplorer />
@@ -2427,7 +2537,7 @@ export default function Home() {
           <TeacherNote time="14分钟" question="请学员指出：模型、编排器和工具分别对哪一段结果负责？" misconception="工具返回内容不是模型记忆；固定for循环不是动态Agent；多Agent也不天然更强。" mustSay="六块架构、工具错误语义、状态更新和停止条件必须完整走通。" canSkip="可跳过多Agent的第三条风险，但不要跳过BX-42017三分支。" />
         </section>
 
-        <section id="agent-control" className="lesson">
+        <section id="agent-control" className="lesson course-slide" hidden={activeCoursePage.id !== "agent-control"}>
           <SectionTitle no="08" time="第二部分 · 约8分钟" title="Agent怎样受控运行" />
           <section className="chapter-step"><div className="chapter-step-head"><span>8.1 · 风险面</span><h3>错误可能发生在目标、模型、工具、状态和控制五个环节</h3><p>Agent会连续行动，任何一环失效都可能影响后续步骤。</p></div>
             <div className="agent-risk-surface"><div><b>01</b><strong>目标风险</strong><p>目标模糊、范围扩张、成功标准不可判断。</p></div><div><b>02</b><strong>模型风险</strong><p>误解意图、选错工具、编造参数、过度自信。</p></div><div><b>03</b><strong>工具风险</strong><p>超时、脏数据、返回结构变化、重复执行。</p></div><div><b>04</b><strong>状态风险</strong><p>过期记忆、事实与推测混淆、上下文污染。</p></div><div><b>05</b><strong>控制风险</strong><p>越权、无限循环、静默失败、日志缺失。</p></div></div>
@@ -2446,7 +2556,7 @@ export default function Home() {
           <TeacherNote time="8分钟" question="如果模型提示词写着“不要越权”，是否已经构成权限控制？" misconception="可靠性不只是提高模型准确率；日志也不是事后可有可无的记录。" mustSay="控制要覆盖运行前、运行中、运行后；无结果、失败和正常必须严格区分。" canSkip="风险卡片可快速扫过，但自主度三档和控制生命周期不能省。" />
         </section>
 
-        <section id="agent-evaluation" className="lesson">
+        <section id="agent-evaluation" className="lesson course-slide" hidden={activeCoursePage.id !== "agent-evaluation"}>
           <SectionTitle no="09" time="第二部分 · 约5分钟" title="Agent的价值、评价与建设" />
           <section className="chapter-step"><div className="chapter-step-head"><span>9.1 · 价值</span><h3>减少跨系统协调成本，提高任务闭环率</h3><p>系统持续追踪证据缺口，把需要判断的事项交还给人。</p></div>
             <div className="agent-value-grid"><div><span>覆盖</span><strong>看得更多</strong><p>批量处理人无法逐项浏览的任务。</p></div><div><span>连续性</span><strong>少漏步骤</strong><p>状态持续记录已做与未做事项。</p></div><div><span>协调</span><strong>少切系统</strong><p>用统一目标组织多工具查询。</p></div><div><span>可追溯</span><strong>过程可还原</strong><p>保留工具参数、返回与停止原因。</p></div><div><span>人机分工</span><strong>把时间还给判断</strong><p>机器处理查找整理，人负责高价值决策。</p></div></div>
@@ -2465,16 +2575,18 @@ export default function Home() {
           <TeacherNote time="5分钟" question="如果任务完成率提高，但越权事件和单笔成本同时上升，这个Agent算成功吗？" misconception="展示效果好不等于业务价值；准确率也不是唯一指标。" mustSay="必须有基线、覆盖失败场景，并同时衡量质量、过程、成本和风险。" canSkip="六阶段建设路径可快速讲，但必须讲清先只读、后扩权。" />
         </section>
 
-        <PartTitle
-          id="part-3"
-          no="第三部分 · 核心"
-          title="Agent在审计中的应用"
-          chapters="章节 10—13 · 主线约25分钟"
-          lead="先确定审计工作产品，再设计智能问数和报告生成，最后建设统一的数据、证据、权限与治理底座。"
-        />
-        <div className="part-route-wrap"><AuditChapterRoute /></div>
+        <div className="part-overview course-slide" hidden={activeCoursePage.id !== "part-3"}>
+          <PartTitle
+            id="part-3"
+            no="第三部分 · 核心"
+            title="Agent在审计中的应用"
+            chapters="章节 10—13 · 主线约25分钟"
+            lead="先确定审计工作产品，再设计智能问数和报告生成，最后建设统一的数据、证据、权限与治理底座。"
+          />
+          <div className="part-route-wrap"><AuditChapterRoute /></div>
+        </div>
 
-        <section id="audit" className="lesson">
+        <section id="audit" className="lesson course-slide" hidden={activeCoursePage.id !== "audit"}>
           <SectionTitle no="10" time="第三部分 · 约5分钟" title="先定义审计功能" />
 
           <section className="chapter-step"><div className="chapter-step-head"><span>10.1 · 工作产品</span><h3>先回答系统要交付什么</h3><p>问数答案、疑点队列、证据包、底稿和报告对应不同输入与控制。</p></div>
@@ -2495,7 +2607,7 @@ export default function Home() {
           <TeacherNote time="5分钟" question="智能问数、风险筛查和报告生成，能否使用同一套提示词直接解决？为什么？" misconception="一个聊天框不等于一个完整审计平台；功能名称相似也不代表数据、控制和交付相同。" mustSay="先定功能和工作产品，再决定规则、模型、工具与Agent。" canSkip="能力矩阵可折叠，但六类功能全景和场景选择不能跳过。" />
         </section>
 
-        <section id="audit-architecture" className="lesson">
+        <section id="audit-architecture" className="lesson course-slide" hidden={activeCoursePage.id !== "audit-architecture"}>
           <SectionTitle no="11" time="第三部分 · 约7分钟" title="智能问数：从问题到可信数字" />
 
           <section className="chapter-step"><div className="chapter-step-head"><span>11.1 · 交付标准</span><h3>数字、口径、查询、来源和限制缺一不可</h3><p>期间、组织范围、指标定义和比较方式来自认证口径或用户确认。</p></div>
@@ -2519,7 +2631,7 @@ export default function Home() {
           <TeacherNote time="主线7分钟；完整演示约10分钟" question="用户问“华东最近差旅怎么样”，系统应该立即给数还是先问问题？为什么？" misconception="生成SQL正确不代表口径正确；数据库返回结果也不代表数字已经经过审计校验。" mustSay="智能问数必须能澄清和拒绝；答案至少同时包含数字、口径、来源、查询和限制。" canSkip="时间紧时互动只切换“指标查询”和“口径不清”。" />
         </section>
 
-        <section id="audit-evidence" className="lesson">
+        <section id="audit-evidence" className="lesson course-slide" hidden={activeCoursePage.id !== "audit-evidence"}>
           <SectionTitle no="12" time="第三部分 · 约7分钟" title="智能生成审计报告：从发现到草稿" />
 
           <section className="chapter-step"><div className="chapter-step-head"><span>12.1 · 输入</span><h3>报告起草从已确认、已冻结的发现开始</h3><p>输入来自发现登记库、证据库、管理层回应和报告模板。</p></div>
@@ -2548,7 +2660,7 @@ export default function Home() {
           <TeacherNote time="主线7分钟；完整演示约10分钟" question="原因尚未取得时，模型应该根据经验补一段合理原因吗？数字冲突时能否选择多数来源？" misconception="语言通顺不等于发现完整；引用存在不等于证据充分；自动排版也不等于自动签发。" mustSay="上游必须是冻结发现库；缺失留占位、冲突要阻断；评级与最终责任由人。" canSkip="时间紧时人机责任互动只查看“证据评价”和“定性与报告”。" />
         </section>
 
-        <section id="audit-rollout" className="lesson">
+        <section id="audit-rollout" className="lesson course-slide" hidden={activeCoursePage.id !== "audit-rollout"}>
           <SectionTitle no="13" time="第三部分 · 约6分钟" title="共性底座、治理与上线" />
 
           <section className="chapter-step"><div className="chapter-step-head"><span>13.1 · 六层底座</span><h3>不同功能共享数据、工具、模型、编排、证据和应用层</h3><p>指标口径、身份权限、对象ID和运行日志在平台内统一管理。</p></div>
@@ -2586,8 +2698,9 @@ export default function Home() {
           <TeacherNote time="主线6分钟；完整展开约9分钟" question="智能问数算出的数字，怎样沿证据链进入一条发现，再进入报告段落？中间哪些节点必须由人确认？" misconception="共用模型不等于共用底座；试点成功也不等于可以自动扩围。" mustSay="统一对象ID和版本贯穿问数、证据、发现、底稿和报告；分功能评价，四阶段上线。" canSkip="责任分工可快速带过，但证据链、治理风险和分功能指标不能省。" />
         </section>
 
-        <footer><strong>LLM 与 Agent：基础、架构及审计应用</strong><span>从问题出发的能力链：规则 → ML → ANN → LLM → Agent</span><a href="#top">回到顶部 ↑</a></footer>
+        <footer hidden={activeCoursePage.id !== "audit-rollout"}><strong>LLM 与 Agent：基础、架构及审计应用</strong><span>从问题出发的能力链：规则 → ML → ANN → LLM → Agent</span><button type="button" onClick={() => goToPage(0)}>回到首页 ↑</button></footer>
       </div>
+      <CoursePager activeIndex={activePage} onChange={goToPage} />
     </main>
   </PythonKernelProvider>;
 }
