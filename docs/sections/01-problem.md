@@ -15,7 +15,7 @@
 
 1. `SectionTitle` — 导言（无副标题 intro）
 2. `lesson-abstract` — Abstract + 三部分条目列表
-3. `CourseArchitecture` — 三部分总体架构；第二部分标为核心，第三部分标为待设计
+3. `CourseArchitecture` — 三部分总体架构；第二、第三部分均标为核心，合计约60分钟
 4. `content-block.lesson-takeaways` — 「主要收获」四格（无小标题）
 5. `Bridge` → 基于任务逻辑的编程 / `TeacherNote`
 

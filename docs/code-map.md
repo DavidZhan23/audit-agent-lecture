@@ -5,12 +5,16 @@
 | 文档 | 代码 |
 |------|------|
 | `docs/lecture-structure.md` | `app/page.tsx`：`nav`、`stages`、`Home` |
-| `docs/sections/*.md` | `app/page.tsx` 对应 `section#...`（含 `#audit` 占位） |
+| `docs/sections/*.md` | `app/page.tsx` 对应 `section#...` |
 | `docs/interactives.md` | `app/course-interactives.tsx` + page 内 lab |
 | `docs/data-pack.md` | `public/toy_audit_case/**` |
 | ANN 人脸演示 | `services/face-predict/**` + `app/face-predict-lab.tsx` + `app/api/face-predict/route.ts` |
 | LLM 七步详稿 | `app/page.tsx`（`LlmContextDemo` / `LlmTrainingWorkbench` / `LlmCheckpointExplorer` / `LlmCallLab` / 两段Python） |
 | LLM 图示 | `app/llm-diagrams.tsx`（缺口/分词/生成/Attention/Transformer/生命周期等） |
+| Agent七步章 / 审计八步章 | `app/page.tsx`（`section#agent` / `section#audit`） |
+| Agent与审计互动 | `app/agent-audit-interactives.tsx` |
+| Agent分支 / 审计画布 | `app/course-interactives.tsx` |
+| Agent与审计Python | `app/page.tsx` → `kernelExamples.agent` / `kernelExamples.audit_pipeline` |
 
 ## 应用壳
 

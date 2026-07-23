@@ -999,6 +999,158 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; }
   .llm-step-title h3 { font-size: 24px; }
 }
 
+/* 第二、第三部分：Agent架构与审计落地 */
+.focus-route { margin: 25px 0 38px; border: 1px solid var(--line); background: #fff; }
+.focus-route-head { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding: 17px 20px; color: #fff; background: var(--dark); }
+.focus-route-head span { color: #9fc1b5; font-size: 9px; font-weight: 800; letter-spacing: .08em; }
+.focus-route-head strong { max-width: 760px; font-family: var(--serif); font-size: 17px; font-weight: 500; text-align: right; }
+.focus-route > div:last-child { display: grid; grid-template-columns: repeat(8, 1fr); }
+.focus-route article { min-height: 138px; padding: 15px 13px; border-right: 1px solid var(--line); }
+.focus-route article:last-child { border-right: 0; }
+.focus-route article b { color: #9ca6a2; font: 8px ui-monospace, monospace; }
+.focus-route article strong { display: block; margin: 14px 0 8px; font-family: var(--serif); font-size: 14px; line-height: 1.4; }
+.focus-route article p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.6; }
+.chapter-step { margin-top: 48px; padding-top: 2px; border-top: 4px solid var(--accent); }
+.chapter-step-head { padding: 24px 4px 5px; }
+.chapter-step-head > span { color: var(--accent); font-size: 10px; font-weight: 800; letter-spacing: .06em; }
+.chapter-step-head h3 { margin: 9px 0 7px; font-family: var(--serif); font-size: 29px; line-height: 1.35; }
+.chapter-step-head p { max-width: 840px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.8; }
+.chapter-memory { display: grid; grid-template-columns: 150px 1fr; gap: 18px; align-items: center; margin: 22px 0 4px; padding: 17px 20px; background: var(--accent-soft); border-left: 4px solid var(--accent); }
+.chapter-memory strong { color: var(--accent); font-size: 10px; }
+.chapter-memory code { color: #344f46; font-size: 11px; line-height: 1.7; }
+
+.architecture-explorer, .audit-scene-selector, .evidence-package-lab, .audit-evaluation-lab { display: grid; grid-template-columns: 235px 1fr; margin: 22px 0; border: 1px solid var(--line); background: #fff; }
+.architecture-list, .scene-list, .package-tabs, .evaluation-stages { background: #f5f6f4; border-right: 1px solid var(--line); }
+.architecture-list button, .scene-list button, .package-tabs button, .evaluation-stages button { display: grid; width: 100%; padding: 13px 15px; border: 0; border-bottom: 1px solid var(--line); background: transparent; text-align: left; }
+.architecture-list button.active, .scene-list button.active, .package-tabs button.active, .evaluation-stages button.active { color: #fff; background: var(--accent); }
+.architecture-list b, .package-tabs b, .evaluation-stages b { color: #99a39f; font: 8px ui-monospace, monospace; }
+.architecture-list span, .package-tabs span { margin-top: 5px; font-size: 10px; font-weight: 700; }
+.architecture-explorer > section, .audit-scene-selector > section, .evidence-package-lab > section, .audit-evaluation-lab > section { padding: 27px; }
+.architecture-explorer section > span, .audit-scene-selector section > span, .evidence-package-lab section > span, .audit-evaluation-lab section > span { color: var(--accent); font-size: 9px; font-weight: 800; }
+.architecture-explorer h3, .audit-scene-selector h3, .evidence-package-lab h3, .audit-evaluation-lab h3 { margin: 8px 0 12px; font-family: var(--serif); font-size: 25px; }
+.architecture-explorer section > strong, .evidence-package-lab section > strong { display: block; margin-bottom: 18px; font-size: 13px; line-height: 1.7; }
+.architecture-explorer section > div, .evidence-package-lab section > div, .audit-evaluation-lab section > div:not(.evaluation-metrics) { margin-top: 11px; padding: 12px 14px; background: #f7f8f6; }
+.architecture-explorer small, .evidence-package-lab small, .audit-evaluation-lab small { color: var(--accent); font-size: 8px; font-weight: 800; }
+.architecture-explorer p, .evidence-package-lab p, .audit-evaluation-lab p { margin: 5px 0 0; color: var(--muted); font-size: 10px; line-height: 1.7; }
+.architecture-explorer blockquote, .evidence-package-lab blockquote, .audit-scene-selector blockquote { margin: 15px 0; padding: 13px 15px; background: var(--warm-soft); color: #705c4c; font-size: 10px; line-height: 1.7; }
+.architecture-explorer section > button, .evidence-package-lab section > button, .audit-evaluation-lab section > button { margin-top: 14px; padding: 9px 12px; border: 0; color: #fff; background: var(--accent); font-size: 9px; }
+
+.tool-contract-lab, .agent-state-explorer, .agent-control-lab { margin: 22px 0; border: 1px solid var(--line); background: #fff; }
+.tool-contract-head { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 17px 20px; border-bottom: 1px solid var(--line); }
+.tool-contract-head span { color: var(--accent); font-size: 9px; font-weight: 800; }
+.tool-contract-head h3 { margin: 5px 0 0; font-family: var(--serif); font-size: 20px; }
+.tool-contract-head > div:last-child { display: flex; gap: 5px; }
+.tool-contract-head button { padding: 8px 10px; border: 1px solid var(--line); background: #fff; font-size: 9px; }
+.tool-contract-head button.active { color: #fff; border-color: var(--accent); background: var(--accent); }
+.tool-contract-grid { display: grid; grid-template-columns: 1.1fr 45px .8fr 45px 1fr; align-items: stretch; }
+.tool-contract-grid > div { min-width: 0; padding: 17px; background: #252f2c; color: #dce5e1; }
+.tool-contract-grid > div.result.ok { background: #284038; }
+.tool-contract-grid > div.result.error, .tool-contract-grid > div.result.denied { background: #503a31; }
+.tool-contract-grid > div > span { color: #9fc3b6; font-size: 8px; font-weight: 800; }
+.tool-contract-grid pre { min-height: 160px; margin: 12px 0 0; overflow: auto; white-space: pre-wrap; font: 9px/1.75 ui-monospace, monospace; }
+.tool-contract-grid > i { display: grid; place-items: center; color: var(--accent); font: 8px ui-monospace, monospace; font-style: normal; }
+.tool-next { padding: 17px 20px; border-top: 1px solid var(--line); }
+.tool-next span { color: var(--accent); font-size: 8px; font-weight: 800; }
+.tool-next strong { display: block; margin: 7px 0 4px; font-family: var(--serif); font-size: 16px; }
+.tool-next p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.7; }
+
+.state-tabs, .control-levels, .evaluation-stages { display: grid; grid-template-columns: repeat(3, 1fr); }
+.state-tabs button, .control-levels button { padding: 17px; border: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #f7f8f6; text-align: left; }
+.state-tabs button:last-child, .control-levels button:last-child { border-right: 0; }
+.state-tabs button.active, .control-levels button.active { color: #fff; background: var(--accent); }
+.state-tabs b, .control-levels b { display: block; color: #99a39f; font: 8px ui-monospace, monospace; }
+.state-tabs span, .control-levels strong { display: block; margin-top: 9px; font-size: 11px; }
+.state-detail { padding: 22px; border-bottom: 1px solid var(--line); }
+.state-detail > span { color: var(--accent); font-size: 9px; font-weight: 800; }
+.state-detail h3 { margin: 7px 0; font-family: var(--serif); font-size: 22px; }
+.state-detail p { color: var(--muted); font-size: 10px; line-height: 1.75; }
+.state-detail code { display: block; padding: 11px 13px; background: #252f2c; color: #dce5e1; font-size: 9px; }
+.stop-grid { display: grid; grid-template-columns: 130px repeat(5, 1fr); }
+.stop-grid > span { display: grid; place-items: center; padding: 14px; color: var(--accent); background: var(--accent-soft); font-size: 9px; font-weight: 800; text-align: center; }
+.stop-grid article { padding: 14px; border-left: 1px solid var(--line); }
+.stop-grid strong { font-size: 10px; }
+.stop-grid p { margin: 7px 0 0; color: var(--muted); font-size: 8px; line-height: 1.6; }
+.control-levels button p { margin: 6px 0 0; color: inherit; opacity: .72; font-size: 8px; line-height: 1.6; }
+.control-actions { display: grid; grid-template-columns: repeat(3, 1fr); }
+.control-actions > div { min-height: 150px; padding: 18px; border-right: 1px solid var(--line); }
+.control-actions > div:last-child { border-right: 0; }
+.control-actions span { display: block; margin-bottom: 12px; font-size: 9px; font-weight: 800; }
+.control-actions .allowed span { color: var(--accent); }
+.control-actions .approval span { color: var(--warm); }
+.control-actions .denied span { color: #934b3b; }
+.control-actions strong { display: block; margin: 6px 0; padding: 7px 9px; background: #f4f6f5; font-size: 9px; }
+.agent-control-lab > p { margin: 0; padding: 15px 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 9px; line-height: 1.7; }
+
+.scene-list button strong { font-size: 11px; }
+.scene-list button span { margin-top: 4px; color: var(--muted); font-size: 8px; }
+.scene-list button.active span { color: #c9ddd6; }
+.scene-scores { display: grid; gap: 10px; margin-top: 18px; }
+.scene-scores > div { display: grid; grid-template-columns: 90px 1fr 35px; gap: 9px; align-items: center; }
+.scene-scores b { font-size: 9px; }
+.scene-scores i { display: block; height: 8px; background: #e5e8e6; }
+.scene-scores i span { display: block; height: 100%; background: var(--accent); }
+.scene-scores strong { font: 8px ui-monospace, monospace; }
+
+.audit-evidence-map { margin: 22px 0; border: 1px solid var(--line); background: #fff; }
+.audit-evidence-map > div { padding: 18px 20px; }
+.audit-evidence-map > i { display: block; padding: 9px 20px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); color: var(--accent); background: #f3f6f4; font-size: 9px; font-style: normal; text-align: center; }
+.audit-evidence-map span { display: block; margin-bottom: 12px; color: var(--accent); font-size: 9px; font-weight: 800; }
+.evidence-sources > div, .evidence-processing > div { display: grid; grid-template-columns: repeat(9, 1fr); gap: 5px; }
+.evidence-sources b, .evidence-processing b, .evidence-policy strong { padding: 9px 6px; background: #f4f6f5; font-size: 8px; text-align: center; }
+.evidence-policy { display: grid; grid-template-columns: 150px 1fr 1fr 2fr; gap: 8px; align-items: center; }
+.evidence-policy span { margin: 0; }
+.evidence-policy p, .evidence-processing p, .evidence-output p { margin: 8px 0 0; color: var(--muted); font-size: 9px; line-height: 1.7; }
+.evidence-processing > div { grid-template-columns: repeat(5, 1fr); }
+.evidence-output { text-align: center; background: var(--accent-soft); }
+.evidence-output strong { font-family: var(--serif); font-size: 20px; }
+
+.package-tabs { display: block; }
+.package-tabs button { grid-template-columns: 28px 1fr; align-items: center; }
+.evidence-package-lab section > strong { padding: 15px; background: var(--accent-soft); color: #35564b; }
+.evaluation-stages { grid-template-columns: 1fr; }
+.evaluation-stages button strong { margin-top: 7px; font-size: 10px; }
+.evaluation-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 15px; }
+.evaluation-metrics strong { padding: 9px 11px; background: var(--accent-soft); color: var(--accent); font-size: 9px; }
+
+.audit-deliverable { display: grid; grid-template-columns: repeat(5, 1fr); margin: 22px 0; border: 1px solid var(--line); background: #fff; }
+.audit-deliverable > div { min-height: 160px; padding: 18px; border-right: 1px solid var(--line); }
+.audit-deliverable > div:last-child { border-right: 0; }
+.audit-deliverable span { color: var(--accent); font-size: 9px; font-weight: 800; }
+.audit-deliverable strong { display: block; margin: 17px 0 8px; font-family: var(--serif); font-size: 15px; }
+.audit-deliverable p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.7; }
+.audit-operating-model { display: grid; grid-template-columns: repeat(6, 1fr); margin: 22px 0; border: 1px solid var(--line); background: #fff; }
+.audit-operating-model > div { min-height: 150px; padding: 17px; border-right: 1px solid var(--line); }
+.audit-operating-model > div:last-child { border-right: 0; background: var(--accent-soft); }
+.audit-operating-model b { color: #9ca5a2; font: 8px ui-monospace, monospace; }
+.audit-operating-model strong { display: block; margin: 16px 0 8px; font-family: var(--serif); font-size: 14px; }
+.audit-operating-model p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.65; }
+.audit-governance-grid { display: grid; grid-template-columns: repeat(3, 1fr); margin: 22px 0; border: 1px solid var(--line); background: #fff; }
+.audit-governance-grid > div { padding: 18px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.audit-governance-grid > div:nth-child(3n) { border-right: 0; }
+.audit-governance-grid span { color: var(--warm); font-size: 9px; font-weight: 800; }
+.audit-governance-grid strong { display: block; margin: 10px 0 7px; font-family: var(--serif); font-size: 15px; }
+.audit-governance-grid p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.7; }
+
+@media (max-width: 980px) {
+  .focus-route > div:last-child { grid-template-columns: repeat(2, 1fr); }
+  .architecture-explorer, .audit-scene-selector, .evidence-package-lab, .audit-evaluation-lab { grid-template-columns: 1fr; }
+  .architecture-list, .scene-list, .package-tabs, .evaluation-stages { display: grid; grid-template-columns: repeat(2, 1fr); border-right: 0; border-bottom: 1px solid var(--line); }
+  .tool-contract-grid { grid-template-columns: 1fr; }
+  .tool-contract-grid > i { min-height: 38px; transform: rotate(90deg); }
+  .stop-grid, .audit-deliverable, .audit-operating-model { grid-template-columns: 1fr 1fr; }
+  .stop-grid > span { grid-column: 1 / -1; }
+  .evidence-sources > div { grid-template-columns: repeat(3, 1fr); }
+  .evidence-policy { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 620px) {
+  .focus-route-head, .tool-contract-head { align-items: flex-start; flex-direction: column; }
+  .focus-route > div:last-child, .architecture-list, .scene-list, .package-tabs, .state-tabs, .control-levels, .control-actions, .stop-grid, .audit-deliverable, .audit-operating-model, .audit-governance-grid { grid-template-columns: 1fr; }
+  .chapter-step-head h3 { font-size: 24px; }
+  .chapter-memory { grid-template-columns: 1fr; }
+  .evidence-policy, .evidence-sources > div, .evidence-processing > div { grid-template-columns: 1fr 1fr; }
+}
+
 .math-explain {
   margin-top: 22px;
   padding: 24px 26px;

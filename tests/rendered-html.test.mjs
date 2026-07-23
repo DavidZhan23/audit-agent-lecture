@@ -23,8 +23,9 @@ test("server-renders the complete audit AI course", async () => {
   assert.match(html, /id="part-2"/);
   assert.match(html, /id="part-3"/);
   assert.match(html, /Agent基础与架构/);
-  assert.match(html, /Agent \+ LLM/);
-  assert.match(html, /审计智能体（内容占位）/);
+  assert.match(html, /Agent基础与架构/);
+  assert.match(html, /Agent在审计中的应用/);
+  assert.doesNotMatch(html, /内容占位|本章建设中/);
   assert.match(html, /基于任务逻辑的编程/);
   assert.match(html, /经典机器学习/);
   assert.match(html, /历史核实样本\.xlsx/);
@@ -60,7 +61,18 @@ test("server-renders the complete audit AI course", async () => {
   assert.match(html, /推理服务/);
   assert.match(html, /模型密钥不能直接写在浏览器代码里|API密钥应放在受控后端/);
   assert.match(html, /语言流畅/);
-  assert.match(html, /工具与反馈循环/);
+  assert.match(html, /工具反馈循环/);
+  assert.match(html, /为什么还需要Agent/);
+  assert.match(html, /目标与策略.*LLM决策核.*工具.*状态.*编排循环.*控制与可观测/s);
+  assert.match(html, /工具不是.*插件名称.*输入输出契约/s);
+  assert.match(html, /状态、长期记忆和运行轨迹/);
+  assert.match(html, /能调用.*有权调用/s);
+  assert.match(html, /定义审计交付/);
+  assert.match(html, /事实.*适用标准.*原始证据.*不确定性.*核查建议/s);
+  assert.match(html, /选择窄场景/);
+  assert.match(html, /任务受理.*规则筛查.*模型增强.*Agent调查.*证据包.*人工复核/s);
+  assert.match(html, /提示注入/);
+  assert.match(html, /离线基准.*影子运行.*小范围试点.*受控扩围/s);
   assert.doesNotMatch(html, /Your site is taking shape|codex-preview/);
 });
 

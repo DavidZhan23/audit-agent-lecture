@@ -1,32 +1,27 @@
 # 课件文档（给 AI / 协作者先读）
 
-> **任何 AI 或新人接手本项目时：先读本目录，再改代码。**
+> 修改项目前先读本目录，并始终以 `app/page.tsx` 中导出的 `Home` 为准。
 
-本目录描述的是**当前实际上线课件**的结构与教学设计，以 `app/page.tsx` 中 `export default function Home` 为准。
-
-**课程标题：** LLM 与 Agent：基础、架构及审计应用  
-**顶层架构：** ① 大模型和智能体的技术基础 → ② Agent基础与架构（核心长章）→ ③ Agent在审计中的应用（占位）
+**课程标题：** LLM 与 Agent：基础、架构及审计应用
+**顶层架构：** ① 技术基础 → ② Agent基础与架构 → ③ Agent在审计中的应用
 
 ## 阅读顺序
 
-1. [lecture-structure.md](./lecture-structure.md) — 整堂课总览  
-2. [sections/](./sections/) — 各章节明细  
-3. [interactives.md](./interactives.md) — 互动组件  
-4. [data-pack.md](./data-pack.md) — Toy Data Pack  
-5. [code-map.md](./code-map.md) — 代码对照  
+1. [lecture-structure.md](./lecture-structure.md) — 120分钟总体架构
+2. [sections/](./sections/) — 逐章教学设计
+3. [interactives.md](./interactives.md) — 互动与课堂作用
+4. [data-pack.md](./data-pack.md) — Toy Data Pack与证据来源
+5. [code-map.md](./code-map.md) — 文档、组件与代码位置
 
-## 维护规则（强制）
+## 当前课程事实
 
-改动课件内容后必须同步更新本目录。约束见：`.cursor/rules/lecture-docs.mdc`。
-
-## 快速事实
-
-| 项 | 值 |
-|----|-----|
-| 标题 | LLM 与 Agent：基础、架构及审计应用 |
-| 第一部分 | `#part-1` 大标题后进入 `#code`—`#llm`（`#problem` 为导言） |
-| 第一部分内部案例 | 重复发票 → 拆分报销 → 票据修改 → 招待语义矛盾 |
-| 第二部分 | `#part-2` 大标题后进入 `#agent`：40′核心长章 |
-| 第三部分 | `#part-3` 大标题后进入 `#audit`：审计应用占位 |
-| 审计项目 | A集团差旅及招待费专项审计（作为教学案例与应用背景） |
+| 项 | 当前设计 |
+|---|---|
+| 第一部分 | `#code`—`#llm`，50分钟；规则→ML→ANN→LLM |
+| 第二部分 | `#agent`，35分钟；七步讲清通用Agent系统 |
+| 第三部分 | `#audit`，25分钟；八步搭建审计智能体 |
+| 审计交付 | 可复核疑点证据包，不是风险分或自动结论 |
+| 审计项目 | A集团差旅及招待费专项审计 |
 | 主实现 | `app/page.tsx`（`Home`） |
+
+任何教学结构变化都必须同步更新本目录；详细约束见 `.cursor/rules/lecture-docs.mdc`。

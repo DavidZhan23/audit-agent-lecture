@@ -23,9 +23,20 @@
 | `LlmCheckpointExplorer` | llm | 打开 config/tokenizer/权重文件；浏览真实同类张量名称与形状 |
 | `LlmCallLab` | llm | request → 推理服务 → response；解释模型部署和调用 |
 | `InlinePythonLab(attention / language / llm_call)` | llm | 计算微型Attention；运行神经语言模型训练；运行一次无网络模型调用模拟 |
+| `AgentChapterRoute` | agent | 七步学习路线，避免模块堆砌 |
+| `AgentArchitectureExplorer` | agent | 六块架构的输入、产出与失败风险 |
+| `ToolContractLab` | agent | 工具Schema、参数、成功/超时/拒绝返回与下一行动 |
+| `AgentStateExplorer` | agent | 区分状态、记忆、轨迹并展示五类停止条件 |
+| `AgentControlLab` | agent | 建议、只读、受控执行三种自主度与动作权限 |
 | `AgentBranchLab` | agent | BX-42017行程矛盾 / 行程一致 / 工具失败三分支 |
-| `AuditAgentCanvas` | audit（预习 DeepDive） | 设计画布 |
-| `ToyDatasetExplorer` / `CaseMatrix` | audit（预习） | 多表与情形矩阵 |
-| `Quiz` | audit 收束 | 结课自测 |
+| `AuditChapterRoute` | audit | 审计智能体八步设计路线 |
+| `AuditScenarioSelector` | audit | 对四类任务进行五维适配诊断 |
+| `AuditEvidenceMap` | audit | 九表两制度到能力层与证据包的来源链 |
+| `EvidencePackageLab` | audit | BX-42017五字段证据包逐项复核 |
+| `AuditEvaluationLab` | audit | 离线、影子、试点、扩围四阶段门槛 |
+| `AuditAgentCanvas` | audit | 六步设计画布 |
+| `CaseMatrix` | audit（折叠扩展） | 六类事项在五种技术下的结果差异 |
+| `InlinePythonLab(audit_pipeline)` | audit | 规则→语义结构化→动态取证→证据包→人工关口 |
+| `Quiz` | audit 收束 | 七题自测，重点检查Agent架构与审计边界 |
 
-Agent 长章的规范列表、架构 stack、好处双栏为 `page.tsx` 内静态内容块（非独立导出组件）。
+第二、第三部分新增互动集中在 `app/agent-audit-interactives.tsx`；正文、治理清单与Python示例入口在 `app/page.tsx`。
