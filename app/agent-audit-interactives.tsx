@@ -82,12 +82,55 @@ export function AgentControlLab() {
 }
 
 export function AuditChapterRoute() {
-  return <ChapterRoute label="第三部分 · 四章路线" title="从审计任务定义，到架构、证据协作和受控上线" items={[
-    ["10", "任务与场景", "定义可复核交付，筛选窄而有价值的任务"],
-    ["11", "系统与数据架构", "组合五种能力，连接九表两制度并跑通流程"],
-    ["12", "证据与人机协作", "形成五字段证据包，明确机器与人的交接点"],
-    ["13", "治理、评价与试点", "控制六类风险，以四阶段门槛逐步上线"],
+  return <ChapterRoute label="第三部分 · 四章路线" title="先看审计功能全景，再深入智能问数与报告生成，最后落到共性底座" items={[
+    ["10", "功能全景与选择", "问数、筛查、取证、底稿、报告和持续监控"],
+    ["11", "智能问数", "自然语言问题 → 受控查询 → 可信数字与来源"],
+    ["12", "智能报告生成", "已确认证据 → 发现结构 → 可复核草稿与审批"],
+    ["13", "共性底座与治理", "数据语义、证据链、权限、人机责任和试点评价"],
   ]} />;
+}
+
+type CapabilityKey = "ask" | "screen" | "investigate" | "workpaper" | "report" | "monitor";
+
+export function AuditCapabilityMap() {
+  const [selected, setSelected] = useState<CapabilityKey>("ask");
+  const items: Record<CapabilityKey, { name: string; question: string; input: string; output: string; stack: string; boundary: string }> = {
+    ask: { name: "智能问数", question: "华东区二季度差旅费同比增长多少？", input: "自然语言问题 + 数据目录 + 指标口径", output: "数字、口径、查询、来源和限制", stack: "语义层 + SQL工具 + LLM解释 + 校验", boundary: "答案只代表获准数据与确定口径，不能自动成为审计结论。" },
+    screen: { name: "智能风险筛查", question: "哪些报销最值得优先核查？", input: "规则、特征、历史标签和当期待审数据", output: "疑点队列、触发规则和风险信号", stack: "规则 + ML/ANN + 阈值策略", boundary: "概率用于排序，不能代替证据。" },
+    investigate: { name: "智能取证调查", question: "该行程矛盾还缺哪些证据？", input: "明确目标 + 只读工具 + 当前证据状态", output: "来源可追溯的证据包和未决事项", stack: "Agent + 工具 + 状态 + 停止条件", boundary: "只能在批准范围内取数；访谈和扩围需要人工关口。" },
+    workpaper: { name: "智能底稿助手", question: "怎样把证据整理成标准工作底稿？", input: "已复核证据、程序模板和审计记录", output: "带引用的底稿草稿和复核清单", stack: "模板引擎 + LLM + 引用校验", boundary: "机器草稿必须标记并保留人工修订链。" },
+    report: { name: "智能报告生成", question: "怎样从已确认发现形成报告草稿？", input: "冻结发现库、证据、回应和报告模板", output: "带来源的章节草稿、图表和版本记录", stack: "发现数据模型 + LLM + 确定性校验 + 审批流", boundary: "不得补写原因、影响、评级或管理层回应。" },
+    monitor: { name: "持续审计监控", question: "新交易何时触发预警并进入复核？", input: "事件流、规则模型、阈值和运行日历", output: "预警、趋势、任务和关闭记录", stack: "流处理 + 规则/模型 + 工单系统", boundary: "阈值、漂移、误报和责任人需要持续治理。" },
+  };
+  const item = items[selected];
+  return <div className="audit-capability-map"><div className="capability-options">{(Object.keys(items) as CapabilityKey[]).map((key, index) => <button type="button" key={key} className={selected === key ? "active" : ""} onClick={() => setSelected(key)}><b>{String(index + 1).padStart(2, "0")}</b><span>{items[key].name}</span></button>)}</div><section><span>审计功能 {item.name}</span><h3>{item.question}</h3><div className="capability-io"><div><small>需要输入</small><p>{item.input}</p></div><i>→</i><div><small>形成输出</small><p>{item.output}</p></div></div><div className="capability-stack-line"><small>推荐能力组合</small><strong>{item.stack}</strong></div><blockquote>{item.boundary}</blockquote></section></div>;
+}
+
+type AskDataMode = "growth" | "risk" | "ambiguous" | "denied";
+
+export function AskDataLab() {
+  const [mode, setMode] = useState<AskDataMode>("growth");
+  const cases: Record<AskDataMode, { label: string; question: string; status: string; state: "ok" | "clarify" | "denied"; contract: string[]; plan: string; query: string; answer: string; proof: string[] }> = {
+    growth: { label: "指标查询", question: "2026年二季度华东区差旅费同比增长多少？", status: "已验证后回答", state: "ok", contract: ["期间：2026Q2 vs 2025Q2", "范围：华东区在册主体", "指标：已入账差旅费（不含冲销）", "币种：人民币本位币"], plan: "按法人和季度聚合差旅费；统一币种；排除冲销；计算同比。", query: "SELECT quarter, SUM(travel_amount_cny)\nFROM certified_expense_fact\nWHERE region='华东' AND quarter IN ('2025Q2','2026Q2')\n  AND reversal_flag=false\nGROUP BY quarter", answer: "2026Q2为1,248万元，较2025Q2的1,060万元增长17.7%。", proof: ["指标：finance.travel_expense_cny v3", "数据快照：2026-07-15 08:00", "校验：分法人合计=集团合计", "权限：east_region.read"] },
+    risk: { label: "多表追问", question: "增长主要来自哪些部门？其中多少被规则标记为异常？", status: "多表查询并保留口径", state: "ok", contract: ["沿用上一问期间与区域", "贡献：同比增量金额", "异常：规则库v12任一规则命中", "部门：交易日组织归属"], plan: "连接费用事实、组织历史和规则命中表；按同比增量排序并统计异常金额。", query: "WITH growth AS (...)\nSELECT department, yoy_increase,\n       SUM(CASE WHEN rule_hit THEN amount ELSE 0 END) AS flagged_amount\nFROM growth JOIN org_history USING(employee_id, effective_date)\nGROUP BY department ORDER BY yoy_increase DESC", answer: "销售二部贡献增量96万元，其中规则标记金额21万元；渠道部贡献54万元，标记8万元。", proof: ["关联：employee_id + effective_date", "规则库：expense_rules v12", "查询ID：AQ-2026-0715-042", "提示：标记金额不是确认错报"] },
+    ambiguous: { label: "口径不清", question: "最近华东差旅花得怎么样？", status: "暂停并请求澄清", state: "clarify", contract: ["“最近”未定义", "“华东”可能指主体或发生地", "“怎么样”缺少比较基准", "差旅费口径未确认"], plan: "不得猜测口径。先向提问人给出可选择的期间、组织范围、指标和比较方式。", query: "未生成查询：语义契约不完整", answer: "请确认：①最近是本月、季度还是12个月；②华东按公司归属还是消费发生地；③比较预算、同比还是环比？", proof: ["状态：needs_clarification", "未访问业务数据", "未消耗查询预算", "澄清后重新生成任务ID"] },
+    denied: { label: "权限拒绝", question: "列出全部员工身份证号、工资和差旅明细。", status: "拒绝执行并留下日志", state: "denied", contract: ["请求包含高敏个人信息", "当前角色只有费用汇总权限", "目的与最小必要原则不匹配", "不存在已批准的数据扩围"], plan: "权限引擎在生成SQL前阻断；不得通过别名、分批查询或其他工具绕过。", query: "BLOCKED_BY_POLICY: pii.payroll.read 未授权", answer: "无法执行该查询。可以提供经脱敏、按部门汇总的差旅指标；如确有审计需要，请走数据扩围审批。", proof: ["策略：DATA-MIN-07", "所需权限：pii.payroll.read", "当前权限：expense.aggregate.read", "事件已写入安全日志"] },
+  };
+  const item = cases[mode];
+  return <div className="ask-data-lab"><div className="ask-data-tabs">{(Object.keys(cases) as AskDataMode[]).map(key => <button type="button" key={key} className={mode === key ? "active" : ""} onClick={() => setMode(key)}><strong>{cases[key].label}</strong><span>{cases[key].state === "ok" ? "可执行" : cases[key].state === "clarify" ? "需澄清" : "被拒绝"}</span></button>)}</div><section><div className="ask-data-question"><span>审计人员提问</span><h3>“{item.question}”</h3><b className={item.state}>{item.status}</b></div><div className="ask-data-contract">{item.contract.map(value => <span key={value}>{value}</span>)}</div><div className="ask-data-plan"><small>语义计划</small><p>{item.plan}</p></div><pre className={`ask-data-query ${item.state}`}>{item.query}</pre><div className="ask-data-answer"><small>系统回答</small><strong>{item.answer}</strong></div><div className="ask-data-proof">{item.proof.map(value => <span key={value}>{value}</span>)}</div></section></div>;
+}
+
+type ReportMode = "ready" | "missing" | "conflict";
+
+export function ReportGenerationLab() {
+  const [mode, setMode] = useState<ReportMode>("ready");
+  const cases: Record<ReportMode, { label: string; state: "ready" | "warning" | "blocked"; status: string; checks: Array<[string, string]>; draft: string; action: string }> = {
+    ready: { label: "证据完整", state: "ready", status: "可生成草稿，仍需人工复核", checks: [["事实", "已确认"], ["标准", "已引用"], ["原因", "访谈确认"], ["影响", "已量化"], ["回应", "已取得"]], draft: "抽查发现，BX-42017报销说明记载“上海机场至苏州客户”，但航班及酒店记录显示员工当日抵达并入住南京〔证据E-17、E-18〕。该情况不符合差旅费用应与实际业务行程一致的要求〔制度P-04〕。经访谈确认，原因是行程变更后未同步更新报销说明〔访谈E-19〕，涉及金额468元。建议增加行程变更校验并由业务负责人复核异常目的地。管理层已同意整改，并计划于2026年9月上线校验规则〔回应M-03〕。", action: "进入审计人员逐句复核；确认评级、措辞、建议和管理层回应后送审批。" },
+    missing: { label: "原因缺失", state: "warning", status: "允许生成带占位符草稿", checks: [["事实", "已确认"], ["标准", "已引用"], ["原因", "未取得"], ["影响", "待量化"], ["回应", "未取得"]], draft: "抽查发现，BX-42017报销说明与航班、酒店记录存在目的地不一致〔证据E-17、E-18〕，不符合差旅信息应与实际行程一致的要求〔制度P-04〕。【原因待访谈确认】【影响待审计人员评价】【管理层回应待取得】。", action: "不得补写看似合理的原因；创建访谈和影响量化任务，完成后重新生成。" },
+    conflict: { label: "数字冲突", state: "blocked", status: "校验失败，禁止生成", checks: [["事实", "冲突"], ["标准", "已引用"], ["原因", "已确认"], ["影响", "金额不一致"], ["回应", "已取得"]], draft: "已阻断：证据包金额为468元，发现登记表为486元，报告汇总表为468元。任何正文与图表生成均暂停。", action: "由审计人员确认正确金额、修订来源记录并重新冻结发现版本。系统不得自行选择其中一个数字。" },
+  };
+  const item = cases[mode];
+  return <div className="report-generation-lab"><div className="report-mode-tabs">{(Object.keys(cases) as ReportMode[]).map(key => <button type="button" key={key} className={mode === key ? "active" : ""} onClick={() => setMode(key)}><strong>{cases[key].label}</strong><span>{cases[key].state === "ready" ? "通过" : cases[key].state === "warning" ? "带缺口" : "阻断"}</span></button>)}</div><section><div className="report-status"><span>生成前质量门</span><h3>{item.status}</h3></div><div className="report-checks">{item.checks.map(([name, status]) => <div key={name}><span>{name}</span><b className={status === "已确认" || status === "已引用" || status === "已量化" || status === "已取得" || status === "访谈确认" ? "ok" : status === "冲突" || status === "金额不一致" ? "bad" : "warn"}>{status}</b></div>)}</div><article className={`report-draft ${item.state}`}><span>报告段落草稿</span><p>{item.draft}</p></article><div className="report-next"><small>下一动作</small><strong>{item.action}</strong></div></section></div>;
 }
 
 type SceneKey = "travel" | "opinion" | "duplicate" | "universal";

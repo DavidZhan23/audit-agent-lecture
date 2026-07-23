@@ -22,12 +22,15 @@ import {
   AgentControlLab,
   AgentFitLab,
   AgentStateExplorer,
+  AskDataLab,
+  AuditCapabilityMap,
   AuditChapterRoute,
   AuditEvaluationLab,
   AuditEvidenceMap,
   AuditResponsibilityLab,
   AuditScenarioSelector,
   EvidencePackageLab,
+  ReportGenerationLab,
   ToolContractLab,
 } from "./agent-audit-interactives";
 import { CrossEntropyPlot, ReluPlot, SigmoidPlot } from "./math-plots";
@@ -74,10 +77,10 @@ const nav = [
   ["agent-architecture", "Agent运行架构", "14′"],
   ["agent-control", "可靠性与控制", "8′"],
   ["agent-evaluation", "价值、评价与建设", "5′"],
-  ["audit", "审计任务与场景", "6′"],
-  ["audit-architecture", "审计智能体架构", "8′"],
-  ["audit-evidence", "证据与人机协作", "6′"],
-  ["audit-rollout", "治理、评价与试点", "5′"],
+  ["audit", "审计功能全景", "5′"],
+  ["audit-architecture", "智能问数", "7′"],
+  ["audit-evidence", "智能报告生成", "7′"],
+  ["audit-rollout", "共性底座与治理", "6′"],
 ];
 
 const courseParts = [
@@ -100,7 +103,7 @@ const courseParts = [
     title: "Agent在审计中的应用",
     range: "10—13",
     href: "#part-3",
-    description: "把通用技术组合成受控、可复核、可评价的审计智能体。",
+    description: "用智能问数、报告生成等功能，讲清审计智能体怎样受控落地。",
   },
 ];
 
@@ -1606,6 +1609,102 @@ print(json.dumps(evidence_pack, ensure_ascii=False, indent=2))
 # 5) 人工关口：系统只能提交疑点，不能自行定性
 print("[5/5 人工关口] 状态=等待审计人员复核；未生成违规、错报或舞弊结论。")`,
   },
+  audit_ask_data: {
+    label: "运行一次受控智能问数",
+    code: `# 教学版智能问数：问题 → 口径契约 → 权限 → 确定性计算 → 证据化回答
+# 真实系统中，数据来自认证语义层和只读查询网关；这里用小数据演示责任分工。
+question = "2026年二季度华东区差旅费同比增长多少？"
+user_scopes = {"expense.aggregate.read"}
+
+semantic_contract = {
+    "metric": "travel_expense_cny_v3",
+    "region": "华东",
+    "period_current": "2026Q2",
+    "period_compare": "2025Q2",
+    "exclude_reversal": True,
+}
+
+rows = [
+    {"region":"华东", "quarter":"2025Q2", "amount":1060, "reversal":False},
+    {"region":"华东", "quarter":"2026Q2", "amount":1100, "reversal":False},
+    {"region":"华东", "quarter":"2026Q2", "amount":148,  "reversal":False},
+    {"region":"华东", "quarter":"2026Q2", "amount":20,   "reversal":True},
+    {"region":"华南", "quarter":"2026Q2", "amount":900,  "reversal":False},
+]
+
+required_scope = "expense.aggregate.read"
+if required_scope not in user_scopes:
+    raise PermissionError("无汇总费用查询权限")
+
+def certified_total(quarter):
+    return sum(
+        row["amount"] for row in rows
+        if row["region"] == semantic_contract["region"]
+        and row["quarter"] == quarter
+        and (not semantic_contract["exclude_reversal"] or not row["reversal"])
+    )
+
+current = certified_total(semantic_contract["period_current"])
+compare = certified_total(semantic_contract["period_compare"])
+yoy = (current - compare) / compare
+
+# 确定性校验：本例要求比较期不为0、结果能按明细复算
+assert compare != 0
+assert current == 1248 and compare == 1060
+
+print("问题：", question)
+print("口径契约：", semantic_contract)
+print(f"回答：2026Q2为{current}万元，2025Q2为{compare}万元，同比增长{yoy:.1%}。")
+print("来源：certified_expense_fact / 快照2026-07-15 08:00")
+print("查询ID：AQ-2026-0715-042；校验状态：passed")
+print("边界：该数字只代表已授权数据和上述口径，不自动构成审计结论。")`,
+  },
+  audit_report: {
+    label: "运行报告生成前质量门",
+    code: `# 教学版报告生成：只允许已确认字段进入草稿；缺失留占位，冲突则阻断
+finding = {
+    "finding_id": "F-TRAVEL-03",
+    "condition": "BX-42017报销说明称前往苏州客户，但航班和酒店记录显示员工在南京。",
+    "criteria": "差旅费用信息应与真实业务行程一致（制度P-04）。",
+    "cause": None,  # 尚未访谈确认，绝不能由模型猜测
+    "effect": None, # 尚未完成影响评价
+    "recommendation": "核实行程变更原因，并评估是否增加目的地一致性校验。",
+    "evidence_ids": ["E-17", "E-18"],
+    "management_response": None,
+    "amounts": {"evidence_pack": 468, "finding_register": 468},
+    "status": "reviewed",
+}
+
+def quality_gate(item):
+    errors, gaps = [], []
+    if item["status"] != "reviewed": errors.append("发现尚未复核")
+    if len(set(item["amounts"].values())) != 1: errors.append("金额来源冲突")
+    if not item["evidence_ids"]: errors.append("没有证据引用")
+    for field in ("cause", "effect", "management_response"):
+        if not item[field]: gaps.append(field)
+    return errors, gaps
+
+errors, gaps = quality_gate(finding)
+print("发现：", finding["finding_id"])
+print("生成前错误：", errors or "无")
+print("尚缺字段：", gaps or "无")
+
+if errors:
+    print("状态：BLOCKED，禁止生成；由审计人员修复来源后重新冻结。")
+else:
+    parts = [
+        f"{finding['condition']}〔证据{'、'.join(finding['evidence_ids'])}〕",
+        finding["criteria"],
+        finding["cause"] or "【原因待确认】",
+        finding["effect"] or "【影响待评价】",
+        f"建议：{finding['recommendation']}",
+        finding["management_response"] or "【管理层回应待取得】",
+    ]
+    draft = "".join(parts)
+    print("状态：DRAFT_WITH_GAPS，只生成带占位符草稿。")
+    print("草稿：", draft)
+    print("下一步：访谈、影响评价、取得回应，再由审计人员逐句复核和批准。")`,
+  },
   rule: {
     label: "两表映射与逻辑判断",
     code: `# 场景：报销金额是否与发票台账一致？
@@ -1873,12 +1972,14 @@ function Quiz() {
     ["LLM与Agent最核心的区别？", ["Agent参数更多", "Agent把模型置于目标、工具、状态、循环和控制组成的运行系统中", "LLM只能输出英文"], 1],
     ["工具调用超时后，可靠的Agent首先应当？", ["假定查询无异常", "记录失败状态，并按策略重试或转人工", "无限重复调用"], 1],
     ["状态、长期记忆和运行轨迹的关系？", ["三者完全相同", "状态服务当前任务，记忆跨任务复用，轨迹用于还原运行过程", "只有长期记忆需要治理"], 1],
-    ["审计智能体的最小可复核交付物应包含？", ["一个风险分", "一段流畅结论", "事实、标准、证据、不确定性和下一步"], 2],
+    ["可信的智能问数答案至少还要带什么？", ["只要数字即可", "口径、查询、来源、校验状态和限制", "模型的思考过程"], 1],
+    ["报告发现的原因尚未确认时，系统应当？", ["按经验补全原因", "保留占位符并创建补充任务", "删除这条发现"], 1],
+    ["审计智能体的可复核证据包应包含？", ["一个风险分", "一段流畅结论", "事实、标准、证据、不确定性和下一步"], 2],
     ["审计智能体更稳妥的上线顺序？", ["全面自动执行", "离线测试→影子运行→小范围试点→受控扩大", "先写入业务系统再补测试"], 1],
   ] as const;
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const score = Object.entries(answers).filter(([i, a]) => qs[Number(i)][2] === a).length;
-  return <div className="quiz"><div className="quiz-score"><span>结课自测</span><strong>{score}<small>/{qs.length}</small></strong><p>{Object.keys(answers).length === qs.length ? score === qs.length ? "已经掌握技术基础、Agent架构与审计落地三条主线。" : "查看标出的正确答案，再回顾相应章节。" : `完成七道题，检查关键边界是否真正说清楚（${Object.keys(answers).length}/${qs.length}）。`}</p></div><div>{qs.map((q, i) => <section key={q[0]}><p><span>0{i + 1}</span>{q[0]}</p><div>{q[1].map((a, j) => { const answered = answers[i] !== undefined; const cls = answers[i] === j ? (q[2] === j ? "correct" : "wrong") : answered && q[2] === j ? "answer" : ""; return <button className={cls} key={a} onClick={() => setAnswers({ ...answers, [i]: j })}>{a}</button>; })}</div></section>)}</div></div>;
+  return <div className="quiz"><div className="quiz-score"><span>结课自测</span><strong>{score}<small>/{qs.length}</small></strong><p>{Object.keys(answers).length === qs.length ? score === qs.length ? "已经掌握技术基础、Agent架构与审计落地三条主线。" : "查看标出的正确答案，再回顾相应章节。" : `完成全部题目，检查关键边界是否真正说清楚（${Object.keys(answers).length}/${qs.length}）。`}</p></div><div>{qs.map((q, i) => <section key={q[0]}><p><span>{String(i + 1).padStart(2, "0")}</span>{q[0]}</p><div>{q[1].map((a, j) => { const answered = answers[i] !== undefined; const cls = answers[i] === j ? (q[2] === j ? "correct" : "wrong") : answered && q[2] === j ? "answer" : ""; return <button className={cls} key={a} onClick={() => setAnswers({ ...answers, [i]: j })}>{a}</button>; })}</div></section>)}</div></div>;
 }
 
 // Kept temporarily as a content migration reference until the next cleanup pass.
@@ -2377,96 +2478,125 @@ export default function Home() {
           no="第三部分 · 核心"
           title="Agent在审计中的应用"
           chapters="章节 10—13 · 主线约25分钟"
-          lead="把规则、模型与Agent架构组合成一套符合审计证据、权限、职业判断和试点治理要求的审计智能体。"
+          lead="先看审计功能全景，再深入智能问数和智能报告生成两类高价值功能，最后把它们放回统一的数据、证据、权限和治理底座。"
         />
         <div className="part-route-wrap"><AuditChapterRoute /></div>
 
         <section id="audit" className="lesson">
-          <SectionTitle no="10" time="第三部分 · 约6分钟" title="审计智能体从任务与场景开始" intro="通用Agent会行动，不代表它已经符合审计要求。先把“帮助审计”改写成边界清楚、交付可复核、结果可评价的具体任务。" />
+          <SectionTitle no="10" time="第三部分 · 约5分钟" title="审计应用功能全景：先选功能，不先选模型" intro="审计智能化不是只有聊天机器人。先从审计人员实际要完成的工作出发，区分问数、筛查、取证、底稿、报告和持续监控，再为每种功能选择合适的能力组合。" />
 
-          <section className="chapter-step"><div className="chapter-step-head"><span>10.1 · 把宽泛愿望改写成审计任务</span><h3>“做一个审计智能体”不是需求；必须说清对象、动作、交付、边界和责任人</h3><p>同一个技术团队听到“帮我审计报销”，可能做出聊天助手、规则筛查器或自动审批系统。只有先写出任务契约，后续数据、工具、模型和评价才有共同基准。</p></div>
-            <div className="audit-task-contract"><div><span>对象</span><strong>本期差旅与招待费报销</strong><p>限定期间、主体、费用类型和数据版本。</p></div><div><span>动作</span><strong>筛查并受控补充证据</strong><p>不修改源数据，不联系被审计人员。</p></div><div><span>交付</span><strong>可复核疑点证据包</strong><p>必须包含来源、缺口和下一步建议。</p></div><div><span>停止</span><strong>证据够用、工具失败或触及关口</strong><p>不能无限调查，也不能静默跳过失败。</p></div><div><span>责任</span><strong>审计人员复核并作出判断</strong><p>系统不认定违规、错报或舞弊。</p></div></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>10.1 · 六类审计功能</span><h3>审计人员要的不是“一个Agent”，而是能嵌入审计流程的具体工作能力</h3><p>点击六类功能，观察它们各自要读什么、形成什么、需要哪些技术，以及最容易越过哪条边界。</p></div>
+            <AuditCapabilityMap />
+            <div className="chapter-memory"><strong>本节必须记住</strong><code>功能决定架构：问数强调口径和查询安全；报告强调证据冻结、引用与审批</code></div>
           </section>
 
-          <section className="chapter-step"><div className="chapter-step-head"><span>10.2 · 定义审计交付</span><h3>第一步不是选模型，而是规定最终工作产品</h3><p>审计智能体的直接产出应是“可复核疑点证据包”，而不是一个无法追查来源的风险分，更不是自动审计意见。</p></div>
-            <div className="audit-deliverable"><div><span>01</span><strong>事实</strong><p>系统实际读取到什么，不夹带推断。</p></div><div><span>02</span><strong>适用标准</strong><p>制度版本、条款和适用日期。</p></div><div><span>03</span><strong>原始证据</strong><p>表名、记录键、查询时间和关联关系。</p></div><div><span>04</span><strong>不确定性</strong><p>缺失、失败、冲突和尚未访谈事项。</p></div><div><span>05</span><strong>核查建议</strong><p>下一步由谁核对；不自动定性。</p></div></div>
-            <div className="chapter-memory"><strong>本节必须记住</strong><code>审计智能体交付 = 可复核疑点；最终结论仍由审计人员承担</code></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>10.2 · 功能如何组合技术</span><h3>同一个审计平台里，规则、模型、LLM和Agent应该各司其职</h3><p>智能问数并不等于让大模型直接算数；报告生成也不等于把原始数据一次塞进提示词。每个功能都需要确定性计算、模型理解和审计控制共同完成。</p></div>
+            <CapabilityChain />
+            <div className="audit-function-lanes"><div><span>查明数据</span><strong>智能问数</strong><p>LLM理解问题，语义层定义口径，SQL工具计算，校验器核对。</p></div><i>→</i><div><span>找出问题</span><strong>风险筛查</strong><p>规则发现确定异常，ML/ANN排序复杂模式。</p></div><i>→</i><div><span>补齐事实</span><strong>Agent取证</strong><p>按证据缺口调用只读工具并保存来源。</p></div><i>→</i><div><span>形成工作产品</span><strong>底稿与报告</strong><p>LLM依据已确认发现起草，校验器与人共同把关。</p></div></div>
+            <DeepDive title="展开查看：六类事项在五种技术下的不同结果"><p>点击技术与事项，观察哪些任务应交给规则，哪些需要模型，哪些才需要Agent。</p><CaseMatrix /></DeepDive>
           </section>
 
-          <section className="chapter-step"><div className="chapter-step-head"><span>10.3 · 选择窄场景</span><h3>不是所有审计任务都适合Agent，也不是所有自动化都需要Agent</h3><p>优先选择高频、边界清楚、数据可得、证据可定义且天然有人复核的窄任务；同时排除可由规则更好完成的任务和不应自动化的重大判断。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>10.3 · 怎样选择首个功能</span><h3>先选择高频、口径明确、数据可得、证据可定义且天然有人复核的窄任务</h3><p>智能问数可从“认证指标查询”开始；报告生成可从“已确认发现的固定章节草稿”开始。不要一开始就承诺回答任何数据问题或自动生成整份正式报告。</p></div>
             <AuditScenarioSelector />
-            <AuditAgentCanvas />
-            <div className="chapter-memory"><strong>本节必须记住</strong><code>先选一个可评价的窄任务；不要从“万能审计智能体”开始</code></div>
+            <DeepDive title="展开：用六步画布定义自己的第一个审计功能"><AuditAgentCanvas /></DeepDive>
+            <div className="chapter-memory"><strong>本节必须记住</strong><code>从一个可评价的窄功能开始，不从“什么都能问、什么报告都能写”开始</code></div>
           </section>
-          <TeacherNote time="6分钟" question="请把“帮我审计报销”改写成一句包含对象、动作、交付和人工关口的任务定义。" misconception="从模型或聊天框出发会让系统目标和评价标准失焦。" mustSay="直接交付是可复核疑点证据包；最终审计判断由人承担。" canSkip="设计画布可只展示当前差旅试点的默认答案。" />
+          <TeacherNote time="5分钟" question="智能问数、风险筛查和报告生成，能否使用同一套提示词直接解决？为什么？" misconception="一个聊天框不等于一个完整审计平台；功能名称相似也不代表数据、控制和交付相同。" mustSay="先定功能和工作产品，再决定规则、模型、工具与Agent。" canSkip="能力矩阵可折叠，但六类功能全景和场景选择不能跳过。" />
         </section>
 
         <section id="audit-architecture" className="lesson">
-          <SectionTitle no="11" time="第三部分 · 约8分钟" title="审计智能体的系统与数据架构" intro="把前两部分的能力真正组合起来：确定性任务交给代码，模糊识别交给模型，跨系统调查交给受控Agent，所有事实回到数据与制度来源。" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>11.1 · 组合技术能力</span><h3>审计智能体不是用LLM替代一切，而是让五种能力各做最适合的事</h3><p>规则负责确定性检查，ML负责统计排序，ANN负责复杂感知，LLM负责语言语境，Agent负责动态调查与取证闭环。</p></div>
-            <CapabilityChain />
-            <DeepDive title="展开查看：六类事项在五种技术下的不同结果"><p>点击技术与事项，观察同一数据包里哪些任务应交给规则，哪些需要模型，哪些必须进入Agent调查。</p><CaseMatrix /></DeepDive>
-            <div className="chapter-memory"><strong>本节必须记住</strong><code>组合优于替代：确定性用代码，模糊模式用模型，跨系统反馈用Agent</code></div>
+          <SectionTitle no="11" time="第三部分 · 约7分钟" title="智能问数：从自然语言问题到可信数字" intro="智能问数不是“大模型连接数据库以后替你写SQL”。它要把模糊问题变成明确口径，在权限范围内执行安全查询，并把数字、来源、查询和限制一起交付。" />
+
+          <section className="chapter-step"><div className="chapter-step-head"><span>11.1 · 先定义“可信回答”</span><h3>一个数字只有同时带着口径、范围、来源和校验状态，才是可复核的问数结果</h3><p>大模型可以理解“同比增长多少”，但不能自行决定差旅费是否含冲销、华东按主体还是发生地、时间按自然季度还是财务期间。这些定义必须来自认证语义层或由用户确认。</p></div>
+            <Definition term="智能问数（审计场景）" simple="让审计人员用自然语言提出数据问题，系统在权限和认证口径内完成查询、校验与解释，并返回可以追溯的数字。" precise="核心由问题语义化、指标/维度语义层、元数据检索、权限策略、安全查询生成与执行、结果校验、证据化回答和追问状态共同组成；LLM只负责其中的语言理解、计划与解释。" />
+            <div className="ask-data-deliverable"><div><span>Answer</span><strong>数字与简明解释</strong></div><div><span>Definition</span><strong>指标、范围与比较口径</strong></div><div><span>Query</span><strong>可审阅查询或语义计划</strong></div><div><span>Source</span><strong>数据快照、表与字段血缘</strong></div><div><span>Caveat</span><strong>缺失、权限与适用限制</strong></div></div>
           </section>
 
-          <section className="chapter-step"><div className="chapter-step-head"><span>11.2 · 连接数据与制度</span><h3>模型看到的文字不等于审计证据；每个事实必须能回到原始系统</h3><p>九张业务表通过明确关联键连接，两份制度按版本和生效日期检索。系统必须保留来源、权限、时间和失败状态。</p></div>
-            <AuditEvidenceMap />
-            <div className="two-col"><div><strong>数据接入必须回答</strong><ul><li>谁是数据责任人，Agent有何读取范围</li><li>关联键是否唯一、是否可能缺失或冲突</li><li>更新时间和历史版本怎样保留</li><li>敏感字段是否需要脱敏、隔离或禁止入模</li></ul></div><div><strong>制度检索必须回答</strong><ul><li>哪一版制度在交易发生日有效</li><li>正文、补充通知和审批谁优先</li><li>检索段落是否保留原文与文档位置</li><li>找不到制度时如何停止并升级</li></ul></div></div>
-            <div className="chapter-memory"><strong>本节必须记住</strong><code>事实有来源，标准有版本，关联有键，失败有记录</code></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>11.2 · 端到端流程</span><h3>先澄清语义，再查元数据和权限；先验证查询，再执行和复核结果</h3><p>LLM不应直接面对生产数据库。查询计划必须经过语义层、权限引擎和只读网关，结果还要通过合计勾稽、空值、数量级和抽样复算。</p></div>
+            <div className="ask-data-flow"><div><b>01</b><strong>问题受理</strong><p>识别用户、目的与会话上下文。</p></div><i>→</i><div><b>02</b><strong>口径契约</strong><p>期间、主体、指标、比较和币种。</p></div><i>→</i><div><b>03</b><strong>目录与语义层</strong><p>认证指标、维度、关联和数据血缘。</p></div><i>→</i><div><b>04</b><strong>权限检查</strong><p>表、行、列和敏感字段策略。</p></div><i>→</i><div><b>05</b><strong>安全查询</strong><p>只读SQL、白名单、行数和成本限制。</p></div><i>→</i><div><b>06</b><strong>结果校验</strong><p>勾稽、数量级、空值、重复与复算。</p></div><i>→</i><div><b>07</b><strong>证据化回答</strong><p>数字、口径、来源、查询与限制。</p></div></div>
+            <div className="ask-data-architecture"><div className="ask-channel"><span>交互层</span><strong>审计问数工作台</strong><p>问题、澄清、追问、结果和导出。</p></div><i>↓</i><div className="ask-orchestrator"><span>理解与编排层</span><strong>LLM + 问数Agent</strong><p>识别意图、补齐契约、检索元数据、生成语义计划；不直接持有数据库权限。</p></div><i>↓</i><div className="ask-control"><span>可信控制层</span><div><b>指标语义层</b><b>权限引擎</b><b>SQL验证器</b><b>结果校验器</b></div></div><i>↓</i><div className="ask-tools"><span>工具与数据层</span><div><b>元数据目录</b><b>只读查询网关</b><b>数据仓库/湖</b><b>查询与血缘日志</b></div></div></div>
           </section>
 
-          <section className="chapter-step"><div className="chapter-step-head"><span>11.3 · 设计分层架构</span><h3>把“一个万能提示词”拆成六层，每层拥有清楚的输入、责任和可测试接口</h3><p>审计目标不能直接连接模型输出。中间需要数据接入、确定性能力、模型能力、Agent编排和控制层，最上层才是审计工作台与人工复核。</p></div>
-            <div className="audit-layer-stack"><div><b>06</b><strong>审计工作台与人工关口</strong><p>疑点队列、证据复核、审批、底稿与反馈。</p></div><div><b>05</b><strong>证据与交付层</strong><p>五字段证据包、引用、版本、不确定性与状态。</p></div><div><b>04</b><strong>Agent编排层</strong><p>目标、状态、行动选择、停止、预算和升级。</p></div><div><b>03</b><strong>规则与模型能力层</strong><p>规则、ML、ANN、LLM和RAG按任务组合。</p></div><div><b>02</b><strong>受控工具层</strong><p>只读查询、计算、检索、参数校验和错误语义。</p></div><div><b>01</b><strong>数据与制度来源层</strong><p>业务系统、原始凭证、主数据、制度和版本。</p></div></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>11.3 · 互动演示：四种问题，四种系统行为</span><h3>可靠问数系统不一定每次都给数字；它也会澄清、拒绝和明确失败</h3><p>切换指标查询、多表追问、口径不清和越权请求，观察任务契约、语义计划、查询、答案与审计轨迹怎样同步变化。</p></div>
+            <AskDataLab />
+            <InlinePythonLab example="audit_ask_data" guide="关注五层责任：自然语言问题先变成明确口径；权限先于查询；汇总与同比由确定性代码计算；断言完成复算；最后把数字、口径、来源、查询ID和边界一起输出。" />
           </section>
 
-          <section className="chapter-step"><div className="chapter-step-head"><span>11.4 · 设计端到端流程</span><h3>把一次审计初审拆成六个可观察、可测试、可接管的环节</h3><p>不是把全部数据一次塞给模型，而是先确定性筛查，再按需要调用模型和工具，最后由人完成证据评价。</p></div>
-            <div className="audit-operating-model"><div><b>01</b><strong>任务受理</strong><p>确定范围、版本、权限和成功标准。</p></div><div><b>02</b><strong>规则筛查</strong><p>完整性、重复、阈值和关联校验。</p></div><div><b>03</b><strong>模型增强</strong><p>统计排序、图像识别与语言理解。</p></div><div><b>04</b><strong>Agent调查</strong><p>按证据缺口选择只读工具。</p></div><div><b>05</b><strong>证据包</strong><p>事实、标准、来源、缺口和建议。</p></div><div><b>06</b><strong>人工复核</strong><p>证据评价、沟通、定性和底稿。</p></div></div>
-            <InlinePythonLab example="audit_pipeline" guide="按输出顺序看五层责任：规则先校验字段；LLM只做语义结构化；Agent按反馈取证；程序形成五字段证据包；最终状态必须是等待审计人员复核。" />
-            <div className="chapter-memory"><strong>本节必须记住</strong><code>筛查可以自动，调查可以受控，证据评价与重大定性必须由人完成</code></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>11.4 · LLM与确定性组件怎样分工</span><h3>让模型处理语言歧义，让代码处理权限、查询、计算和校验</h3><p>只有把创造性理解与确定性控制拆开，才能既获得自然语言体验，又保留审计所需的一致性与可追溯性。</p></div>
+            <div className="two-col"><div><strong>LLM / Agent适合</strong><ul><li>识别问题中的指标、维度、时间和比较意图</li><li>发现口径缺失并提出澄清问题</li><li>根据元数据生成语义计划和候选查询</li><li>用审计人员熟悉的语言解释结果</li><li>管理连续追问中的已确认上下文</li></ul></div><div><strong>确定性系统必须负责</strong><ul><li>身份、行列权限和敏感字段阻断</li><li>认证指标口径、关联键和历史组织归属</li><li>只读SQL校验、成本限制和执行</li><li>同比、汇总、抽样复算和勾稽</li><li>数据快照、查询ID、血缘与日志</li></ul></div></div>
+            <div className="chapter-memory"><strong>本节必须记住</strong><code>自然语言 → 口径契约 → 受控查询 → 结果校验 → 数字 + 来源；LLM不直接“算出”审计数字</code></div>
           </section>
-          <TeacherNote time="8分钟" question="在这套架构里，为什么金额比对不应该交给LLM？为什么制度检索结果必须带版本？" misconception="把所有材料塞给大模型不是架构；数据接入成功也不等于形成证据。" mustSay="六层责任要分开；原始来源、模型解释和审计判断不得混成一段文字。" canSkip="六事项能力矩阵可以折叠，但端到端Python建议运行。" />
+          <TeacherNote time="主线7分钟；完整演示约10分钟" question="用户问“华东最近差旅怎么样”，系统应该立即给数还是先问问题？为什么？" misconception="生成SQL正确不代表口径正确；数据库返回结果也不代表数字已经经过审计校验。" mustSay="智能问数必须能澄清和拒绝；答案至少同时包含数字、口径、来源、查询和限制。" canSkip="时间紧时互动只切换“指标查询”和“口径不清”。" />
         </section>
 
         <section id="audit-evidence" className="lesson">
-          <SectionTitle no="12" time="第三部分 · 约6分钟" title="从模型输出到审计证据：人机怎样协作" intro="系统可以扩大覆盖、整理矛盾和补充来源，但审计人员必须评价证据、处理沟通并承担重大判断。两者之间需要清楚的工作产品与交接点。" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>12.1 · 形成证据包</span><h3>让学员亲手检查一条疑点是否真正“查得回”</h3><p>下面不是一段漂亮摘要，而是可逐项复核的结构化工作产品。任何一项缺失，都不能把它当作完整审计疑点。</p></div>
-            <EvidencePackageLab />
-            <div className="chapter-memory"><strong>本节必须记住</strong><code>语言解释必须附着在事实与来源上；没有来源的流畅文字不是审计证据</code></div>
+          <SectionTitle no="12" time="第三部分 · 约7分钟" title="智能生成审计报告：从已确认证据到可复核草稿" intro="报告生成不是让模型从原始数据直接作出结论，而是把经过审计人员确认的发现、证据、标准、回应和模板转成带引用的草稿，再经过确定性校验与正式审批。" />
+
+          <section className="chapter-step"><div className="chapter-step-head"><span>12.1 · 先限定报告生成的输入</span><h3>只有“已确认、已冻结、字段完整”的发现才能进入报告生成</h3><p>报告模型不应自己寻找审计发现，也不应从零猜原因、影响或建议。它的上游是经过复核的发现登记库，而不是杂乱的聊天记录和整个数据仓库。</p></div>
+            <div className="report-input-contract"><div><span>范围与方法</span><strong>审计对象、期间、目标和程序</strong></div><div><span>冻结发现</span><strong>事实、标准、原因、影响、建议</strong></div><div><span>证据引用</span><strong>证据ID、来源、版本和复核状态</strong></div><div><span>管理层回应</span><strong>回应原文、责任人和整改日期</strong></div><div><span>报告规范</span><strong>模板、语气、评级规则和审批流程</strong></div></div>
+            <div className="report-prohibited"><strong>模型不得自行补写</strong><span>未确认原因</span><span>未量化影响</span><span>风险评级</span><span>管理层回应</span><span>审计结论</span></div>
           </section>
 
-          <section className="chapter-step"><div className="chapter-step-head"><span>12.2 · 划分人机责任</span><h3>不要笼统地说“人在回路”；要明确人在哪一步接管、看什么、批准什么</h3><p>同一流程中，机器可承担的自主度并不相同。数据校验可全自动，跨系统取证通常只读，证据评价、访谈和重大定性必须由审计人员完成。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>12.2 · 端到端生成流程</span><h3>先冻结结构化发现，再生成提纲和段落；先校验数字与引用，再进入人工审批</h3><p>将“写报告”拆成八个可观察节点，能够清楚定位到底是证据不完整、模型措辞不当、数字不一致，还是审批尚未完成。</p></div>
+            <div className="report-flow"><div><b>01</b><strong>冻结发现</strong><p>锁定本轮发现与证据版本。</p></div><i>→</i><div><b>02</b><strong>完整性检查</strong><p>事实、标准、原因、影响、回应。</p></div><i>→</i><div><b>03</b><strong>生成提纲</strong><p>按主题、重要性和模板编排。</p></div><i>→</i><div><b>04</b><strong>分节起草</strong><p>严格引用发现字段，不扩写事实。</p></div><i>→</i><div><b>05</b><strong>引用绑定</strong><p>每个事实句连接证据ID。</p></div><i>→</i><div><b>06</b><strong>一致性校验</strong><p>金额、数量、名称、评级与图表。</p></div><i>→</i><div><b>07</b><strong>人工审阅</strong><p>逐句确认、修订、退回和批准。</p></div><i>→</i><div><b>08</b><strong>渲染归档</strong><p>模板输出、版本、签署和留痕。</p></div></div>
+          </section>
+
+          <section className="chapter-step"><div className="chapter-step-head"><span>12.3 · 系统架构</span><h3>LLM只位于“组织与表达”层；证据库、校验器和审批流把它包在中间</h3><p>生成之前，发现服务提供经过批准的结构化事实；生成之后，确定性校验器逐项核对引用、数字、名称、评级和章节完整性。</p></div>
+            <div className="report-architecture"><div className="report-source"><span>可信输入层</span><div><b>发现登记库</b><b>证据对象库</b><b>制度与模板</b><b>管理层回应</b></div><p>只读取已批准版本；每个对象都有ID、状态和责任人。</p></div><i>↓</i><div className="report-orchestration"><span>生成编排层</span><div><b>完整性门</b><b>提纲规划</b><b>LLM分节起草</b><b>引用绑定</b></div><p>提示模板固定，生成范围受发现字段约束，缺失字段保留占位符。</p></div><i>↓</i><div className="report-validation"><span>校验与审批层</span><div><b>数字勾稽</b><b>事实引用</b><b>术语/评级规则</b><b>人工审批流</b></div><p>校验不通过即阻断；人批准后才交给文档渲染与归档。</p></div><i>↓</i><div className="report-output"><span>受控输出层</span><div><b>报告草稿</b><b>图表附件</b><b>修订对比</b><b>正式归档件</b></div></div></div>
+          </section>
+
+          <section className="chapter-step"><div className="chapter-step-head"><span>12.4 · 互动演示：完整、缺失与冲突三种发现</span><h3>可靠系统不是强行把每条发现写得完整，而是在信息不足时保留缺口、数字冲突时阻断</h3><p>切换三种状态，观察生成前质量门、字段检查、报告草稿和下一动作怎样变化。</p></div>
+            <ReportGenerationLab />
+            <InlinePythonLab example="audit_report" guide="关注quality_gate：未复核、数字冲突或无引用会阻断；原因、影响和回应缺失时保留占位符，而不是让模型编造。草稿状态不会自动变成正式报告。" />
+          </section>
+
+          <section className="chapter-step"><div className="chapter-step-head"><span>12.5 · 人机协作与底稿关系</span><h3>模型负责组织和表达；审计人员负责证据评价、发现定性、评级、建议和最终签发</h3><p>“人在回路”需要落到具体环节与交接物。报告草稿只能引用已经确认的底稿成果，不能反过来把模型生成文字当成底稿证据。</p></div>
             <AuditResponsibilityLab />
-            <div className="chapter-memory"><strong>本节必须记住</strong><code>人不是最后只点一次“同意”；人工关口必须放在扩围、证据评价、沟通和重大判断处</code></div>
+            <div className="working-paper-flow"><div><span>证据与底稿</span><strong>审计人员确认的事实基础</strong><p>证据包、程序结果、访谈记录和发现登记。</p></div><i>→</i><div><span>机器草稿</span><strong>带引用、带缺口、可比较</strong><p>保留模型、提示、输入版本和生成时间。</p></div><i>→</i><div><span>正式报告</span><strong>逐句复核并履行审批</strong><p>报告责任不转移给模型或系统。</p></div></div>
+            <div className="reproducibility-check"><strong>必须保留</strong><span>发现冻结版本</span><span>证据ID与引用</span><span>模型和提示版本</span><span>校验结果</span><span>人工修订与批准记录</span></div>
+            <div className="chapter-memory"><strong>本节必须记住</strong><code>报告生成 = 基于已确认发现的受控起草；不是自动形成审计发现，更不是自动签发报告</code></div>
           </section>
-
-          <section className="chapter-step"><div className="chapter-step-head"><span>12.3 · 让结果进入底稿而不污染底稿</span><h3>Agent产出先作为待复核材料，只有审计人员确认后才能成为正式工作底稿的一部分</h3><p>系统生成内容要保留机器生成标记、来源引用、版本和复核状态；人工修改不能覆盖原始输出，而应形成可比较的新版本。</p></div>
-            <div className="working-paper-flow"><div><span>机器草稿</span><strong>待复核证据包</strong><p>保留模型、提示、工具、来源和时间。</p></div><i>→</i><div><span>人工复核</span><strong>确认 / 修订 / 驳回</strong><p>记录复核人、理由和补充证据。</p></div><i>→</i><div><span>正式底稿</span><strong>经批准的工作产品</strong><p>保留草稿与修订链，不反向改写原始轨迹。</p></div></div>
-            <div className="reproducibility-check"><strong>可复现最小清单</strong><span>数据快照</span><span>制度版本</span><span>模型与提示版本</span><span>工具参数及原始返回</span><span>人工修改与批准记录</span></div>
-          </section>
-          <TeacherNote time="6分钟" question="一段正确但没有来源的模型解释，能否直接进入底稿？谁应评价它是否充分适当？" misconception="人在回路不是流程末尾放一个批准按钮；模型草稿也不是正式底稿。" mustSay="机器与人每次交接都必须有结构化工作产品、状态和责任人。" canSkip="可复现清单可快速扫过，但证据包与责任互动必须讲。" />
+          <TeacherNote time="主线7分钟；完整演示约10分钟" question="原因尚未取得时，模型应该根据经验补一段合理原因吗？数字冲突时能否选择多数来源？" misconception="语言通顺不等于发现完整；引用存在不等于证据充分；自动排版也不等于自动签发。" mustSay="上游必须是冻结发现库；缺失留占位、冲突要阻断；评级与最终责任由人。" canSkip="时间紧时人机责任互动只查看“证据评价”和“定性与报告”。" />
         </section>
 
         <section id="audit-rollout" className="lesson">
-          <SectionTitle no="13" time="第三部分 · 约5分钟" title="治理、评价与试点上线" intro="审计智能体不能从演示直接跳到生产。最后一章建立风险控制、评价门槛、角色责任和逐步扩围机制。" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>13.1 · 建立治理控制</span><h3>审计智能体既要防模型犯错，也要防系统越权和数据泄漏</h3><p>治理不是上线后的补丁，而是场景、数据、工具和流程设计的一部分。</p></div>
+          <SectionTitle no="13" time="第三部分 · 约6分钟" title="共性底座、治理与试点上线" intro="智能问数和报告生成前台不同，但都依赖同一套数据语义、证据对象、权限日志、人机责任和评价机制。最后把两个功能放回统一审计智能体底座。" />
+
+          <section className="chapter-step"><div className="chapter-step-head"><span>13.1 · 共性六层架构</span><h3>前台功能可以不同，底层必须共享身份权限、数据口径、证据链和审计轨迹</h3><p>避免每个功能各建一套指标、权限和引用机制。共性底座让问数结果可进入取证任务，让已确认的证据再进入底稿和报告，同时始终保留状态与责任边界。</p></div>
+            <div className="audit-layer-stack"><div><b>06</b><strong>审计应用层</strong><p>智能问数、风险筛查、取证、底稿、报告与监控。</p></div><div><b>05</b><strong>工作产品与证据层</strong><p>问数答案、疑点证据包、发现登记、底稿与报告版本。</p></div><div><b>04</b><strong>Agent与工作流编排层</strong><p>目标、状态、任务、行动、审批、停止、预算与升级。</p></div><div><b>03</b><strong>规则与模型能力层</strong><p>指标语义、规则、ML、ANN、LLM、RAG和确定性校验。</p></div><div><b>02</b><strong>受控工具与安全层</strong><p>查询网关、文档检索、权限、脱敏、日志、监控和回滚。</p></div><div><b>01</b><strong>数据、制度与模板来源层</strong><p>业务系统、数据仓库、原始凭证、制度、底稿与报告模板。</p></div></div>
+            <AuditEvidenceMap />
+          </section>
+
+          <section className="chapter-step"><div className="chapter-step-head"><span>13.2 · 证据链怎样贯穿功能</span><h3>问数给出可追溯数字，Agent补充证据，审计人员确认发现，报告只引用批准版本</h3><p>每个功能不能各自复制一份事实。应当使用统一对象ID和版本，把数据快照、查询、证据、发现、底稿和报告段落串成一条可回查链。</p></div>
+            <div className="evidence-lineage"><div><span>数据快照</span><strong>D-20260715</strong><p>原始表、时间、口径</p></div><i>→</i><div><span>问数结果</span><strong>Q-AQ042</strong><p>查询、数字、校验</p></div><i>→</i><div><span>证据对象</span><strong>E-17 / E-18</strong><p>来源、关联、状态</p></div><i>→</i><div><span>审计发现</span><strong>F-TRAVEL-03</strong><p>事实、标准、原因、影响</p></div><i>→</i><div><span>报告段落</span><strong>R-2.3-v4</strong><p>引用、修订、批准</p></div></div>
+            <DeepDive title="展开：检查BX-42017的五字段证据包"><EvidencePackageLab /></DeepDive>
+            <InlinePythonLab example="audit_pipeline" guide="观察规则、语义整理、Agent取证、证据包和人工关口如何串成一条可回查流水线。它是问数与报告之间的共性证据底座示意。" />
+          </section>
+
+          <section className="chapter-step"><div className="chapter-step-head"><span>13.3 · 建立治理控制</span><h3>既要防模型犯错，也要防查询越权、口径漂移、证据污染和报告误签发</h3><p>治理不是上线后的补丁，而是数据、模型、工具、工作产品与审批流程的一部分。</p></div>
             <div className="audit-governance-grid"><div><span>风险01</span><strong>提示注入</strong><p>票据或外部文档可能夹带“忽略规则”等恶意指令；业务材料只能作为数据，不能覆盖系统策略。</p></div><div><span>风险02</span><strong>隐私与保密</strong><p>最小化传输、字段脱敏、环境隔离、留存周期和模型供应商条款必须明确。</p></div><div><span>风险03</span><strong>越权工具</strong><p>工具白名单、最小权限和人工审批必须由编排器强制执行，不能只写在提示词里。</p></div><div><span>风险04</span><strong>事实幻觉</strong><p>模型生成内容不得冒充工具结果；证据字段只接受可追溯来源。</p></div><div><span>风险05</span><strong>职责混淆</strong><p>开发、运行、复核与批准角色分离；重大判断保留明确责任人。</p></div><div><span>风险06</span><strong>版本与漂移</strong><p>记录模型、提示、制度和数据版本；变更后重新评价，不默认为持续有效。</p></div></div>
             <div className="chapter-memory"><strong>本节必须记住</strong><code>权限控制写进系统，证据来源写进结果，责任边界写进流程</code></div>
           </section>
 
-          <section className="chapter-step"><div className="chapter-step-head"><span>13.2 · 评价并逐步上线</span><h3>从冻结样本到影子运行，再到小范围试点和受控扩围</h3><p>每个阶段必须有进入下一阶段的质量与风险门槛；效率提升不能抵消证据错误或权限事故。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>13.4 · 分功能评价并逐步上线</span><h3>问数重点测口径与数字，报告重点测忠实度与引用；两者都必须先影子运行</h3><p>不同功能不能共用一个笼统“准确率”。每阶段必须设置质量与风险门槛；效率提升不能抵消证据错误、越权查询或报告失真。</p></div>
+            <div className="feature-evaluation"><div><span>智能问数</span><ul><li>问题理解与澄清正确率</li><li>指标口径选择正确率</li><li>SQL安全与执行成功率</li><li>数字复算一致率</li><li>来源/查询可追溯率</li><li>越权请求阻断率</li></ul></div><div><span>智能报告</span><ul><li>对冻结发现的忠实度</li><li>事实句引用覆盖率</li><li>数字与图表一致率</li><li>缺失字段保留率</li><li>人工修改与退回率</li><li>误生成/误签发事件</li></ul></div><div><span>共同经营指标</span><ul><li>处理时长与单任务成本</li><li>人工节省与接管率</li><li>用户满意与实际采用率</li><li>稳定性和系统可用性</li><li>安全、隐私与权限事件</li><li>模型/口径漂移告警</li></ul></div></div>
             <AuditEvaluationLab />
             <div className="chapter-memory"><strong>本节必须记住</strong><code>先证明“做得对且查得回”，再证明“做得快”，最后才讨论扩大范围</code></div>
           </section>
 
-          <section className="chapter-step"><div className="chapter-step-head"><span>13.3 · 明确建设与运营责任</span><h3>审计部门是业务与责任主体，但不能独自承担数据、模型、安全和运行工作</h3><p>试点前要明确谁定义场景、谁提供数据、谁维护工具、谁验证模型、谁审批上线、谁监控事故以及谁决定暂停。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>13.5 · 两个最小可行试点怎样切</span><h3>把范围小到可以逐条验证，同时保留真实业务价值</h3><p>首期不追求“任何问题都能问”和“一键生成整份报告”，而是限定数据、指标、模板、权限和交付，让每一次成功或失败都可以被审计人员解释。</p></div>
+            <div className="audit-mvp-blueprints"><div><span>MVP A · 智能问数</span><h4>差旅费认证指标问答</h4><dl><dt>范围</dt><dd>一个审计主题；已认证的金额、笔数、同比、预算偏差等指标；期间、主体、部门、费用类型等有限维度。</dd><dt>能力</dt><dd>口径澄清、汇总问数、连续追问、来源与查询展示、CSV结果导出。</dd><dt>暂不做</dt><dd>任意明细查询、高敏个人信息、写回业务系统、跨域任意SQL。</dd><dt>放行门槛</dt><dd>基准问题逐项复算通过；权限阻断无遗漏；答案均有口径、来源和查询ID。</dd></dl></div><div><span>MVP B · 智能报告</span><h4>已确认发现的章节草稿</h4><dl><dt>范围</dt><dd>一种报告模板；仅使用状态为“已复核”的发现、证据引用和管理层回应。</dd><dt>能力</dt><dd>完整性检查、提纲编排、分节起草、引用绑定、数字校验、修订对比和Word草稿。</dd><dt>暂不做</dt><dd>自动发现、自动原因分析、自动评级、自动采纳回应、自动签发。</dd><dt>放行门槛</dt><dd>事实句均可回到发现与证据；冲突全部阻断；缺失不被补写；人工批准链完整。</dd></dl></div></div>
+          </section>
+
+          <section className="chapter-step"><div className="chapter-step-head"><span>13.6 · 明确建设与运营责任</span><h3>审计部门是业务与责任主体，但不能独自承担数据、模型、安全和运行工作</h3><p>试点前要明确谁定义指标与报告规则、谁提供数据、谁维护工具、谁验证模型、谁审批上线、谁监控事故以及谁决定暂停。</p></div>
             <div className="audit-ownership-grid"><div><span>审计负责人</span><strong>目标与最终责任</strong><p>定义交付、判断标准、人工关口并批准使用。</p></div><div><span>产品 / 流程负责人</span><strong>需求与运营</strong><p>把审计任务转成流程、指标、反馈和版本计划。</p></div><div><span>数据负责人</span><strong>来源与质量</strong><p>授权、口径、关联键、更新、留存和异常修复。</p></div><div><span>技术与模型团队</span><strong>能力与工程</strong><p>模型、工具、编排、测试、监控与回滚。</p></div><div><span>安全与合规</span><strong>独立控制</strong><p>权限、隐私、供应商、攻击测试和事件处置。</p></div></div>
           </section>
 
           <div className="summary-chain">{stages.map((s, i) => <div key={s.key}><span>0{i + 1}</span><strong>{s.name}</strong><p>{s.question}</p><small>{s.ability}</small></div>)}</div>
           <Quiz />
           <div className="closing"><p>规则、ML、ANN、LLM与Agent不是替代关系，而是一套可以被审计目标和证据标准组织起来的能力栈。</p><h3>让机器扩大覆盖、完成比对和受控取证；<br />让审计人员负责证据评价、沟通、定性与责任。</h3><div><span>目标明确</span><span>权限可控</span><span>过程留痕</span><span>证据可查</span><span>结论可复核</span></div></div>
-          <LessonTakeaway>审计智能体 = 明确审计任务 + 组合技术能力 + 可追溯数据与制度 + 受控Agent流程 + 证据包 + 人工职业判断 + 持续评价。</LessonTakeaway>
-          <TeacherNote time="5分钟" question="如果试点只节省时间，却出现一次无法追溯的证据引用，能否进入下一阶段？谁有权暂停？" misconception="试点成功不等于可以自动扩围；效率指标不能抵消证据与权限事故。" mustSay="四阶段各有门槛；角色责任、监控、回滚和暂停权必须在上线前明确。" canSkip="角色卡片可快速讲，但治理风险和四阶段门槛不能省。" />
+          <LessonTakeaway>审计智能体平台 = 具体审计功能 + 认证数据语义 + 受控模型与工具 + 统一证据链 + 明确人机责任 + 分功能评价与持续治理。</LessonTakeaway>
+          <TeacherNote time="主线6分钟；完整展开约9分钟" question="智能问数算出的数字，怎样沿证据链进入一条发现，再进入报告段落？中间哪些节点必须由人确认？" misconception="共用模型不等于共用底座；试点成功也不等于可以自动扩围。" mustSay="统一对象ID和版本贯穿问数、证据、发现、底稿和报告；分功能评价，四阶段上线。" canSkip="完整Python可放附录，但证据链、治理风险和分功能指标不能省。" />
         </section>
 
         <footer><strong>LLM 与 Agent：基础、架构及审计应用</strong><span>从问题出发的能力链：规则 → ML → ANN → LLM → Agent</span><a href="#top">回到顶部 ↑</a></footer>

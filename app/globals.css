@@ -1219,10 +1219,112 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; }
 .reproducibility-check strong { margin-right: 8px; color: var(--accent); font-size: 9px; }
 .reproducibility-check span { padding: 7px 9px; background: #f3f5f4; font-size: 8px; }
 
+.audit-capability-map, .ask-data-lab, .report-generation-lab { display: grid; grid-template-columns: 245px 1fr; margin: 22px 0; border: 1px solid var(--line); background: #fff; }
+.capability-options, .ask-data-tabs, .report-mode-tabs { background: #f5f6f4; border-right: 1px solid var(--line); }
+.capability-options button, .ask-data-tabs button, .report-mode-tabs button { display: grid; width: 100%; padding: 14px 16px; border: 0; border-bottom: 1px solid var(--line); background: transparent; text-align: left; }
+.capability-options button { grid-template-columns: 28px 1fr; align-items: center; }
+.capability-options button.active, .ask-data-tabs button.active, .report-mode-tabs button.active { color: #fff; background: var(--accent); }
+.capability-options b { color: #98a39f; font: 8px ui-monospace, monospace; }
+.capability-options span, .ask-data-tabs strong, .report-mode-tabs strong { font-size: 10px; }
+.ask-data-tabs span, .report-mode-tabs span { margin-top: 4px; color: var(--muted); font-size: 8px; }
+.ask-data-tabs button.active span, .report-mode-tabs button.active span { color: #cce0d9; }
+.audit-capability-map > section, .ask-data-lab > section, .report-generation-lab > section { padding: 26px; }
+.audit-capability-map section > span, .ask-data-question > span, .report-status > span { color: var(--accent); font-size: 9px; font-weight: 800; }
+.audit-capability-map h3, .ask-data-question h3, .report-status h3 { margin: 8px 0 15px; font-family: var(--serif); font-size: 23px; line-height: 1.4; }
+.capability-io { display: grid; grid-template-columns: 1fr 34px 1fr; align-items: stretch; }
+.capability-io > div, .capability-stack-line { padding: 13px 15px; background: #f5f7f6; }
+.capability-io > i { display: grid; place-items: center; color: var(--accent); font-style: normal; }
+.capability-io small, .capability-stack-line small { color: var(--accent); font-size: 8px; font-weight: 800; }
+.capability-io p { margin: 6px 0 0; color: var(--muted); font-size: 9px; line-height: 1.65; }
+.capability-stack-line { margin-top: 8px; background: var(--accent-soft); }
+.capability-stack-line strong { display: block; margin-top: 6px; font-size: 10px; }
+.audit-capability-map blockquote { margin: 14px 0 0; padding: 13px 15px; color: #705c4c; background: var(--warm-soft); font-size: 9px; line-height: 1.7; }
+
+.audit-function-lanes, .ask-data-flow, .report-flow, .evidence-lineage { display: grid; align-items: stretch; margin: 22px 0; border: 1px solid var(--line); background: #fff; }
+.audit-function-lanes { grid-template-columns: 1fr 30px 1fr 30px 1fr 30px 1fr; }
+.audit-function-lanes > div, .ask-data-flow > div, .report-flow > div, .evidence-lineage > div { min-width: 0; padding: 16px; }
+.audit-function-lanes > i, .ask-data-flow > i, .report-flow > i, .evidence-lineage > i { display: grid; place-items: center; color: var(--accent); background: #f3f6f4; font-style: normal; }
+.audit-function-lanes span, .evidence-lineage span { color: var(--accent); font-size: 8px; font-weight: 800; }
+.audit-function-lanes strong, .evidence-lineage strong { display: block; margin: 10px 0 7px; font-family: var(--serif); font-size: 13px; }
+.audit-function-lanes p, .evidence-lineage p { margin: 0; color: var(--muted); font-size: 8px; line-height: 1.65; }
+
+.ask-data-deliverable, .report-input-contract { display: grid; grid-template-columns: repeat(5, 1fr); margin: 22px 0; border: 1px solid var(--line); background: #fff; }
+.ask-data-deliverable > div, .report-input-contract > div { min-height: 120px; padding: 16px; border-right: 1px solid var(--line); }
+.ask-data-deliverable > div:last-child, .report-input-contract > div:last-child { border-right: 0; }
+.ask-data-deliverable span, .report-input-contract span { color: var(--accent); font: 8px ui-monospace, monospace; font-weight: 800; }
+.ask-data-deliverable strong, .report-input-contract strong { display: block; margin-top: 15px; font-family: var(--serif); font-size: 13px; line-height: 1.5; }
+.ask-data-flow { grid-template-columns: 1fr 22px 1fr 22px 1fr 22px 1fr 22px 1fr 22px 1fr 22px 1fr; }
+.ask-data-flow b, .report-flow b { color: #97a29e; font: 8px ui-monospace, monospace; }
+.ask-data-flow strong, .report-flow strong { display: block; margin: 11px 0 7px; font-family: var(--serif); font-size: 12px; }
+.ask-data-flow p, .report-flow p { margin: 0; color: var(--muted); font-size: 8px; line-height: 1.6; }
+
+.ask-data-architecture, .report-architecture { margin: 22px 0; border: 1px solid var(--line); background: #fff; }
+.ask-data-architecture > div, .report-architecture > div { padding: 17px 20px; }
+.ask-data-architecture > i, .report-architecture > i { display: block; padding: 7px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); color: var(--accent); background: #f3f6f4; font-size: 9px; font-style: normal; text-align: center; }
+.ask-data-architecture span, .report-architecture span { color: var(--accent); font-size: 8px; font-weight: 800; }
+.ask-data-architecture strong { display: block; margin: 7px 0 4px; font-family: var(--serif); font-size: 15px; }
+.ask-data-architecture p, .report-architecture p { margin: 6px 0 0; color: var(--muted); font-size: 8px; line-height: 1.65; }
+.ask-control > div, .ask-tools > div, .report-architecture > div > div { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.ask-control b, .ask-tools b, .report-architecture > div > div b { padding: 10px 8px; background: #f4f6f5; font-size: 8px; text-align: center; }
+.ask-control { background: var(--accent-soft); }
+
+.ask-data-question { position: relative; padding-right: 120px; }
+.ask-data-question > b { position: absolute; top: 0; right: 0; padding: 7px 9px; font-size: 8px; }
+.ask-data-question > b.ok { color: var(--accent); background: var(--accent-soft); }
+.ask-data-question > b.clarify { color: #805b38; background: var(--warm-soft); }
+.ask-data-question > b.denied { color: #8a3f32; background: #f4e5e1; }
+.ask-data-contract, .ask-data-proof { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.ask-data-contract span, .ask-data-proof span { padding: 8px 10px; background: #f4f6f5; color: var(--muted); font-size: 8px; }
+.ask-data-plan, .ask-data-answer, .report-next { margin-top: 10px; padding: 12px 14px; background: var(--accent-soft); }
+.ask-data-plan small, .ask-data-answer small, .report-next small { color: var(--accent); font-size: 8px; font-weight: 800; }
+.ask-data-plan p { margin: 5px 0 0; color: var(--muted); font-size: 9px; line-height: 1.65; }
+.ask-data-query { min-height: 95px; margin: 10px 0; padding: 14px; overflow: auto; white-space: pre-wrap; background: #26312e; color: #d9e5e0; font: 8px/1.7 ui-monospace, monospace; }
+.ask-data-query.clarify { background: #554536; }
+.ask-data-query.denied { background: #543a34; }
+.ask-data-answer strong, .report-next strong { display: block; margin-top: 6px; font-size: 10px; line-height: 1.7; }
+
+.report-prohibited { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; margin: 14px 0; padding: 14px; background: #4e3b34; color: white; }
+.report-prohibited strong { margin-right: 8px; color: #f0c6b3; font-size: 9px; }
+.report-prohibited span { padding: 6px 8px; background: rgba(255,255,255,.08); font-size: 8px; }
+.report-flow { grid-template-columns: 1fr 18px 1fr 18px 1fr 18px 1fr 18px 1fr 18px 1fr 18px 1fr 18px 1fr; }
+.report-validation { background: var(--accent-soft); }
+.report-output { text-align: center; }
+
+.report-checks { display: grid; grid-template-columns: repeat(5, 1fr); border: 1px solid var(--line); }
+.report-checks > div { padding: 11px; border-right: 1px solid var(--line); text-align: center; }
+.report-checks > div:last-child { border-right: 0; }
+.report-checks span { display: block; color: var(--muted); font-size: 8px; }
+.report-checks b { display: inline-block; margin-top: 7px; padding: 4px 6px; font-size: 8px; }
+.report-checks b.ok { color: var(--accent); background: var(--accent-soft); }
+.report-checks b.warn { color: #805b38; background: var(--warm-soft); }
+.report-checks b.bad { color: #8a3f32; background: #f4e5e1; }
+.report-draft { margin: 12px 0 0; padding: 18px; border-left: 4px solid var(--accent); background: #f8faf9; }
+.report-draft.warning { border-color: var(--warm); background: var(--warm-soft); }
+.report-draft.blocked { border-color: #934b3b; background: #f5e8e4; }
+.report-draft span { color: var(--accent); font-size: 8px; font-weight: 800; }
+.report-draft p { margin: 9px 0 0; color: #36443f; font-family: var(--serif); font-size: 11px; line-height: 1.9; }
+
+.evidence-lineage { grid-template-columns: 1fr 24px 1fr 24px 1fr 24px 1fr 24px 1fr; }
+.feature-evaluation { display: grid; grid-template-columns: repeat(3, 1fr); margin: 22px 0; border: 1px solid var(--line); background: #fff; }
+.feature-evaluation > div { padding: 19px; border-right: 1px solid var(--line); }
+.feature-evaluation > div:last-child { border-right: 0; }
+.feature-evaluation span { color: var(--accent); font-size: 9px; font-weight: 800; }
+.feature-evaluation ul { margin: 10px 0 0; padding-left: 17px; color: var(--muted); font-size: 9px; line-height: 1.85; }
+.audit-mvp-blueprints { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 22px 0; }
+.audit-mvp-blueprints > div { padding: 22px; border: 1px solid var(--line); background: #fff; }
+.audit-mvp-blueprints > div:last-child { border-top: 4px solid var(--warm); }
+.audit-mvp-blueprints > div:first-child { border-top: 4px solid var(--accent); }
+.audit-mvp-blueprints span { color: var(--accent); font-size: 9px; font-weight: 800; }
+.audit-mvp-blueprints h4 { margin: 9px 0 17px; font-family: var(--serif); font-size: 20px; }
+.audit-mvp-blueprints dl { display: grid; grid-template-columns: 72px 1fr; gap: 0; margin: 0; }
+.audit-mvp-blueprints dt, .audit-mvp-blueprints dd { margin: 0; padding: 10px 0; border-top: 1px solid var(--line); font-size: 9px; line-height: 1.7; }
+.audit-mvp-blueprints dt { color: var(--accent); font-weight: 800; }
+.audit-mvp-blueprints dd { color: var(--muted); }
+
 @media (max-width: 980px) {
   .focus-route > div:last-child { grid-template-columns: repeat(2, 1fr); }
-  .architecture-explorer, .audit-scene-selector, .evidence-package-lab, .audit-evaluation-lab, .agent-fit-lab, .audit-responsibility-lab { grid-template-columns: 1fr; }
-  .architecture-list, .scene-list, .package-tabs, .evaluation-stages, .fit-options, .responsibility-steps { display: grid; grid-template-columns: repeat(2, 1fr); border-right: 0; border-bottom: 1px solid var(--line); }
+  .architecture-explorer, .audit-scene-selector, .evidence-package-lab, .audit-evaluation-lab, .agent-fit-lab, .audit-responsibility-lab, .audit-capability-map, .ask-data-lab, .report-generation-lab { grid-template-columns: 1fr; }
+  .architecture-list, .scene-list, .package-tabs, .evaluation-stages, .fit-options, .responsibility-steps, .capability-options, .ask-data-tabs, .report-mode-tabs { display: grid; grid-template-columns: repeat(2, 1fr); border-right: 0; border-bottom: 1px solid var(--line); }
   .tool-contract-grid { grid-template-columns: 1fr; }
   .tool-contract-grid > i { min-height: 38px; transform: rotate(90deg); }
   .stop-grid, .audit-deliverable, .audit-operating-model { grid-template-columns: 1fr 1fr; }
@@ -1235,12 +1337,18 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; }
   .agent-risk-surface > div, .agent-value-grid > div, .audit-task-contract > div, .audit-ownership-grid > div { border-bottom: 1px solid var(--line); }
   .agent-eval-board { grid-template-columns: 1fr 1fr; }
   .generic-agent-lifecycle { grid-template-columns: repeat(3, 1fr); }
+  .ask-data-deliverable, .report-input-contract { grid-template-columns: repeat(2, 1fr); }
+  .audit-function-lanes, .ask-data-flow, .report-flow, .evidence-lineage { grid-template-columns: 1fr; }
+  .audit-function-lanes > i, .ask-data-flow > i, .report-flow > i, .evidence-lineage > i { min-height: 28px; transform: rotate(90deg); }
+  .feature-evaluation { grid-template-columns: 1fr; }
+  .feature-evaluation > div { border-right: 0; border-bottom: 1px solid var(--line); }
+  .audit-mvp-blueprints { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 620px) {
   .focus-route-head, .tool-contract-head { align-items: flex-start; flex-direction: column; }
   .part-route-wrap { padding: 28px; }
-  .focus-route > div:last-child, .architecture-list, .scene-list, .package-tabs, .state-tabs, .control-levels, .control-actions, .stop-grid, .audit-deliverable, .audit-operating-model, .audit-governance-grid, .fit-options, .responsibility-steps, .agent-decision-rule, .agent-topology, .agent-risk-surface, .agent-value-grid, .control-lifecycle, .agent-eval-board, .generic-agent-lifecycle, .audit-task-contract, .audit-ownership-grid, .responsibility-columns { grid-template-columns: 1fr; }
+  .focus-route > div:last-child, .architecture-list, .scene-list, .package-tabs, .state-tabs, .control-levels, .control-actions, .stop-grid, .audit-deliverable, .audit-operating-model, .audit-governance-grid, .fit-options, .responsibility-steps, .agent-decision-rule, .agent-topology, .agent-risk-surface, .agent-value-grid, .control-lifecycle, .agent-eval-board, .generic-agent-lifecycle, .audit-task-contract, .audit-ownership-grid, .responsibility-columns, .capability-options, .ask-data-tabs, .report-mode-tabs, .ask-data-deliverable, .report-input-contract, .report-checks, .ask-data-contract, .ask-data-proof, .ask-control > div, .ask-tools > div, .report-architecture > div > div { grid-template-columns: 1fr; }
   .chapter-step-head h3 { font-size: 24px; }
   .chapter-memory { grid-template-columns: 1fr; }
   .evidence-policy, .evidence-sources > div, .evidence-processing > div { grid-template-columns: 1fr 1fr; }
@@ -1250,6 +1358,10 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; }
   .incident-response i { transform: rotate(90deg); }
   .audit-layer-stack > div { grid-template-columns: 32px 1fr; }
   .audit-layer-stack p { grid-column: 2; margin-top: 5px; }
+  .capability-io { grid-template-columns: 1fr; }
+  .capability-io > i { min-height: 28px; transform: rotate(90deg); }
+  .ask-data-question { padding-right: 0; }
+  .ask-data-question > b { position: static; display: inline-block; margin-bottom: 8px; }
 }
 
 .math-explain {

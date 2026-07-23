@@ -30,15 +30,20 @@
 | `AgentStateExplorer` | agent | 区分状态、记忆、轨迹并展示五类停止条件 |
 | `AgentControlLab` | agent | 建议、只读、受控执行三种自主度与动作权限 |
 | `AgentBranchLab` | agent | BX-42017行程矛盾 / 行程一致 / 工具失败三分支 |
-| `AuditChapterRoute` | part-3 | 章节10—13四章路线 |
+| `AuditChapterRoute` | part-3 | 功能全景→智能问数→智能报告→共性治理四章路线 |
+| `AuditCapabilityMap` | audit | 六类审计智能功能的输入、输出、技术组合与边界 |
+| `AskDataLab` | audit-architecture | 指标查询、多表追问、口径不清、越权请求四种问数分支 |
+| `ReportGenerationLab` | audit-evidence | 证据完整、原因缺失、数字冲突三种报告生成状态 |
+| `InlinePythonLab(audit_ask_data)` | audit-architecture | 口径契约、权限、确定性汇总复算与证据化回答 |
+| `InlinePythonLab(audit_report)` | audit-evidence | 报告生成质量门、缺失占位和冲突阻断 |
 | `AuditScenarioSelector` | audit | 对四类任务进行五维适配诊断 |
 | `AuditEvidenceMap` | audit | 九表两制度到能力层与证据包的来源链 |
 | `EvidencePackageLab` | audit | BX-42017五字段证据包逐项复核 |
-| `AuditResponsibilityLab` | audit-evidence | 六个审计环节的人机责任、交接物与原因 |
+| `AuditResponsibilityLab` | audit-evidence | 报告上下游六个审计环节的人机责任、交接物与原因 |
 | `AuditEvaluationLab` | audit | 离线、影子、试点、扩围四阶段门槛 |
 | `AuditAgentCanvas` | audit | 六步设计画布 |
 | `CaseMatrix` | audit（折叠扩展） | 六类事项在五种技术下的结果差异 |
 | `InlinePythonLab(audit_pipeline)` | audit | 规则→语义结构化→动态取证→证据包→人工关口 |
-| `Quiz` | audit 收束 | 七题自测，重点检查Agent架构与审计边界 |
+| `Quiz` | audit 收束 | 九题自测，新增智能问数与报告生成边界 |
 
 第二、第三部分新增互动集中在 `app/agent-audit-interactives.tsx`；正文、治理清单与Python示例入口在 `app/page.tsx`。
