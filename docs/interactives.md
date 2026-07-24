@@ -15,7 +15,7 @@
 | `KnownUnknownBridge` / `FunctionFittingLab` / `ConfusionMatrixLab` | 备用（当前 Home 的 ml 已精简） | 旧版 ML 互动 |
 | `NeuronContinuityLab` 等 | 备用（旧版 nn DeepDive） | ANN 解剖 |
 | `DigitsImageLab` | nn（嵌在 AnnPixelDemo） | 自构 16×16 示意像素 → 数字 0—9 |
-| `FacePredictLab` | nn 趣味支线 | 真实 ResNet34（224，head_hidden=512）人脸：上传/拍照 → 检测裁剪 → 三类概率；阈值 0.70 拒识 |
+| `FacePredictLab` | nn 趣味支线 | “笑雨与骐源的双人限定识别器”故事首屏 + 笑雨示例照片 + 训练流程图 + 真实 ResNet34（224，head_hidden=512）演示；可一键运行示例或上传/拍照，输出笑雨/骐源/其他三类概率并以0.70阈值拒识 |
 | `LlmContextDemo` / `LlmChapterRoute` | llm | BX-42519 动机 + 七步连续主线；明确本章学习顺序 |
 | `ContextEvidenceInbox` | llm（嵌在 LlmContextDemo） | 说明/小票/CRM/日历多段文字 |
 | `AnnToLlmGapDiagram` 等 | llm（`app/llm-diagrams.tsx`） | 缺口/连续关系/分词/生成循环/Attention/Transformer/生命周期/窗口/边界等图示 |
@@ -24,7 +24,9 @@
 | `LlmTrainingWorkbench` | llm | 四个训练状态；同步观察预测、Loss与参数更新 |
 | `LlmCheckpointExplorer` | llm | 打开 config/tokenizer/权重文件；浏览真实同类张量名称与形状 |
 | `LlmCallLab` | llm | request → 推理服务 → response；解释模型部署和调用 |
+| `InlinePythonLab(rule / ml / neural / …)` | 各章 | 浏览器内可运行代码；`neural` 右侧带 `NeuralTrainMonitor` 回放 epoch/Loss |
 | `InlinePythonLab(attention / language / llm_call)` | llm | 计算微型Attention；运行神经语言模型训练；运行一次无网络模型调用模拟 |
+| `FoundationChapterRoute` | part-1 | 章节02—05四章目录：规则→ML→ANN→LLM，可点击跳转 |
 | `AgentChapterRoute` | part-2 | 章节06—09四章路线，避免一个大section平铺内容 |
 | `AgentFitLab` | agent | 四类任务互动判断：程序、工作流、LLM应用或Agent |
 | `AgentArchitectureExplorer` | agent | 六块架构的输入、产出与失败风险 |

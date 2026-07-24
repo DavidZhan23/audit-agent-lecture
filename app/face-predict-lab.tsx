@@ -6,6 +6,7 @@ type Probs = { 笑雨: number; 骐源: number; 其他: number };
 type PredictOk = { label: string; probs: Probs; confidence: number; threshold?: number };
 
 const LABELS: Array<keyof Probs> = ["笑雨", "骐源", "其他"];
+const XIAOYU_SAMPLE = "/images/xiaoyu.jpg";
 
 /** 压缩到边长与体积上限内，避免线上 vinext 默认 ~1MB 体积极限触发 413 */
 async function compressImageBlob(
@@ -60,7 +61,7 @@ function httpsHintUrl(): string {
 }
 
 export function FacePredictLab() {
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(XIAOYU_SAMPLE);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PredictOk | null>(null);
@@ -72,7 +73,8 @@ export function FacePredictLab() {
   const captureRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setSecureOk(isSecureForCamera());
+    const id = window.setTimeout(() => setSecureOk(isSecureForCamera()), 0);
+    return () => window.clearTimeout(id);
   }, []);
 
   const stopCamera = useCallback(() => {
@@ -140,6 +142,20 @@ export function FacePredictLab() {
     await runPredict(file);
   };
 
+  const runXiaoyuSample = async () => {
+    stopCamera();
+    setPreview(XIAOYU_SAMPLE);
+    setError(null);
+    setResult(null);
+    try {
+      const response = await fetch(XIAOYU_SAMPLE);
+      if (!response.ok) throw new Error("课堂示例照片读取失败");
+      await runPredict(await response.blob());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "课堂示例照片读取失败");
+    }
+  };
+
   const startCamera = async () => {
     setError(null);
     setResult(null);
@@ -194,31 +210,73 @@ export function FacePredictLab() {
   };
 
   return (
-    <div className="face-lab interactive">
-      <div className="interactive-head">
-        <div>
-          <span>趣味实验 · 真实 ANN · ResNet34 迁移学习</span>
-          <h3>同样是像素：网络怎样从数字识别扩展到人脸特征？</h3>
+    <div className="xiaoyu-story">
+      <section className="xiaoyu-story-hero" aria-labelledby="xiaoyu-story-title">
+        <div className="xiaoyu-portrait">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={XIAOYU_SAMPLE} alt="笑雨举起剪刀手的课堂示例照片" />
+          <div><span>今日主角</span><strong>笑雨</strong><small>XIAO YU · 本人已上线</small></div>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            setPreview(null);
-            setResult(null);
-            setError(null);
-            stopCamera();
-            if (fileRef.current) fileRef.current.value = "";
-            if (captureRef.current) captureRef.current.value = "";
-          }}
-        >
-          重置
-        </button>
-      </div>
+        <div className="xiaoyu-premise">
+          <span>趣味支线 · 5—7分钟 · 课堂虚构故事</span>
+          <h3 id="xiaoyu-story-title">不必认识全世界，<br /><em>只要一眼认出笑雨。</em></h3>
+          <p>笑雨住在一栋邻里热络、认人却有点马虎的公寓。每天清晨，他和许多年轻人一样，挤进电梯、穿过快递柜前白亮的灯光，再汇入一座脚步匆匆的城市。邻居们总会热情地向他点头，却常在下一秒叫出另一个名字；偶尔一句“你是不是住楼上的那位”，也会把刚刚升起的亲切感轻轻推远。被认错似乎只是一件微不足道的小事，可次数多了，笑雨渐渐觉得，自己像这座城市里一张没有被保存的面孔——每天与许多人擦肩，却很少真正被谁记住。一次深夜，他向小伙伴骐源说起这份难以启齿的失落，没想到骐源沉默片刻，也说自己常有同样的感受。两个<strong>“总被认错的人”</strong>一拍即合：既然邻居一时记不住，那就先教会一个模型。他们整理照片、贴上名字，看着一轮轮训练从屏幕上跑过。终于，模型一次次坚定地显示出“笑雨”。笑雨带着微笑看着电脑，轻声说：“能被你认识，真好啊。”</p>
+          <blockquote>“世界很大，而我想被认出来。”</blockquote>
+          <div className="xiaoyu-binary"><span>公寓里的所有人</span><i>→</i><strong>笑雨</strong><b>或</b><strong>骐源</strong><b>或</b><strong>其他</strong></div>
+        </div>
+      </section>
 
-      <div className="face-lab-actions">
-        <button type="button" className="primary" disabled={busy} onClick={() => fileRef.current?.click()}>
-          上传照片
-        </button>
+      <section className="xiaoyu-training-map" aria-label="从照片到双人限定识别器的训练流程">
+        <div className="xiaoyu-training-head">
+          <span>把上面的 ANN 机制换一组像素，再走一遍</span>
+          <h4>他“喂给网络”的不是一个名字，而是一组带答案的照片</h4>
+        </div>
+        <div className="xiaoyu-training-flow">
+          <div className="xiaoyu-samples">
+            <span>01 · 带标签照片</span>
+            <div><b className="target">笑雨</b><b className="target">骐源</b><b>其他</b></div>
+            <small>角度 · 表情 · 光线 · 背景</small>
+          </div>
+          <i>→</i>
+          <div><span>02 · 输入</span><strong>224 × 224</strong><small>像素张量</small></div>
+          <i>→</i>
+          <div><span>03 · 表示学习</span><strong>ResNet34</strong><small>边缘 → 纹理 → 面部组合</small></div>
+          <i>→</i>
+          <div><span>04 · 输出</span><strong>3 类概率</strong><small>Softmax + 交叉熵</small></div>
+          <i>→</i>
+          <div className="xiaoyu-decision"><span>05 · 上线规则</span><strong>目标身份 ≥ 70%</strong><small>否则：其他 / 无法确定</small></div>
+        </div>
+        <p><b>精妙之处：</b>这个模型不是要认识全世界，而是划出一个极小的“熟人圈”：准确区分<strong>笑雨与骐源</strong>，并把圈外的人送进“其他”。学会拒绝，和学会认出同样重要。</p>
+      </section>
+
+      <div className="face-lab interactive">
+        <div className="interactive-head">
+          <div>
+            <span>模型亮相 · 真实 ANN · ResNet34 迁移学习</span>
+            <h3>双人限定识别器 v0.1：让训练后的权重回答</h3>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setPreview(XIAOYU_SAMPLE);
+              setResult(null);
+              setError(null);
+              stopCamera();
+              if (fileRef.current) fileRef.current.value = "";
+              if (captureRef.current) captureRef.current.value = "";
+            }}
+          >
+            回到示例
+          </button>
+        </div>
+
+        <div className="face-lab-actions">
+          <button type="button" className="primary" disabled={busy} onClick={() => void runXiaoyuSample()}>
+            ▶ 让模型认认笑雨
+          </button>
+          <button type="button" disabled={busy} onClick={() => fileRef.current?.click()}>
+            换一张照片
+          </button>
         <input
           ref={fileRef}
           type="file"
@@ -251,10 +309,10 @@ export function FacePredictLab() {
             </button>
           </>
         )}
-      </div>
+        </div>
 
-      <div className="face-lab-stage">
-        <div className="face-lab-preview">
+        <div className="face-lab-stage">
+          <div className="face-lab-preview">
           <span>输入</span>
           {cameraOn ? (
             <video ref={videoRef} playsInline muted autoPlay />
@@ -264,9 +322,9 @@ export function FacePredictLab() {
           ) : (
             <div className="face-lab-empty">上传、手机拍照，或打开摄像头后，预览会出现在这里。</div>
           )}
-        </div>
+          </div>
 
-        <div className="face-lab-result">
+          <div className="face-lab-result">
           <span>输出</span>
           {busy && <p className="face-lab-status">推理中…（首次加载模型可能稍慢）</p>}
           {error && <p className="face-lab-error">{error}</p>}
@@ -301,12 +359,13 @@ export function FacePredictLab() {
               </div>
             </>
           )}
+          </div>
         </div>
-      </div>
 
-      <p className="lab-disclaimer">
-        Softmax 概率不等于真实身份匹配概率；本演示仅用于理解 ANN，不可用于门禁或身份认证。人脸属敏感信息，请获授权后使用。
-      </p>
+        <p className="lab-disclaimer">
+          故事的反转：模型能把像素分进某一类，却不知道“被认错为什么让人难过”。Softmax 概率也不等于真实身份匹配概率；本演示仅用于理解 ANN，不可用于门禁或身份认证。人脸属敏感信息，请获授权后使用。
+        </p>
+      </div>
     </div>
   );
 }

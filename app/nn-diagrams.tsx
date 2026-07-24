@@ -234,7 +234,7 @@ function MlpSvg() {
       <LayerBadge cx={outX} y={18} label="输出 · 10" fill={warmSoft} color={warm} width={100} />
 
       <PixelGrid x={gridX} y={gridY} cell={gridCell} rows={DIGIT_SIZE} cols={DIGIT_SIZE} pixels={demoPixels} />
-      <text x={pixelCx} y={gridY + gridSize + 26} textAnchor="middle" fill={muted} fontSize="11">
+      <text x={pixelCx} y={432} textAnchor="middle" fill={muted} fontSize="12">
         示意数字「2」
       </text>
 
@@ -259,7 +259,7 @@ function MlpSvg() {
       {inYs.map((y, i) => (
         <circle key={`in-${i}`} cx={inX} cy={y} r={8.5} fill="#fff" stroke={accent} strokeWidth="1.7" />
       ))}
-      <text x={inX} y={372} textAnchor="middle" fill={muted} fontSize="11">
+      <text x={inX} y={432} textAnchor="middle" fill={muted} fontSize="12">
         {inputDim} 维 ···
       </text>
 
@@ -293,7 +293,7 @@ function MlpSvg() {
         第 L 层
       </text>
 
-      <text x={510} y={400} textAnchor="middle" fill={muted} fontSize="12">
+      <text x={510} y={432} textAnchor="middle" fill={muted} fontSize="12">
         结构：{DIGIT_SIZE}×{DIGIT_SIZE}（{inputDim}）→ 隐藏层×L → 10
       </text>
 
@@ -319,20 +319,20 @@ function MlpSvg() {
           </text>
         </g>
       ))}
-      <text x={outX} y={408} textAnchor="middle" fill={muted} fontSize="11">
+      <text x={outX} y={432} textAnchor="middle" fill={muted} fontSize="12">
         Softmax · 10 类
       </text>
 
       <line
-        x1={outX + 14}
+        x1={outX + 18}
         y1={outYs[2]}
-        x2={outX + 42}
+        x2={outX + 54}
         y2={outYs[2]}
         stroke={accent}
         strokeWidth="1.5"
         markerEnd={`url(#${prefix}-arrow)`}
       />
-      <text x={outX + 48} y={outYs[2] + 4} fill={accent} fontSize="14" fontWeight="700">
+      <text x={outX + 62} y={outYs[2] + 4} fill={accent} fontSize="14" fontWeight="700">
         「2」
       </text>
     </svg>

@@ -48,11 +48,16 @@ test("server-renders the complete audit AI course", async () => {
   assert.match(html, /BX-42017/);
   assert.match(html, /16×16/);
   assert.match(html, /趣味支线/);
-  assert.match(html, /整堂课的顶层结构/);
+  assert.match(html, /本课讨论大语言模型（LLM）与智能体（Agent）的基础概念/);
   assert.match(html, /第一部分.*大模型和智能体的技术基础/s);
   assert.match(html, /第二部分.*Agent基础与架构/s);
   assert.match(html, /第三部分.*Agent在审计中的应用/s);
-  assert.match(html, /问题逐渐变难，技术基础逐层出现/);
+  assert.match(html, /第一部分 · 章节目录/);
+  assert.match(html, /images\/xiaoyu\.jpg/);
+  assert.match(html, /两个.*“总被认错的人”/s);
+  assert.match(html, /能被你认识，真好啊/);
+  assert.match(html, /世界很大，而我想被认出来/);
+  assert.match(html, /双人限定识别器 v0\.1/);
   assert.doesNotMatch(html, /整堂课只审这一笔/);
   assert.match(html, /从 ANN 到 LLM/);
   assert.match(html, /同一笔招待：多段文字证据/);

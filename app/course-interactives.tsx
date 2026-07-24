@@ -185,7 +185,7 @@ const trainPhaseMeta: Record<TrainPhase, { label: string; caption: string; note:
 
 export function DigitsImageLab() {
   const [selected, setSelected] = useState(2); // 默认选本课金额里的「2」
-  const [phase, setPhase] = useState<TrainPhase>("after");
+  const [phase, setPhase] = useState<TrainPhase>("before");
   const sample = digitSamples[selected];
   const probs = useMemo(() => demoSoftmax(sample.digit, phase), [sample.digit, phase]);
   const guess = probs.indexOf(Math.max(...probs));
@@ -202,7 +202,7 @@ export function DigitsImageLab() {
           type="button"
           onClick={() => {
             setSelected(2);
-            setPhase("after");
+            setPhase("before");
           }}
         >
           重置

@@ -30,10 +30,11 @@ import {
   AuditResponsibilityLab,
   AuditScenarioSelector,
   EvidencePackageLab,
+  FoundationChapterRoute,
   ReportGenerationLab,
   ToolContractLab,
 } from "./agent-audit-interactives";
-import { CrossEntropyPlot, ReluPlot, SigmoidPlot } from "./math-plots";
+import { CrossEntropyPlot, SigmoidPlot } from "./math-plots";
 import { NetworkComparePanel } from "./nn-diagrams";
 import {
   AnnLlmSideBySide,
@@ -63,7 +64,7 @@ const stages: Array<{
   { key: "code", name: "通俗逻辑与规则", question: "条件是否满足？", ability: "用人写清的逻辑批量、稳定地判断", limit: "只会处理事先写出的情况", sees: "结构化字段与明确阈值" },
   { key: "ml", name: "特征拟合（ML）", question: "它像不像历史异常？", ability: "用少量人工特征拟合历史规律", limit: "特征靠人设计；看不见原始像素与长文本", sees: "表格特征组合" },
   { key: "nn", name: "人工神经网络", question: "高维原始输入里有什么？", ability: "在超多特征上自动学习表示", limit: "识别内容不等于理解制度与业务", sees: "像素、波形等高维信号" },
-  { key: "llm", name: "大语言模型", question: "这些信息合起来意味着什么？", ability: "在语言序列上做大规模 ANN 预测与生成", limit: "可能幻觉；不会天然访问业务系统", sees: "制度、说明与多文档上下文" },
+  { key: "llm", name: "大语言模型", question: "我真正想问什么，又该如何权衡？", ability: "在语言序列上做大规模 ANN 预测与生成", limit: "可能幻觉；不会天然访问业务系统", sees: "问题背景、目标、顾虑与对话历史" },
   { key: "agent", name: "Agent + LLM", question: "下一步该调用什么、如何停？", ability: "用 LLM 决策，用工具行动，用状态闭环", limit: "必须受权限、证据和人工复核约束", sees: "目标、工具结果与运行状态" },
 ];
 
@@ -71,7 +72,7 @@ const nav = [
   ["problem", "导言", "5′"],
   ["code", "基于任务逻辑的编程", "8′"],
   ["ml", "经典机器学习", "10′"],
-  ["nn", "ANN", "12′"],
+  ["nn", "ANN", "15′"],
   ["llm", "从 ANN 到 LLM", "20′"],
   ["agent", "从回答到任务", "8′"],
   ["agent-architecture", "Agent怎样运行", "14′"],
@@ -661,59 +662,36 @@ function AnnPixelDemo() {
           </p>
           <NetworkComparePanel />
         </section>
-
-        <section>
-          <h4>② 编码：像素变成向量</h4>
-          <p>
-            上方示意用 16×16 图：每个格子亮度 0—16，整图拉成
-            <TeX math="x\in\mathbb{R}^{256}" />。
-            输入里没有「这是数字 2」这个概念，只有 256 个数。
-          </p>
-        </section>
-
-        <section>
-          <h4>③ 多层：先表示，再分类</h4>
-          <TeX display ariaLabel="hidden" math="h^{(\ell)}=\mathrm{ReLU}\!\left(W^{(\ell)} h^{(\ell-1)}+b^{(\ell)}\right),\quad \ell=1,\ldots,L" />
-          <TeX display ariaLabel="softmax" math="p=\mathrm{softmax}\!\left(W^{(L+1)} h^{(L)}+b^{(L+1)}\right)\in\mathbb{R}^{10}" />
-          <p className="board-line">
-            结构对齐：<b>256 → 隐藏层×L → 10</b>。隐藏层学笔画组合；输出是数字 0—9 的概率。可切换 CNN，对比「保留邻域」与「一次拉平」。
-          </p>
-          <ReluPlot />
-        </section>
-
-        <section>
-          <h4>④ Loss：跟标签对齐</h4>
-          <TeX display ariaLabel="ce" math="\ell=-\log p_y" />
-          <p className="board-line">整表平均后，反向传播微调各层权重，让正确类别的概率升高。</p>
-          <p className="board-line">
-            下方 Python 为便于当场跑通，用更小的 8×8（64→24→10）子集；层数逻辑与上面示意相同。
-          </p>
-        </section>
-      </div>
-
-      <div className="task-logic-map">
-        <span>板书收束</span>
-        <code>16×16（256）→ 隐藏层×L → Softmax（10）</code>
-        <span>提醒</span>
-        <strong>看见数字 ≠ 理解制度</strong>
       </div>
     </div>
   );
 }
 
-function ContextEvidenceInbox() {
+function DiscussionCaseInbox() {
+  const [followUp, setFollowUp] = useState(0);
   const cards = [
-    { src: "报销说明", text: "周日接待重要客户", tone: "claim" },
-    { src: "小票 OCR", text: "儿童套餐 · 生日蛋糕", tone: "warn" },
-    { src: "CRM", text: "当天无客户拜访", tone: "warn" },
-    { src: "员工日历", text: "家属生日聚餐", tone: "warn" },
+    { src: "业务目标", text: "希望下月投入使用", tone: "claim" },
+    { src: "当前情况", text: "测试结果仍有波动", tone: "warn" },
+    { src: "现实约束", text: "支持团队人手有限", tone: "warn" },
+    { src: "核心问题", text: "全面上线，还是先试点？", tone: "claim" },
   ];
+  const turns = [
+    {
+      question: "我最应该担心什么？",
+      answer: "先聚焦两件事：测试波动会影响可靠性，支持人手会影响问题发生后的恢复能力。",
+    },
+    {
+      question: "如果只在一个部门试点呢？",
+      answer: "试点能缩小影响范围，也能验证支持流程；但应先定义成功门槛、观察周期和退出条件。",
+    },
+  ];
+  const currentTurn = turns[followUp];
   return (
     <div className="context-inbox">
       <div className="context-inbox-bar">
-        <span>BX-42519</span>
-        <strong>同一笔招待：多段文字证据</strong>
-        <em>单看任一字段都不够</em>
+        <span>讨论案例</span>
+        <strong>新功能：全面上线，还是先小范围试点？</strong>
+        <em>回答应该随着追问继续深入</em>
       </div>
       <div className="context-inbox-grid">
         {cards.map((card) => (
@@ -725,15 +703,28 @@ function ContextEvidenceInbox() {
       </div>
       <div className="context-inbox-pain">
         <div>
-          <span>ANN 能做的</span>
-          <strong>认出小票上的字</strong>
-          <p>「儿童套餐」「生日蛋糕」可以被读出来。</p>
+          <span>目标 1</span>
+          <strong>真正理解这个问题</strong>
+          <p>不只抓关键词，还要读懂背景、目标、约束与权衡。</p>
         </div>
-        <i>→</i>
+        <i>+</i>
         <div>
-          <span>还缺的</span>
-          <strong>把多段文字放在业务语境里对照</strong>
-          <p>说明、小票、CRM、日历合起来是否自洽。</p>
+          <span>目标 2</span>
+          <strong>根据我的追问给出反馈</strong>
+          <p>记住对话上下文，给出相关、连贯、有针对性的回应。</p>
+        </div>
+      </div>
+      <div className="discussion-followup">
+        <div className="discussion-followup-tabs" aria-label="选择一个追问">
+          {turns.map((turn, index) => (
+            <button type="button" key={turn.question} className={followUp === index ? "active" : ""} onClick={() => setFollowUp(index)}>
+              追问 {index + 1} · {turn.question}
+            </button>
+          ))}
+        </div>
+        <div className="discussion-followup-answer">
+          <span>模型的相关反馈</span>
+          <p>{currentTurn.answer}</p>
         </div>
       </div>
     </div>
@@ -761,10 +752,10 @@ function LlmChapterRoute() {
 function LlmTrainingWorkbench() {
   const [stage, setStage] = useState(0);
   const states = [
-    { name: "随机初始化", batch: "epoch 0", loss: "3.69", target: "发票", top: "40 个候选接近均匀", note: "权重还是随机数，模型几乎在乱猜。" },
-    { name: "训练开始", batch: "epoch 10", loss: "3.24", target: "发票", top: "正确 Token 的概率开始上升", note: "反向传播已经改变参数，但预测仍不稳定。" },
-    { name: "训练进行中", batch: "epoch 150", loss: "0.59", target: "发票", top: "正确序列已成为高概率候选", note: "总体 Loss 明显下降，但仍需独立评估。" },
-    { name: "形成检查点", batch: "epoch 300", loss: "0.34", target: "发票", top: "参数固定，可用于新输入推理", note: "保存结构、Tokenizer 与训练后的参数；推理时不再改权重。" },
+    { name: "随机初始化", batch: "epoch 0", loss: "3.69", target: "试点", top: "40 个候选接近均匀", note: "权重还是随机数，模型几乎在乱猜。" },
+    { name: "训练开始", batch: "epoch 10", loss: "3.24", target: "试点", top: "正确 Token 的概率开始上升", note: "反向传播已经改变参数，但预测仍不稳定。" },
+    { name: "训练进行中", batch: "epoch 150", loss: "0.59", target: "试点", top: "正确序列已成为高概率候选", note: "总体 Loss 明显下降，但仍需独立评估。" },
+    { name: "形成检查点", batch: "epoch 300", loss: "0.34", target: "试点", top: "参数固定，可用于新输入推理", note: "保存结构、Tokenizer 与训练后的参数；推理时不再改权重。" },
   ];
   const current = states[stage];
   const loop = ["取一批 Token", "前向预测", "计算 Loss", "反向传播", "优化器更新参数", "换下一批"];
@@ -777,7 +768,7 @@ function LlmTrainingWorkbench() {
       <div className="training-loop-strip">{loop.map((item, i) => <div key={item} className={i === Math.min(stage + 1, 4) ? "active" : ""}><b>{String(i + 1).padStart(2, "0")}</b><span>{item}</span></div>)}</div>
       <div className="training-workbench-body">
         <div><span>训练状态</span><strong>{current.name}</strong><small>{current.batch}</small></div>
-        <div><span>训练样本</span><code>制度规定：报销金额必须与 → ?</code><p>真实答案：<b>{current.target}</b></p></div>
+        <div><span>训练样本</span><code>风险尚未验证时，可以先小范围 → ?</code><p>真实答案：<b>{current.target}</b></p></div>
         <div><span>模型当前预测</span><strong>{current.top}</strong><p>{current.note}</p></div>
         <div className="loss-meter"><span>总体 Loss</span><strong>{current.loss}</strong><i><b style={{ width: `${18 + (states.length - 1 - stage) * 24}%` }} /></i><small>Loss 下降只说明更贴近训练目标，不自动证明事实可靠。</small></div>
       </div>
@@ -790,7 +781,7 @@ function LlmCallLab() {
   const [step, setStep] = useState(0);
   const [sent, setSent] = useState(false);
   const steps = [
-    { title: "应用组织输入", body: "程序把系统要求、用户问题和本案材料整理成 messages。它不是把整台数据库塞进模型。" },
+    { title: "应用组织输入", body: "程序把系统要求、问题背景和对话历史整理成 messages。只有放进当前上下文的信息，模型才能在追问中继续参考。" },
     { title: "发送一次请求", body: "应用通过 HTTPS 把模型名、messages 和生成参数发给推理服务。密钥应保存在后端，不应写进静态 HTML。" },
     { title: "服务执行推理", body: "服务加载检查点，Tokenizer 编码文字，Transformer 反复预测下一个 Token；推理阶段通常不更新权重。" },
     { title: "返回结构化响应", body: "服务返回文本、模型标识、Token 用量和停止原因。应用再显示、保存或交给下一段程序。" },
@@ -798,8 +789,9 @@ function LlmCallLab() {
   const request = `{
   "model": "enterprise-llm",
   "messages": [
-    {"role": "system", "content": "只列疑点，不下审计结论"},
-    {"role": "user", "content": "说明：周日客户招待；小票：儿童套餐、生日蛋糕；CRM：无拜访"}
+    {"role": "system", "content": "帮助用户权衡方案；区分已知信息与假设"},
+    {"role": "user", "content": "背景：希望下月上线；但测试有波动，支持人手有限。应全面上线还是先试点？"},
+    {"role": "user", "content": "如果只在一个部门试点呢？"}
   ],
   "temperature": 0.2,
   "max_output_tokens": 300,
@@ -807,9 +799,9 @@ function LlmCallLab() {
 }`;
   const response = `{
   "output": {
-    "status": "建议人工复核",
-    "conflicts": ["客户招待与小票内容不一致", "CRM无当天拜访"],
-    "missing_evidence": ["客户名单", "审批附件"]
+    "understanding": "你需要在上线速度与可靠性之间权衡",
+    "feedback": "单部门试点可缩小影响，并验证支持流程",
+    "questions": ["成功门槛是什么？", "试点失败时如何退出？"]
   },
   "usage": {"input_tokens": 92, "output_tokens": 47},
   "stop_reason": "end"
@@ -833,12 +825,12 @@ function LlmContextDemo() {
   return (
     <div className="task-logic-demo llm-lesson-rich">
       <p className="task-logic-problem">
-        <span>审计问题</span>
-        报销说明写着「周日接待重要客户」，但小票、CRM、日历放在一起读，语义互相打架。
-        上一章的 ANN 可以把小票上的字认出来；这一章只追问一件事：怎样把这些文字放进神经网络，让它联系上下文并生成说明？
+        <span>现在的问题</span>
+        我有一个难以用固定规则说清的问题，希望能像和一位同事讨论一样与模型交流：
+        它不仅要理解我真正关心的目标、背景和顾虑，还要随着我的追问，给出相关、连贯、有针对性的反馈。
       </p>
 
-      <ContextEvidenceInbox />
+      <DiscussionCaseInbox />
       <LlmChapterRoute />
 
       <section className="llm-step-section">
@@ -866,7 +858,7 @@ function LlmContextDemo() {
         <div className="llm-three-concepts">
           <article><span>Tokenizer</span><strong>切分并编号</strong><p>把文字切成词、字或子词 Token；同一 Token 对应稳定编号。它是编码规则，不负责理解。</p></article>
           <article><span>Embedding</span><strong>把编号查成向量</strong><p>向量表是可训练参数。模型训练时，相关 Token 的表示逐渐形成可用关系。</p></article>
-          <article><span>Position</span><strong>告诉模型先后顺序</strong><p>“客户招待并非私人聚餐”和“私人聚餐并非客户招待”Token 相近，顺序却改变含义。</p></article>
+          <article><span>Position</span><strong>告诉模型先后顺序</strong><p>“先试点再上线”和“先上线再试点”Token 相近，顺序却改变含义。</p></article>
         </div>
         <div className="llm-memory-line"><strong>本节必须记住</strong><code>文字 → Token → Token ID → Embedding 向量 + 位置信息</code></div>
       </section>
@@ -929,11 +921,11 @@ function LlmContextDemo() {
         <WhyNextTokenDiagram />
         <CapabilityBoundaryStrip />
         <div className="llm-case-output">
-          <div><span>输入给模型的材料</span><p>报销说明 + 小票 OCR + CRM 摘录 + 日历标题 + 相关制度</p></div>
+          <div><span>输入给模型的材料</span><p>问题背景 + 目标 + 已知约束 + 对话历史 + 当前追问</p></div>
           <i>→</i>
-          <div><span>LLM 可以输出</span><p>矛盾点、缺失证据、建议核对事项和结构化疑点草稿</p></div>
+          <div><span>LLM 可以输出</span><p>对问题的理解、方案权衡、针对追问的反馈和待补充信息</p></div>
           <i>≠</i>
-          <div className="limit"><span>不能直接输出</span><p>已经核验的事实、违规认定、舞弊定性或最终审计结论</p></div>
+          <div className="limit"><span>不能自动保证</span><p>真正读取了未提供的事实、建议一定正确，或已经代替你做出决策</p></div>
         </div>
         <div className="hallucination">
           <div>
@@ -941,24 +933,24 @@ function LlmContextDemo() {
             <p>目标函数奖励的是「统计上像那么回事的后续 Token」，不是「每句都有系统可核验来源」。资料不足或冲突时，模型仍可能生成语法完美、语气笃定的段落。</p>
           </div>
           <div>
-            <span>语言流畅</span><i>≠</i><span>事实正确</span><i>≠</i><span>证据充分</span><i>≠</i><span>审计结论</span>
+            <span>语言流畅</span><i>≠</i><span>真正理解</span><i>≠</i><span>建议正确</span><i>≠</i><span>代替你决策</span>
           </div>
         </div>
         <CapabilityBoundary
           method="大语言模型（LLM）"
-          input="提示词 + 上下文中的 Token 序列（制度、说明、多段证据）"
-          unique="在语言空间里做大规模条件生成与语境对照"
-          output="解释、摘要、疑点草稿、核对清单（文本）"
-          limit="可能幻觉；不会天然访问业务系统；不能替代职业判断"
+          input="提示词 + 上下文中的 Token 序列（问题、背景、约束、对话历史）"
+          unique="在语言空间里联系上下文，根据当前追问进行条件生成"
+          output="问题理解、方案权衡、针对性反馈、补充问题（文本）"
+          limit="可能幻觉或误解；窗口外信息不可见；不能替代用户做决策"
         />
         <div className="task-logic-map">
           <span>板书收束</span>
           <code>Token 化 → 条件概率 P(下一 Token) → Attention 联语境 → 逐 Token 生成</code>
           <span>提醒</span>
-          <strong>流畅 ≠ 审计结论；窗口外 = 未知</strong>
+          <strong>相关反馈 ≠ 一定正确；窗口外 = 未知</strong>
         </div>
         <LessonTakeaway>
-          LLM 是以 Transformer 为骨干、在海量 Token 序列上训练的大型神经网络：训练时通过下一 Token 误差更新权重，使用时由推理服务接收上下文并逐 Token 生成；它能理解和生成已提供的语言材料，但不会天然主动取数，也不能替代事实核验与审计判断。
+          LLM 是以 Transformer 为骨干、在海量 Token 序列上训练的大型神经网络：训练时通过下一 Token 误差更新权重，使用时根据问题、背景和对话历史逐 Token 生成回应；因此它可以理解开放式问题并针对追问反馈，但仍可能误解或幻觉，也不会天然获得窗口外的信息。
         </LessonTakeaway>
       </section>
     </div>
@@ -1017,22 +1009,8 @@ function TransformerReferenceFigure() {
 
 function CourseArchitecture() {
   return <div className="course-architecture">
-    <div className="course-architecture-head"><span>整堂课的顶层结构</span><h3>先理解技术，再理解Agent，最后讨论审计应用</h3><p>三部分是课程骨架。递进案例只是第一部分用于解释技术演进的教学方法，不能取代这套总体架构。</p></div>
+    <div className="course-architecture-head"><p>本课讨论大语言模型（LLM）与智能体（Agent）的基础概念、系统架构，以及它们在审计工作中的可能用法。课程分为三部分：</p></div>
     <div className="course-architecture-parts">{courseParts.map(part => <a href={part.href} key={part.no}><span>{part.no}</span><small>章节 {part.range}</small><h4>{part.title}</h4><p>{part.description}</p></a>)}</div>
-  </div>;
-}
-
-function FoundationCaseLadder() {
-  const cases = [
-    { no: "01", method: "规则", title: "同一张发票，被报销两次", detail: "号码、金额和日期完全一致", why: "判断条件可以完整写出", claim: "BX-41610 / BX-41902" },
-    { no: "02", method: "ML", title: "四笔都低于2,000元，却集中发生", detail: "同员工、同商户、两天内、说明相似", why: "需要组合多个弱信号", claim: "BX-41881—84" },
-    { no: "03", method: "ANN", title: "票面286元，平台实际86元", detail: "异常可能藏在数字“2”的像素里", why: "需要直接处理高维图像", claim: "BX-42306" },
-    { no: "04", method: "LLM", title: "客户招待，却出现儿童餐和生日蛋糕", detail: "周日、CRM无拜访、日历为家属生日", why: "需要理解语言和业务语境", claim: "BX-42519" },
-  ];
-  return <div className="case-ladder">
-    <div className="case-ladder-head"><div><span>第一部分内部的教学线索</span><h3>问题逐渐变难，技术基础逐层出现</h3><p>规则、ML、ANN和LLM分别对应一种新的问题困难。这条案例线只服务于“技术基础”的讲解；Agent将在第二部分作为独立核心系统展开。</p></div><strong>第一部分 · 01—05</strong></div>
-    <div className="case-ladder-list">{cases.map(item => <article key={item.no}><b>{item.no}</b><div><span>{item.method} · {item.claim}</span><h4>{item.title}</h4><p>{item.detail}</p></div><small>{item.why}</small></article>)}</div>
-    <div className="case-ladder-rule"><strong>第一部分组织原则</strong><p>每一章先提出上一种方法解决不了的具体问题，再引入一个新概念。讲到LLM为止，只回答“模型怎样理解和生成”；Agent的系统架构、工具循环与控制机制留到第二部分集中讲。</p></div>
   </div>;
 }
 
@@ -1404,7 +1382,8 @@ print("提醒：概率用于排序排队，不是违规证据。")
   },
   neural: {
     label: "用 1,300 张 8×8 像素训练数字网络",
-    code: `# 真实运行：从64个像素学习识别0—9（对应票面金额数字）
+    code: `# 真实运行：从 64 个像素学习识别 0—9（对应票面金额数字）
+# 网络：输入 64 → 隐藏层 24（ReLU）→ 输出 10（Softmax + 交叉熵）
 import csv
 from pathlib import Path
 import numpy as np
@@ -1412,43 +1391,74 @@ import numpy as np
 path = Path("/data/digits_8x8_subset.csv")
 if not path.exists():
     path = Path("public/simple_audit_demo/digits_8x8_subset.csv")
+
 rows = list(csv.DictReader(path.open(encoding="utf-8")))
 X = np.array([[float(row[f"pixel_{i:02d}"]) for i in range(64)] for row in rows]) / 16.0
 y = np.array([int(row["label"]) for row in rows])
-train = np.array([row["split"] == "train" for row in rows])
-test = ~train
-X_train, y_train, X_test, y_test = X[train], y[train], X[test], y[test]
+train_mask = np.array([row["split"] == "train" for row in rows])
+X_train, y_train = X[train_mask], y[train_mask]
+X_test, y_test = X[~train_mask], y[~train_mask]
 
-# 网络结构：64个像素 → 24个隐藏神经元 → 10个数字类别
+print(f"数据：训练 {len(y_train)} 张 / 测试 {len(y_test)} 张；每张 8×8=64 像素")
+print("结构：64 → 24(ReLU) → 10(Softmax)")
+print("-" * 48)
+
+EPOCHS = 400
+LOG_AT = {0, 1, 2, 5, 10, 15, 20, 30, 45, 60, 80, 100, 140, 190, 250, 320, 400}
 rng = np.random.default_rng(7)
-W1 = rng.normal(0, .18, (64, 24)); b1 = np.zeros(24)
-W2 = rng.normal(0, .18, (24, 10)); b2 = np.zeros(10)
-learning_rate = .35
+W1 = rng.normal(0, 0.18, (64, 24)); b1 = np.zeros(24)
+W2 = rng.normal(0, 0.18, (24, 10)); b2 = np.zeros(10)
+learning_rate = 0.35
 
-for epoch in range(301):
-    hidden = np.maximum(0, X_train @ W1 + b1)
+def forward(X, W1, b1, W2, b2):
+    hidden = np.maximum(0, X @ W1 + b1)          # ReLU
     logits = hidden @ W2 + b2
-    logits -= logits.max(axis=1, keepdims=True)
-    probs = np.exp(logits); probs /= probs.sum(axis=1, keepdims=True)
-    loss = -np.log(probs[np.arange(len(y_train)), y_train] + 1e-9).mean()
-    if epoch in (0, 10, 50, 150, 300):
-        print(f"epoch={epoch:3d} loss={loss:.4f}")
-    grad = probs.copy(); grad[np.arange(len(y_train)), y_train] -= 1; grad /= len(y_train)
+    logits = logits - logits.max(axis=1, keepdims=True)
+    probs = np.exp(logits)
+    probs /= probs.sum(axis=1, keepdims=True)    # Softmax
+    return hidden, probs
+
+def batch_loss(probs, labels):
+    return -np.log(probs[np.arange(len(labels)), labels] + 1e-9).mean()
+
+def batch_acc(probs, labels):
+    return float((probs.argmax(axis=1) == labels).mean())
+
+for epoch in range(EPOCHS + 1):
+    hidden, probs = forward(X_train, W1, b1, W2, b2)
+    loss = batch_loss(probs, y_train)
+
+    if epoch in LOG_AT:
+        train_acc = batch_acc(probs, y_train)
+        # TRAIN_LOG 供右侧进度条解析；下一行给人看
+        print(f"TRAIN_LOG epoch={epoch} loss={loss:.4f} train_acc={train_acc:.4f}")
+        bar = "#" * (epoch * 20 // EPOCHS) + "." * (20 - epoch * 20 // EPOCHS)
+        print(f"  [{bar}] epoch {epoch:3d}/{EPOCHS}  loss={loss:.4f}  train_acc={train_acc:.1%}")
+
+    if epoch == EPOCHS:
+        break
+
+    # 反向传播：交叉熵对 Softmax 的梯度
+    grad = probs.copy()
+    grad[np.arange(len(y_train)), y_train] -= 1
+    grad /= len(y_train)
     gW2 = hidden.T @ grad; gb2 = grad.sum(axis=0)
     hidden_grad = (grad @ W2.T) * (hidden > 0)
     gW1 = X_train.T @ hidden_grad; gb1 = hidden_grad.sum(axis=0)
-    W1 -= learning_rate*gW1; b1 -= learning_rate*gb1
-    W2 -= learning_rate*gW2; b2 -= learning_rate*gb2
+    W1 -= learning_rate * gW1; b1 -= learning_rate * gb1
+    W2 -= learning_rate * gW2; b2 -= learning_rate * gb2
 
-test_hidden = np.maximum(0, X_test @ W1 + b1)
-predictions = (test_hidden @ W2 + b2).argmax(axis=1)
-print("\\n独立测试集准确率：", f"{(predictions==y_test).mean():.1%}")
-print("训练完保存的东西：W1", W1.shape, "b1", b1.shape, "W2", W2.shape, "b2", b2.shape)
+print("-" * 48)
+_, test_probs = forward(X_test, W1, b1, W2, b2)
+test_pred = test_probs.argmax(axis=1)
+test_acc = (test_pred == y_test).mean()
+print(f"独立测试集准确率：{test_acc:.1%}")
+print("训练完保存的参数：W1", W1.shape, "b1", b1.shape, "W2", W2.shape, "b2", b2.shape)
+
 for digit in (2, 8, 6):
     index = np.where(y_test == digit)[0][0]
-    print(f"票面样本 {digit} → 模型识别为 {predictions[index]}")
-print("拼出票面金额 286；金额是否与平台一致，仍交给规则判断。")
-print("提醒：看见数字 ≠ 理解制度，更不是审计结论。")`,
+    print(f"票面样本 {digit} → 模型识别为 {test_pred[index]}（置信度 {test_probs[index, test_pred[index]]:.1%}）")
+`,
   },
   language: {
     label: "训练一个微型神经语言模型",
@@ -1939,11 +1949,147 @@ function PythonKernelProvider({ children }: { children: React.ReactNode }) {
   return <PythonKernelContext.Provider value={{ status, message, run, restart: startKernel }}>{children}</PythonKernelContext.Provider>;
 }
 
+type TrainLogPoint = { epoch: number; loss: number; trainAcc?: number };
+
+function parseTrainLog(text: string): TrainLogPoint[] {
+  const points: TrainLogPoint[] = [];
+  for (const line of text.split("\n")) {
+    const match = line.match(/TRAIN_LOG\s+epoch=(\d+)\s+loss=([\d.]+)(?:\s+train_acc=([\d.]+))?/);
+    if (!match) continue;
+    points.push({
+      epoch: Number(match[1]),
+      loss: Number(match[2]),
+      trainAcc: match[3] ? Number(match[3]) : undefined,
+    });
+  }
+  return points;
+}
+
+function stripTrainLogLines(text: string) {
+  return text
+    .split("\n")
+    .filter(line => !line.startsWith("TRAIN_LOG "))
+    .join("\n")
+    .trim();
+}
+
+function LossSparkline({ points, peakLoss }: { points: TrainLogPoint[]; peakLoss: number }) {
+  const width = 360;
+  const height = 132;
+  const padX = 10;
+  const padY = 14;
+  if (points.length === 0) {
+    return (
+      <div className="neural-spark-empty">
+        <span>Loss 曲线</span>
+        <p>运行后在这里回放下降过程</p>
+      </div>
+    );
+  }
+  const maxX = Math.max(points.length - 1, 1);
+  const coords = points.map((point, index) => {
+    const x = padX + (index / maxX) * (width - padX * 2);
+    const y = padY + (1 - point.loss / peakLoss) * (height - padY * 2);
+    return [x, y] as const;
+  });
+  const line = coords.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`).join(" ");
+  const area = `${line} L${coords[coords.length - 1][0].toFixed(1)} ${(height - 4).toFixed(1)} L${coords[0][0].toFixed(1)} ${(height - 4).toFixed(1)} Z`;
+  const last = coords[coords.length - 1];
+  const first = points[0];
+  const current = points[points.length - 1];
+  return (
+    <div className="neural-spark">
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Loss 随 epoch 变化曲线">
+        <line x1={padX} x2={width - padX} y1={height / 2} y2={height / 2} className="neural-spark-grid" />
+        <path d={area} className="neural-spark-area" />
+        <path d={line} className="neural-spark-line" />
+        <circle cx={last[0]} cy={last[1]} r="4.5" className="neural-spark-dot" />
+      </svg>
+      <div className="neural-spark-legend">
+        <span>起点 {first.loss.toFixed(2)}</span>
+        <span>当前 {current.loss.toFixed(2)} · epoch {current.epoch}</span>
+      </div>
+    </div>
+  );
+}
+
+function NeuralTrainMonitor({ points, running, maxEpoch = 400 }: { points: TrainLogPoint[]; running: boolean; maxEpoch?: number }) {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    if (running || points.length === 0) {
+      /* eslint-disable react-hooks/set-state-in-effect -- reset playback when a new run starts */
+      setStep(0);
+      /* eslint-enable react-hooks/set-state-in-effect */
+      return;
+    }
+    let index = 0;
+    const id = window.setInterval(() => {
+      setStep(Math.min(index, points.length - 1));
+      index += 1;
+      if (index >= points.length) window.clearInterval(id);
+    }, 580);
+    return () => window.clearInterval(id);
+  }, [points, running]);
+
+  const visible = points.slice(0, step + 1);
+  const current = visible[visible.length - 1];
+  const firstLoss = points[0]?.loss ?? 1;
+  const peakLoss = Math.max(...points.map(point => point.loss), firstLoss, 0.01);
+  const progress = running ? 18 : current ? Math.min(100, (current.epoch / maxEpoch) * 100) : 0;
+  const lossDrop = current && firstLoss > 0 ? ((firstLoss - current.loss) / firstLoss) * 100 : 0;
+  const status = running ? "running" : current ? "playing" : "idle";
+
+  return (
+    <section className={`neural-dash neural-dash-${status}`}>
+      <div className="neural-dash-top">
+        <div>
+          <span>训练监控</span>
+          <strong>
+            {running ? "正在训练网络…" : current ? `Epoch ${current.epoch}` : "等待运行"}
+            {!running && current && <em>/ {maxEpoch}</em>}
+          </strong>
+        </div>
+        <b>{running ? "…" : `${Math.round(progress)}%`}</b>
+      </div>
+
+      <div className="neural-dash-bar" aria-label="训练进度">
+        <i><b style={{ width: `${progress}%` }} /></i>
+      </div>
+      <p className="neural-dash-caption">
+        {running
+          ? "前向 → Loss → 反向传播；结束后自动回放曲线"
+          : current
+            ? `回放中 · 第 ${current.epoch} / ${maxEpoch} 轮 · 采样 ${visible.length}/${points.length}`
+            : "点击左侧「运行代码」后，这里显示进度与 Loss"}
+      </p>
+
+      <div className="neural-dash-stats">
+        <div>
+          <span>Loss</span>
+          <strong>{running || !current ? "—" : current.loss.toFixed(4)}</strong>
+          <small>{current ? `较起点 ${lossDrop >= 0 ? "↓" : "↑"} ${Math.abs(lossDrop).toFixed(0)}%` : "交叉熵损失"}</small>
+        </div>
+        <div>
+          <span>训练准确率</span>
+          <strong>{running || current?.trainAcc == null ? "—" : `${(current.trainAcc * 100).toFixed(1)}%`}</strong>
+          <small>{points[0] ? `起点 Loss ${points[0].loss.toFixed(4)}` : "正确类别占比"}</small>
+        </div>
+      </div>
+
+      <LossSparkline points={running ? [] : visible} peakLoss={peakLoss} />
+    </section>
+  );
+}
+
 function InlinePythonLab({ example, guide }: { example: keyof typeof kernelExamples; guide: string }) {
   const item = kernelExamples[example];
   const kernel = useContext(PythonKernelContext);
-  const [code, setCode] = useState(item.code);
+  const [code, setCode] = useState<string>(item.code);
   const [output, setOutput] = useState("Python环境正在加载。首次打开需要下载浏览器运行时……");
+  const [trainPoints, setTrainPoints] = useState<TrainLogPoint[]>([]);
+  const [trainRunning, setTrainRunning] = useState(false);
+  const showTrainMonitor = example === "neural";
 
   useEffect(() => {
     if (!kernel) return;
@@ -1959,22 +2105,37 @@ function InlinePythonLab({ example, guide }: { example: keyof typeof kernelExamp
 
   const runCode = async () => {
     setOutput("正在运行……");
+    setTrainPoints([]);
+    if (showTrainMonitor) setTrainRunning(true);
     const result = await kernel.run(code);
     const parts = [result.stdout, result.stderr, result.value ? `返回值：${result.value}` : "", result.error].filter(Boolean);
-    setOutput(parts.join("\n") || "代码运行完成，没有输出。");
+    const raw = parts.join("\n") || "代码运行完成，没有输出。";
+    if (showTrainMonitor) {
+      setTrainPoints(parseTrainLog(raw));
+      setTrainRunning(false);
+      setOutput(stripTrainLogLines(raw) || "代码运行完成，没有输出。");
+    } else {
+      setOutput(raw);
+    }
   };
 
   const restart = () => {
     setOutput("正在重启Python Kernel并清空全部变量……");
+    setTrainPoints([]);
+    setTrainRunning(false);
     kernel.restart();
   };
 
   return (
-    <div className="python-lab inline-python">
+    <div className={`python-lab inline-python${showTrainMonitor ? " has-train-monitor" : ""}`}>
       <div className="python-head"><div><span>本节可运行代码</span><h3>{item.label}</h3></div><div className={`kernel-status ${kernel.status}`}><i />{kernel.status === "loading" ? "加载中" : kernel.status === "ready" ? "已就绪" : kernel.status === "running" ? "运行中" : "发生错误"}</div></div>
       <div className="python-workspace">
-        <div className="editor-pane"><div><span>Python代码</span><small>可直接修改后重新运行</small></div><textarea spellCheck={false} value={code} onChange={(event) => setCode(event.target.value)} aria-label={`${item.label}Python代码编辑器`} /><footer><button className="run" disabled={kernel.status !== "ready"} onClick={runCode}>▶ 运行代码</button><button onClick={() => setCode(item.code)}>恢复示例</button><button onClick={restart}>重启内核</button></footer></div>
-        <div className="output-pane"><div><span>运行输出</span><small>stdout / stderr</small></div><pre>{output}</pre></div>
+        <div className="editor-pane"><div><span>Python代码</span><small>可直接修改后重新运行</small></div><textarea spellCheck={false} value={code} onChange={(event) => setCode(event.target.value)} aria-label={`${item.label}Python代码编辑器`} /><footer><button className="run" disabled={kernel.status !== "ready"} onClick={runCode}>▶ 运行代码</button><button onClick={() => { setCode(item.code); setTrainPoints([]); setTrainRunning(false); }}>恢复示例</button><button onClick={restart}>重启内核</button></footer></div>
+        <div className="output-pane">
+          <div><span>运行输出</span><small>{showTrainMonitor ? "进度 · Loss · stdout" : "stdout / stderr"}</small></div>
+          {showTrainMonitor && <NeuralTrainMonitor points={trainPoints} running={trainRunning} maxEpoch={400} />}
+          <pre>{output}</pre>
+        </div>
       </div>
       <div className="kernel-note"><strong>讲解时请学员关注什么</strong><p>{guide}</p></div>
     </div>
@@ -2365,8 +2526,11 @@ export default function Home() {
   useEffect(() => {
     const requested = location.hash.replace("#", "");
     const index = coursePages.findIndex(page => page.id === requested);
+    // 挂载后根据 URL hash / 视口同步一次；replaceState 不会触发 hashchange。
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (index >= 0) setActivePage(index);
     if (matchMedia("(max-width: 760px)").matches) setSidebarOpen(false);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   useEffect(() => {
@@ -2426,15 +2590,6 @@ export default function Home() {
 
         <section id="problem" className="lesson course-slide" hidden={activeCoursePage.id !== "problem"}>
           <SectionTitle no="01" time="导言 · 约5分钟" title="导言" />
-          <div className="lesson-abstract">
-            <span>Abstract</span>
-            <p>本课讨论大语言模型（LLM）与智能体（Agent）的基础概念、系统架构，以及它们在审计工作中的可能用法。课程分为三部分：</p>
-            <ul className="abstract-parts">
-              <li><b>第一部分 · 技术基础</b><span>从规则、机器学习、神经网络到大模型，说明这些技术为何会逐层出现。</span></li>
-              <li><b>第二部分 · Agent 基础与架构</b><span>讲清 Agent 是什么、由哪些模块组成、如何与工具形成受控闭环。</span></li>
-              <li><b>第三部分 · 审计应用</b><span>讨论如何把上述能力落到审计智能体场景。</span></li>
-            </ul>
-          </div>
           <CourseArchitecture />
           <div className="content-block lesson-takeaways">
             <h3>主要收获</h3>
@@ -2468,7 +2623,7 @@ export default function Home() {
             chapters="章节 02—05"
             lead="从规则、机器学习、神经网络到大模型，说明这些技术为何会逐层出现，各自解决什么问题、卡在哪里。"
           />
-          <FoundationCaseLadder />
+          <div className="part-route-wrap"><FoundationChapterRoute onSelect={goToId} /></div>
         </div>
 
         <section id="code" className="lesson course-slide" hidden={activeCoursePage.id !== "code"}>
@@ -2495,23 +2650,14 @@ export default function Home() {
         </section>
 
         <section id="nn" className="lesson course-slide" hidden={activeCoursePage.id !== "nn"}>
-          <SectionTitle no="04" time="第一部分 · 约12分钟" title="ANN" />
+          <SectionTitle no="04" time="第一部分 · 约15分钟" title="ANN" />
           <AnnPixelDemo />
           <InlinePythonLab
             example="neural"
-            guide="读入 1,300 张 8×8 数字图：1,000 张训练 64→24→10 网络，再用 300 张独立测试集看准确率。"
+            guide="先看右侧训练进度：epoch 推进时 Loss 下降、训练准确率上升。跑完后对照测试集准确率与票面 2/8/6 识别结果；参数 W1/b1/W2/b2 就是训练后要保存的东西。"
           />
           <div className="fun-demo-frame">
-            <div>
-              <span>趣味支线 · 5—7分钟</span>
-              <h3>同一种底层机制，为什么也能识别人脸？</h3>
-              <p>
-                审计主线是「像素→数字→286」。下面用真实 ResNet34 展示「像素→面部特征→分类概率」。
-                只帮助理解神经网络，不作为审计案例证据。
-              </p>
-            </div>
             <FacePredictLab />
-            <small>教学边界：置信度高不等于事实正确；真实人脸识别还涉及训练偏差、隐私、授权与使用范围。</small>
           </div>
           <Bridge
             from="ANN 的边界"
@@ -2519,11 +2665,11 @@ export default function Home() {
             to="大语言模型（LLM）"
           />
           <TeacherNote
-            time="12分钟"
+            time="15分钟（主线约9分钟；笑雨支线5—7分钟）"
             question="识别出 286 后，网络知道这笔报销有问题吗？"
             misconception="识别内容不等于理解业务；ANN 不是电子大脑。"
-            mustSay="强调：超多特征 → ANN；ANN 仍属机器学习；人脸实验是趣味支线。"
-            canSkip="反向传播推导；时间紧时人脸演示只跑一次。"
+            mustSay="强调：超多特征 → ANN；ANN 仍属机器学习；公寓故事要讲清笑雨/骐源/其他三类，以及阈值拒识。"
+            canSkip="反向传播推导；时间紧时跳过自带照片上传，只运行笑雨示例一次。"
           />
         </section>
 

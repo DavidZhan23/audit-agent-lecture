@@ -9,7 +9,7 @@
 | `docs/interactives.md` | `app/course-interactives.tsx` + page 内 lab |
 | `docs/data-pack.md` | `public/toy_audit_case/**` |
 | 分页课件导航 | `app/page.tsx`（`coursePages` / `CoursePager` / `Home`）+ `app/globals.css` |
-| ANN 人脸演示 | `services/face-predict/**` + `app/face-predict-lab.tsx` + `app/api/face-predict/route.ts` |
+| ANN 人脸故事与演示 | `app/face-predict-lab.tsx` + `public/images/xiaoyu.jpg` + `services/face-predict/**` + `app/api/face-predict/route.ts` |
 | LLM 七步详稿 | `app/page.tsx`（`LlmContextDemo` / `LlmTrainingWorkbench` / `LlmCheckpointExplorer` / `LlmCallLab` / 两段Python） |
 | LLM 图示 | `app/llm-diagrams.tsx`（缺口/分词/生成/Attention/Transformer/生命周期等） |
 | Transformer 论文原图 | `app/page.tsx`（`TransformerReferenceFigure`）+ `public/images/transformer-encoder-decoder-architecture.png` |

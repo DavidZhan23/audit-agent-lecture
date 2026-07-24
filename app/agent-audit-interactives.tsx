@@ -17,6 +17,40 @@ export function AgentChapterRoute() {
   ]} />;
 }
 
+export function FoundationChapterRoute({ onSelect }: { onSelect?: (id: string) => void }) {
+  const items = [
+    { id: "code", no: "02", method: "规则", title: "基于任务逻辑的编程", detail: "判断条件写得清时，用确定性程序直接解决。" },
+    { id: "ml", no: "03", method: "ML", title: "经典机器学习", detail: "多个弱信号难以穷举，从历史结果学习组合权重。" },
+    { id: "nn", no: "04", method: "ANN", title: "ANN", detail: "异常藏在高维像素里，需要直接处理图像输入。" },
+    { id: "llm", no: "05", method: "LLM", title: "从 ANN 到 LLM", detail: "矛盾藏在语言与业务语境中，需要理解与生成。" },
+  ];
+  return (
+    <nav className="foundation-toc" aria-label="第一部分章节目录">
+      <div className="foundation-toc-head">
+        <span>第一部分 · 章节目录</span>
+      </div>
+      <ol className="foundation-toc-flow" aria-hidden="true">
+        {items.map((item, index) => (
+          <li key={item.method}>
+            <span>{item.method}</span>
+            {index < items.length - 1 && <i />}
+          </li>
+        ))}
+      </ol>
+      <div className="foundation-toc-grid">
+        {items.map(item => (
+          <button type="button" key={item.id} onClick={() => onSelect?.(item.id)}>
+            <b>{item.no}</b>
+            <span className="foundation-toc-method">{item.method}</span>
+            <strong>{item.title}</strong>
+            <p>{item.detail}</p>
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 type FitKey = "calculator" | "workflow" | "assistant" | "investigation";
 
 export function AgentFitLab() {
