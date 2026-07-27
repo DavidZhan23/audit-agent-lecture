@@ -155,7 +155,7 @@ function GenerationPseudoCode() {
 
 function SamplingMethods() {
   return (
-    <section className="sampling-methods"><div className="generation-subhead"><span>小概念卡</span><h5>概率最高的 Token 一定会被选择吗？</h5><p>不一定。推理程序可以每次都选择概率最高的 Token，也可以按照概率进行采样。</p></div><div className="sampling-card-grid"><article><b>01</b><strong>Greedy · 贪心选择</strong><p>每次直接选择概率最高的 Token。输出通常更稳定，但可能比较单一。</p></article><article><b>02</b><strong>Temperature</strong><p>调整概率分布的平滑程度。较低时更稳定，较高时更多样。</p></article><article><b>03</b><strong>Top-p</strong><p>只在累计概率达到一定范围的候选 Token 中进行选择。</p></article></div><p className="generation-key-line">无论使用哪种选择方式，模型本身首先输出的仍然是下一 Token 的概率分布。</p></section>
+    <section className="sampling-methods"><div className="generation-subhead"><span>小概念卡</span><h5>概率最高的 Token 一定会被选择吗？</h5><p>不一定。推理程序可以每次都选择概率最高的 Token，也可以按照概率进行采样。</p></div><div className="sampling-card-grid"><article><strong>Greedy · 贪心选择</strong><p>每次直接选择概率最高的 Token。输出通常更稳定，但可能比较单一。</p></article><article><strong>Temperature</strong><p>调整概率分布的平滑程度。较低时更稳定，较高时更多样。</p></article><article><strong>Top-p</strong><p>只在累计概率达到一定范围的候选 Token 中进行选择。</p></article></div><p className="generation-key-line">无论使用哪种选择方式，模型本身首先输出的仍然是下一 Token 的概率分布。</p></section>
   );
 }
 

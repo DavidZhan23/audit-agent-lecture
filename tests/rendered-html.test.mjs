@@ -151,7 +151,7 @@ test("server-renders the complete audit artificial-intelligence course", async (
   assert.match(html, /异构审计资料解析/);
   assert.match(html, /智能问数与数据分析/);
   assert.match(html, /智能生成审计报告/);
-  assert.match(html, /完整审计协作系统/);
+  assert.match(html, /三个智能体如何协作成完整审计系统/);
   assert.match(html, /目标是什么.*输入是什么.*需要什么知识.*可以调用什么工具.*权限和边界是什么.*输出怎样验证/s);
   assert.match(html, /主合同扫描件.*付款台账.*采购制度.*现场照片/s);
   assert.match(html, /页面拆分.*方向纠正.*去噪清晰化.*文字识别.*版面重建.*质量检测/s);

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, Fragment, useCallback, useContext, useEffect, useRef, useState } from "react";
 import {
   AgentBranchLab,
   AttentionLab,
@@ -92,7 +92,7 @@ const nav = [
   ["audit-documents", "异构审计资料解析", "12′"],
   ["audit-data", "智能问数与数据分析", "12′"],
   ["audit-report", "智能生成审计报告", "15′"],
-  ["audit-collaboration", "完整审计协作系统", "7′"],
+  ["audit-collaboration", "三个智能体协作系统", "7′"],
   ["audit-governance", "效果、评估与治理", "8′"],
 ];
 
@@ -125,7 +125,7 @@ const coursePages: CoursePage[] = [
   { id: "audit-documents", title: "异构审计资料解析", group: "audit", label: "15" },
   { id: "audit-data", title: "智能问数与数据分析", group: "audit", label: "16" },
   { id: "audit-report", title: "智能生成审计报告", group: "audit", label: "17" },
-  { id: "audit-collaboration", title: "完整审计协作系统", group: "audit", label: "18" },
+  { id: "audit-collaboration", title: "三个智能体协作系统", group: "audit", label: "18" },
   { id: "audit-governance", title: "效果、评估与治理", group: "audit", label: "19" },
 ];
 
@@ -250,13 +250,8 @@ function Bridge({ from, problem, to, lead = "所以，我们需要引入：" }: 
   );
 }
 
-type ViewMode = "student" | "teacher" | "appendix";
-
-function Header({ mode, setMode, progressOverride, onHome, sidebarOpen, onToggleSidebar }: { mode: ViewMode; setMode: (v: ViewMode) => void; progressOverride?: number; onHome?: () => void; sidebarOpen?: boolean; onToggleSidebar?: () => void }) {
+function Header({ progressOverride, onHome, sidebarOpen, onToggleSidebar }: { progressOverride?: number; onHome?: () => void; sidebarOpen?: boolean; onToggleSidebar?: () => void }) {
   const [progress, setProgress] = useState(0);
-  const [timerOpen, setTimerOpen] = useState(false);
-  const [seconds, setSeconds] = useState(0);
-  const [running, setRunning] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
@@ -266,28 +261,16 @@ function Header({ mode, setMode, progressOverride, onHome, sidebarOpen, onToggle
     onScroll(); addEventListener("scroll", onScroll, { passive: true });
     return () => removeEventListener("scroll", onScroll);
   }, []);
-  useEffect(() => {
-    if (!running) return;
-    const id = window.setInterval(() => setSeconds(v => v + 1), 1000);
-    return () => clearInterval(id);
-  }, [running]);
 
   return (
-    <>
-      <header className="topbar">
-        <a href="#top" className="brand" onClick={onHome ? (event) => { event.preventDefault(); onHome(); } : undefined}>大语言模型 · 智能体 · 审计应用</a>
-        <div className="top-progress"><i style={{ width: `${progressOverride ?? progress}%` }} /></div>
-        <div className="top-actions">
-          {onToggleSidebar && <button className="sidebar-toggle" type="button" onClick={onToggleSidebar} aria-expanded={sidebarOpen} aria-controls="course-sidebar"><span aria-hidden="true">☰</span><b>{sidebarOpen ? "隐藏侧栏" : "显示侧栏"}</b></button>}
-          <button className={`view-mode-button view-mode-student ${mode === "student" ? "on" : ""}`} onClick={() => setMode("student")}>学员视图</button>
-          <button className={`view-mode-button ${mode === "teacher" ? "on" : ""}`} onClick={() => setMode("teacher")}>讲师视图</button>
-          <button className={`view-mode-button ${mode === "appendix" ? "on" : ""}`} onClick={() => setMode("appendix")}>附录视图</button>
-          <button onClick={() => setTimerOpen(!timerOpen)}>计时</button>
-          <button onClick={() => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.()}>全屏</button>
-        </div>
-      </header>
-      {timerOpen && <div className="timer"><button className="timer-x" onClick={() => setTimerOpen(false)}>×</button><span>课堂计时</span><strong>{String(Math.floor(seconds / 60)).padStart(2, "0")}:{String(seconds % 60).padStart(2, "0")}</strong><div><button onClick={() => setRunning(!running)}>{running ? "暂停" : "开始"}</button><button onClick={() => { setSeconds(0); setRunning(false); }}>归零</button></div></div>}
-    </>
+    <header className="topbar">
+      <a href="#top" className="brand" onClick={onHome ? (event) => { event.preventDefault(); onHome(); } : undefined}>大语言模型 · 智能体 · 审计应用</a>
+      <div className="top-progress"><i style={{ width: `${progressOverride ?? progress}%` }} /></div>
+      <div className="top-actions">
+        {onToggleSidebar && <button className="sidebar-toggle" type="button" onClick={onToggleSidebar} aria-expanded={sidebarOpen} aria-controls="course-sidebar"><span aria-hidden="true">☰</span><b>{sidebarOpen ? "隐藏侧栏" : "显示侧栏"}</b></button>}
+        <button onClick={() => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.()}>全屏</button>
+      </div>
+    </header>
   );
 }
 
@@ -2388,11 +2371,10 @@ function Quiz() {
 // Kept temporarily as a content migration reference until the next cleanup pass.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function LegacyHome() {
-  const [notes, setNotes] = useState(false);
   return (
     <PythonKernelProvider>
-    <main id="top" className={notes ? "show-notes" : ""}>
-      <Header mode={notes ? "teacher" : "student"} setMode={(next) => setNotes(next !== "student")} />
+    <main id="top" className="view-student">
+      <Header />
       <aside className="sidenav"><div><span>2小时课程</span><strong>从规则到智能体</strong></div><nav>{nav.map((x, i) => <a href={`#${x[0]}`} key={x[0]}><span>{String(i + 1).padStart(2, "0")}</span><b>{x[1]}</b><small>{x[2]}</small></a>)}</nav></aside>
       <div className="page">
         <section className="hero">
@@ -2512,11 +2494,10 @@ function LegacyHome() {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ComplexHome() {
-  const [mode, setMode] = useState<ViewMode>("student");
   return (
     <PythonKernelProvider>
-      <main id="top" className={`view-${mode} ${mode !== "student" ? "show-notes" : ""}`}>
-        <Header mode={mode} setMode={setMode} />
+      <main id="top" className="view-student">
+        <Header />
         <aside className="sidenav"><div><span>2小时课程</span><strong>从规则到智能体</strong></div><nav>{nav.map((x, i) => <a href={`#${x[0]}`} key={x[0]}><span>{String(i + 1).padStart(2, "0")}</span><b>{x[1]}</b><small>{x[2]}</small></a>)}</nav></aside>
         <div className="page">
           <section className="hero">
@@ -2639,7 +2620,6 @@ function ComplexHome() {
 }
 
 export default function Home() {
-  const [mode, setMode] = useState<ViewMode>("student");
   const [activePage, setActivePage] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const activeCoursePage = coursePages[activePage];
@@ -2698,8 +2678,8 @@ export default function Home() {
   };
 
   return <PythonKernelProvider>
-    <main id="top" className={`paginated-course page-group-${activeCoursePage.group} ${sidebarOpen ? "sidebar-open" : "sidebar-collapsed"} view-${mode} ${mode !== "student" ? "show-notes" : ""}`}>
-      <Header mode={mode} setMode={setMode} progressOverride={Math.round(activePage / (coursePages.length - 1) * 100)} onHome={() => goToPage(0)} sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(value => !value)} />
+    <main id="top" className={`paginated-course page-group-${activeCoursePage.group} ${sidebarOpen ? "sidebar-open" : "sidebar-collapsed"} view-student`}>
+      <Header progressOverride={Math.round(activePage / (coursePages.length - 1) * 100)} onHome={() => goToPage(0)} sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(value => !value)} />
       {sidebarOpen && <button type="button" className="sidebar-scrim" aria-label="关闭章节侧栏" onClick={() => setSidebarOpen(false)} />}
       <aside id="course-sidebar" className="sidenav" aria-hidden={!sidebarOpen}><div><span></span><strong>大语言模型 · 智能体 · 审计</strong></div><nav>
         <button type="button" className={activeCoursePage.id === nav[0][0] ? "active" : ""} onClick={() => goToId(nav[0][0])}><span>01</span><b>{nav[0][1]}</b><small className="nav-time">{nav[0][2]}</small></button>
@@ -2724,10 +2704,10 @@ export default function Home() {
           <div className="content-block lesson-takeaways">
             <h3>主要收获</h3>
             <ol className="takeaway-grid">
-              <li><b>01</b><span>能按问题类型选择方法，并分清：基于任务逻辑的编程、经典机器学习、神经网络与大模型——各自能解决什么、解决不了什么。</span></li>
-              <li><b>02</b><span>分得清大语言模型与智能体：前者擅长理解与生成；后者围绕目标调用工具、根据反馈决策并受控停止。</span></li>
-              <li><b>03</b><span>理解智能体的运行逻辑：能说出基本模块与工具反馈循环，并对权限、日志、人在回路等落地约束有初步了解。</span></li>
-              <li><b>04</b><span>独立思考在审计场景下，自己该如何针对性地构建智能体。</span></li>
+              <li><span>能按问题类型选择方法，并分清：基于任务逻辑的编程、经典机器学习、神经网络与大模型——各自能解决什么、解决不了什么。</span></li>
+              <li><span>分得清大语言模型与智能体：前者擅长理解与生成；后者围绕目标调用工具、根据反馈决策并受控停止。</span></li>
+              <li><span>理解智能体的运行逻辑：能说出基本模块与工具反馈循环，并对权限、日志、人在回路等落地约束有初步了解。</span></li>
+              <li><span>独立思考在审计场景下，自己该如何针对性地构建智能体。</span></li>
             </ol>
           </div>
           <TeacherNote
@@ -2825,7 +2805,55 @@ export default function Home() {
             <div className="answer-work-gap"><div className="answer-sample"><span>用户</span><p>请检查这份合同是否存在转分包风险。</p><span>大语言模型</span><p>可能需要结合合同工作范围、签约主体、时间和金额进行综合判断。</p></div><div className="work-gap-list"><strong>这段回答没有完成</strong>{["获取合同与正文", "查询企业合同数据库", "搜索潜在关联合同", "调用企业判断规则", "比较工作内容与交付物", "保存分析过程", "形成报告并提交复核"].map(item => <span key={item}>{item}</span>)}</div></div>
           </section>
           <section className="chapter-step"><div className="chapter-step-head"><span>6.2 · 贯穿第二部分的案例</span><h3>接下来，用“合同甲的转分包风险识别”智能体为例，梳理智能体的架构</h3><p>用户要检查合同甲是否存在转分包风险，交付带有证据、判断依据、不确定项和复核建议的可复核的初步分析报告，而不是一句聊天回答。一次模型调用无法自行取得资料、执行查询并保存完整过程，这正是后续要补上的行动缺口。</p></div>
-            <div className="call-task-compare"><div><span>一句模型回答</span><strong>输入</strong><i>↓</i><strong>大语言模型</strong><i>↓</i><strong>文本输出</strong></div><div><span>贯穿案例任务</span>{["接收目标", "理解任务", "获取资料", "调用工具", "分析结果", "判断是否继续", "执行下一步", "形成最终产出"].map((item, index) => <strong key={item}><b>{String(index + 1).padStart(2, "0")}</b>{item}</strong>)}</div></div>
+            <div className="call-task-compare">
+              <article className="call-once-panel">
+                <span>一句模型回答</span>
+                <ol className="call-once-flow" aria-label="单次模型调用">
+                  <li><b>01</b><strong>输入</strong></li>
+                  <li aria-hidden="true"><i>↓</i></li>
+                  <li><b>02</b><strong>大语言模型</strong></li>
+                  <li aria-hidden="true"><i>↓</i></li>
+                  <li><b>03</b><strong>文本输出</strong></li>
+                </ol>
+                <p>一次调用，到文字就结束。</p>
+              </article>
+              <article className="call-cycle-panel">
+                <span>贯穿案例任务</span>
+                <div className="call-cycle-track" aria-label="智能体任务步骤">
+                  {[[
+                    ["接收目标", "明确要检查什么"],
+                    ["理解任务", "拆出范围与交付"],
+                    ["获取资料", "读取合同与正文"],
+                    ["调用工具", "查询、检索、比对"],
+                  ], [
+                    ["分析结果", "形成中间判断"],
+                    ["判断是否继续", "依据反馈改道"],
+                    ["执行下一步", "继续受控行动"],
+                    ["形成最终产出", "可复核初步报告"],
+                  ]].map((row, rowIndex) => (
+                    <div key={rowIndex} className="call-cycle-block">
+                      {rowIndex > 0 && <div className="call-cycle-turn" aria-hidden="true"><i>↓</i></div>}
+                      <ol className="call-cycle-row">
+                        {row.map(([title, detail], index) => {
+                          const no = String(rowIndex * 4 + index + 1).padStart(2, "0");
+                          return (
+                            <Fragment key={title}>
+                              <li>
+                                <b>{no}</b>
+                                <strong>{title}</strong>
+                                <small>{detail}</small>
+                              </li>
+                              {index < row.length - 1 && <li aria-hidden="true"><i>→</i></li>}
+                            </Fragment>
+                          );
+                        })}
+                      </ol>
+                    </div>
+                  ))}
+                </div>
+                <p>不是一次生成，而是沿目标持续行动，直到可交付或转人工。</p>
+              </article>
+            </div>
           </section>
           <LessonTakeaway>大语言模型提供语言理解、内容生成和推理能力；完成现实任务还需要连接外部世界并持续运行的系统。</LessonTakeaway>
           <TeacherNote time="5分钟" question="这段模型回答里，哪一件真实工作已经被执行了？" misconception="回答看起来专业，不代表任务已经完成。" mustSay="先明确贯穿案例的任务与可复核交付物；再说明会回答不等于会完成工作，合同、工具、状态和正式产出仍有缺口。" />
@@ -2839,7 +2867,7 @@ export default function Home() {
           </section>
           <section className="chapter-step"><div className="chapter-step-head"><span>7.2 · 系统组成</span><h3>在模型周围加入知识、工具、状态、权限与运行机制</h3></div><AgentArchitectureMap /></section>
           <section className="chapter-step"><div className="chapter-step-head"><span>7.3 · 边界</span><h3>聊天网页、检索问答和一次工具调用都不等价于智能体</h3><p>关键是系统能否围绕目标读取反馈，更新状态，并受控选择下一步。</p></div>
-            <div className="agent-definition-boundaries">{[["聊天网页", "只是交互界面。"], ["固定工作流", "路径主要预先确定，可以与智能体组合。"], ["知识检索问答", "有知识能力不等于具备完整行动循环。"], ["一次工具调用", "还要看反馈是否改变后续路径。"], ["对话历史", "由应用保存、筛选并重新提供，不等于永久记忆。"], ["完全自主", "不是智能体的必要条件。"]].map(([title, detail], index) => <div key={title}><b>{String(index + 1).padStart(2, "0")}</b><strong>{title}</strong><p>{detail}</p></div>)}</div>
+            <div className="agent-definition-boundaries">{[["聊天网页", "只是交互界面。"], ["固定工作流", "路径主要预先确定，可以与智能体组合。"], ["知识检索问答", "有知识能力不等于具备完整行动循环。"], ["一次工具调用", "还要看反馈是否改变后续路径。"], ["对话历史", "由应用保存、筛选并重新提供，不等于永久记忆。"], ["完全自主", "不是智能体的必要条件。"]].map(([title, detail]) => <div key={title}><strong>{title}</strong><p>{detail}</p></div>)}</div>
           </section>
           <LessonTakeaway>模型提出工具请求，应用程序校验身份、参数和权限后真正执行，再把结果送回智能体状态。</LessonTakeaway>
           <TeacherNote time="6分钟" question="模型生成“查询合同甲”的请求后，谁有权真正进入合同系统？" misconception="模型不是业务系统执行者；智能体也不意味着完全自主。" mustSay="讲清目标、模型、知识、状态、工具、权限和运行机制。" />
@@ -2881,7 +2909,33 @@ export default function Home() {
           <SectionTitle no="09" time="第二部分 · 约5分钟" title="知识型智能体" />
           <section className="chapter-step"><div className="chapter-step-head"><span>9.1 · 定义与结构</span><h3>检索、理解、归纳知识，并给出有依据的回答</h3><p>回答受知识版本、检索结果和访问权限约束。</p></div><AgentTypeSwitcher initial="knowledge" /></section>
           <section className="chapter-step"><div className="chapter-step-head"><span>9.2 · 制度知识助手</span><h3>答案之外，还要展示条款位置、生效时间与限制</h3><p>制度冲突或材料不全时提示核实，不补出一个确定答案。</p></div>
-            <div className="knowledge-case"><div><span>用户问题</span><strong>金额超过标准的服务采购需要哪些审批？</strong><ol>{["识别金额标准与审批流程", "检索现行采购制度", "找到分级条款和权限表", "核对版本与生效日期", "综合回答并绑定来源"].map(item => <li key={item}>{item}</li>)}</ol></div><div><span>回答示例</span><p>该金额区间需依次经过部门负责人、采购管理部门和分管领导审批。</p><strong>依据：第四章第十二条；附件二《采购审批权限表》。</strong><small>紧急采购或单一来源采购还需适用专项程序。</small></div></div>
+            <div className="knowledge-case">
+              <section className="knowledge-case-ask">
+                <span>用户问题</span>
+                <strong>金额超过标准的服务采购需要哪些审批？</strong>
+                <ol className="knowledge-case-flow" aria-label="制度知识助手步骤">
+                  {["识别金额标准与审批流程", "检索现行采购制度", "找到分级条款和权限表", "核对版本与生效日期", "综合回答并绑定来源"].map((item, index) => (
+                    <li key={item}>
+                      <b>{String(index + 1).padStart(2, "0")}</b>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+              <section className="knowledge-case-answer">
+                <span>回答示例</span>
+                <p className="knowledge-case-reply">该金额区间需依次经过部门负责人、采购管理部门和分管领导审批。</p>
+                <div className="knowledge-case-source">
+                  <span>依据与定位</span>
+                  <strong>第四章第十二条</strong>
+                  <strong>附件二《采购审批权限表》</strong>
+                </div>
+                <aside className="knowledge-case-caveat">
+                  <span>限制提示</span>
+                  <p>紧急采购或单一来源采购还需适用专项程序。</p>
+                </aside>
+              </section>
+            </div>
           </section>
           <LessonTakeaway>知识型智能体让模型更好地“知道”：答案要有来源，材料不足要说不足，用户只能看到被授权的知识。</LessonTakeaway>
           <TeacherNote time="5分钟" question="检索不到制度原文时，系统应该凭模型常识回答吗？" misconception="知识库接入不代表知识永远正确。" mustSay="这是海能智能体平台的业务分类，不是唯一行业标准；重要判断仍需核实。" />
@@ -2895,7 +2949,12 @@ export default function Home() {
             <div className="task-meeting-case">
               <section className="meeting-case-context"><span>输入 · 非结构化材料</span><h4>会议录音，外加议程与参会名单</h4><p>讨论内容还散落在口语和附件里。系统要先转写成文字，再抽出议题、决定、待办、负责人和时间，才能进入任务系统。</p><ul className="meeting-input-list"><li>会议录音（口头决定、口头分工）</li><li>议程草稿与参会名单</li><li>会前说明材料</li></ul></section>
               <section className="meeting-case-extraction"><span>模型理解 · 结构化结果</span><dl><dt>议题</dt><dd>合同审计智能体试点</dd><dt>决定</dt><dd>先验证转分包识别</dd><dt>待办</dt><dd>准备脱敏合同样本；形成试点评估表</dd><dt>负责人</dt><dd>张某 <em className="confirmed">已确认</em></dd><dt>截止时间</dt><dd>“8 月中旬前” <em className="pending">表述含糊</em></dd></dl></section>
-              <section className="meeting-case-control"><span>应用校验 · 受控写入</span><h4>日期不明确，先暂停写入</h4><p>系统不能把“8 月中旬前”猜成某一天，而是请求会议主持人补充具体日期。</p><ul><li><b>01</b><span>确认负责人和具体截止日期</span></li><li><b>02</b><span>校验任务系统写入权限</span></li><li><b>03</b><span>发送前确认接收人与内容</span></li></ul><div className="meeting-write-result"><small>人工补充并通过校验后</small><strong>生成结构化会议纪要 → 写入两项待办 → 保存写入回执与通知结果</strong></div></section>
+              <section className="meeting-case-control"><span>应用校验 · 受控写入</span><h4>日期不明确，先暂停写入</h4><p>系统不能把“8 月中旬前”猜成某一天，而是请求会议主持人补充具体日期。</p><ol className="meeting-control-flow" aria-label="受控写入校验">{[["01", "确认负责人和具体截止日期"], ["02", "校验任务系统写入权限"], ["03", "发送前确认接收人与内容"]].map(([no, text], index, list) => (
+                <Fragment key={no}>
+                  <li><b>{no}</b><span>{text}</span></li>
+                  {index < list.length - 1 && <li aria-hidden="true"><i>↓</i></li>}
+                </Fragment>
+              ))}</ol><div className="meeting-write-result"><small>人工补充并通过校验后</small><strong>生成结构化会议纪要 → 写入两项待办 → 保存写入回执与通知结果</strong></div></section>
             </div>
           </section>
           <LessonTakeaway>任务型智能体让模型按流程“去做”；高风险操作必须审批，工具结果必须校验，模型不能绕过业务权限。</LessonTakeaway>
@@ -2904,14 +2963,27 @@ export default function Home() {
 
         <section id="agent-planning" className="lesson course-slide" hidden={activeCoursePage.id !== "agent-planning"}>
           <SectionTitle no="11" time="第二部分 · 约7分钟" title="规划型智能体" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>11.1 · 定义与区别</span><h3>拆分复杂目标，并根据结果调整后续计划</h3><p>任务型与规划型不是非黑即白：总体流程可以固定，局部步骤可以动态调整。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>11.1 · 定义与区别</span><h3>拆分复杂目标，并根据结果调整后续计划</h3><p></p></div>
             <AgentTypeSwitcher initial="planning" />
-            <div className="task-planning-compare"><div><span>任务型</span><strong>明确任务</strong><i>→</i><strong>相对固定流程</strong><i>→</i><strong>节点判断</strong><i>→</i><strong>输出</strong></div><div><span>规划型</span><strong>复杂目标</strong><i>→</i><strong>初步计划</strong><i>→</i><strong>执行与观察</strong><i>→</i><strong>修改计划</strong><i>→</i><strong>完成</strong></div></div>
+            <div className="task-planning-compare">
+              <div>
+                <span>任务型</span>
+                <div className="task-planning-flow">
+                  <strong>明确任务</strong><i>→</i><strong>固定流程</strong><i>→</i><strong>节点判断</strong><i>→</i><strong>输出</strong>
+                </div>
+              </div>
+              <div>
+                <span>规划型</span>
+                <div className="task-planning-flow">
+                  <strong>复杂目标</strong><i>→</i><strong>初步计划</strong><i>→</i><strong>执行与观察</strong><i>→</i><strong>修改计划</strong><i>→</i><strong>完成</strong>
+                </div>
+              </div>
+            </div>
           </section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>11.2 · 专项调查</span><h3>复杂目标先有初步计划，新信息再改写方法和子任务</h3><p>承接 11.1：规划型不是走完固定清单。下面用「近三年相关合同风险筛查」看计划如何被初筛结果改写——名称匹配升级为语义匹配，缺正文触发补充任务。</p></div><PlanningAdjustmentLab /></section>
+          <section className="chapter-step"><div className="chapter-step-head"><span>11.2 · 案例：近一年核心系统故障根因专项排查</span></div><PlanningAdjustmentLab /></section>
           <section className="chapter-step"><div className="chapter-step-head"><span>11.3 · 运行边界</span><h3>规划能力越强，权限、资源、停止与接管越重要</h3><p>不能无限循环、绕过审批或在没有证据时形成最终结论。</p></div><div className="planning-guardrails">{["最大执行步骤", "时间与资源限制", "工具白名单", "数据访问权限", "高风险操作审批", "运行日志", "异常中止", "人工接管", "结果复核"].map(item => <span key={item}>{item}</span>)}</div></section>
           <LessonTakeaway>规划型智能体让模型决定“先做什么、再做什么”；它通常更难稳定实施，也必须在受控范围内运行。</LessonTakeaway>
-          <TeacherNote time="7分钟" question="名称完全不同的合同被遗漏时，系统怎样调整？" misconception="规划型不代表完全自主，动态计划也不能动态扩大权限。" mustSay="计划可以改，权限不能由模型自己扩大。" />
+          <TeacherNote time="7分钟" question="标题完全不同、现象却相同的故障被遗漏时，系统怎样调整？" misconception="规划型不代表完全自主，动态计划也不能动态扩大权限。" mustSay="计划可以改，权限不能由模型自己扩大。" />
         </section>
 
         <section id="agent-case" className="lesson course-slide" hidden={activeCoursePage.id !== "agent-case"}>
@@ -2927,7 +2999,7 @@ export default function Home() {
         <section id="agent-value" className="lesson course-slide" hidden={activeCoursePage.id !== "agent-value"}>
           <SectionTitle no="13" time="第二部分 · 约5分钟" title="智能体带来的价值与边界" />
           <section className="chapter-step"><div className="chapter-step-head"><span>13.1 · 工作方式变化</span><h3>价值不只是节省成本，而是任务怎样被重新组织</h3><p>系统扩大覆盖、串联信息和保留过程；人转向关键判断、异常处理和最终决策。</p></div>
-            <div className="agent-value-shifts">{[["从问答到任务", "人查资料、操作系统、整理结果", "用户提出目标，系统协助完成中间过程"], ["从信息分散到统一调用", "制度、合同和案例分散", "按权限检索并组织相关信息"], ["从逐份检查到穿透分析", "人工抽样有限合同", "系统全量初筛，人工复核重点"], ["从固定流程到处理异常", "材料缺失时停止", "调整步骤或请求人工"], ["从黑盒到可追溯", "只看到风险标签", "保留资料、工具、理由与人工决定"]].map(([title, before, after], index) => <div key={title}><b>{String(index + 1).padStart(2, "0")}</b><strong>{title}</strong><p><span>以前</span>{before}</p><p><span>现在</span>{after}</p></div>)}</div>
+            <div className="agent-value-shifts">{[["从问答到任务", "人查资料、操作系统、整理结果", "用户提出目标，系统协助完成中间过程"], ["从信息分散到统一调用", "制度、合同和案例分散", "按权限检索并组织相关信息"], ["从逐份检查到穿透分析", "人工抽样有限合同", "系统全量初筛，人工复核重点"], ["从固定流程到处理异常", "材料缺失时停止", "调整步骤或请求人工"], ["从黑盒到可追溯", "只看到风险标签", "保留资料、工具、理由与人工决定"]].map(([title, before, after]) => <div key={title}><strong>{title}</strong><p><span>以前</span>{before}</p><p><span>现在</span>{after}</p></div>)}</div>
           </section>
           <section className="chapter-step"><div className="chapter-step-head"><span>13.2 · 风险与治理</span><h3>工具行动会放大错误影响，权限要比文字生成更谨慎</h3><p>模型和工具都可能出错；无结果、错误结果和权限拒绝不能被改写成正常。</p></div>
             <div className="agent-risk-governance"><div><span>可能出错</span>{["误解任务", "忽略证据", "选择错误工具", "错误解释结果"].map(item => <b key={item}>{item}</b>)}</div><div><span>行动放大影响</span>{["错误写入", "错误通知", "错误提交", "数据泄露"].map(item => <b key={item}>{item}</b>)}</div><div><span>必须治理</span>{["身份与权限", "工具白名单", "输入输出校验", "操作日志", "人工审批", "资源限制", "异常中止", "结果复核", "责任边界"].map(item => <b key={item}>{item}</b>)}</div></div>
@@ -2949,10 +3021,10 @@ export default function Home() {
         <section id="audit" className="lesson course-slide" hidden={activeCoursePage.id !== "audit"}>
           <SectionTitle no="14" time="第三部分 · 约6分钟" title="从审计工作链理解三个智能体" />
           <section className="chapter-step"><div className="chapter-step-head"><span>14.1 · 真实任务</span><h3>数百份异构资料的集成、平台数据智能取数和分析以及审计报告的智能撰写，不能一次交给模型解决</h3><p>文件格式、证据定位、业务口径、数据权限、报告类型与人工责任界定等都需要专门系统处理。</p></div><AuditChainChallenge /></section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>14.2 · 三个环节</span><h3>资料进入、可信分析和成果形成组成完整审计工作链</h3><p>三个智能体可以单独工作，也通过统一证据、权限、任务状态和人工审批串联。</p></div>
-            <div className="audit-three-chain"><div><b>01</b><span>资料</span><strong>异构审计资料解析</strong><p>识别格式、调用解析工具、恢复结构、定位来源并形成证据。</p></div><i>→</i><div><b>02</b><span>数据</span><strong>智能问数与分析</strong><p>理解业务问题、匹配指标口径、强制权限、安全查询并分析。</p></div><i>→</i><div><b>03</b><span>成果</span><strong>智能生成审计报告</strong><p>依据已确认发现、证据、制度和模板形成可审核草稿。</p></div></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>14.2 · 三个智能体案例</span><h3>资料进入、可信分析和成果形成组成完整审计工作链</h3><p>三个智能体可以单独工作，也通过统一证据、权限、任务状态和人工审批串联。</p></div>
+            <div className="audit-three-chain"><div><span>资料</span><strong>异构审计资料解析</strong><p>识别格式、调用解析工具、恢复结构、定位来源并形成证据。</p></div><div><span>数据</span><strong>智能问数与分析</strong><p>理解业务问题、匹配指标口径、强制权限、安全查询并分析。</p></div><div><span>成果</span><strong>智能生成审计报告</strong><p>依据已确认发现、证据、制度和模板形成可审核草稿。</p></div></div>
           </section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>14.3 · 统一设计问题</span><h3>先问目标、输入、知识、工具、权限和验证，再考虑模型</h3><p>这六个问题会贯穿三个案例，学习者可以切换观察答案怎样变化。</p></div><AuditDesignWorkbench /></section>
+          <section className="chapter-step"><div className="chapter-step-head"><span>14.3 · 统一设计问题</span><h3>先问目标、输入、知识、工具、权限和验证，再考虑模型</h3></div><AuditDesignWorkbench /></section>
           <LessonTakeaway>三个智能体分别解决资料、数据和成果环节；它们共享证据与权限体系，但任何正式结论都要由审计人员确认。</LessonTakeaway>
           <TeacherNote time="6分钟" question="把全部文件、平台数据和历史报告一次交给模型，最先失去的是格式、权限还是证据定位？" misconception="一个模型调用不能同时替代文件解析、数据库权限和报告审批。" mustSay="先让学员选择，再揭示三类系统；六个设计问题贯穿第三部分。" />
         </section>
@@ -2981,7 +3053,7 @@ export default function Home() {
             <div className="query-control-architecture"><div><span>用户身份</span><strong>角色、组织、项目</strong><p>认证谁在提问。</p></div><i>↓</i><div><span>业务语义层</span><strong>指标、口径、关系、同义词</strong><p>把“单一来源采购金额”定义为相应合同金额合计。</p></div><i>↓</i><div><span>权限服务</span><strong>表、字段、行、项目和时间范围</strong><p>生成模型不可修改的数据范围。</p></div><i>↓</i><div><span>安全查询服务</span><strong>只读、白名单、超时、脱敏、日志</strong><p>前端不直接连接数据库。</p></div><i>↓</i><div><span>结果分析</span><strong>复算、同比、排名、趋势和贡献因素</strong><p>模型只分析已经过滤和校验的结果。</p></div></div>
           </section>
           <section className="chapter-step"><div className="chapter-step-head"><span>16.3 · 异常处理</span><h3>空结果、语句失败和敏感问题都有明确处理分支</h3><p>不能把“无权限”“数据未更新”或“查询失败”改写成“没有数据”。</p></div>
-            <div className="query-exception-grid">{[["口径不明确", "确认合同金额还是付款金额、时间范围、税口径和采购类型。"], ["结果为空", "检查权限、时间、指标、数据更新时间和字段映射。"], ["语句失败", "读取错误、修正后重新校验；限制最大重试，仍失败转技术人员。"], ["敏感信息", "拒绝、聚合、脱敏或要求额外审批。"], ["数据异常", "保留原始结果，执行复算、勾稽和数量级检查。"], ["资源风险", "先检查执行计划，限制扫描范围、返回行数和超时。"]].map(([title, detail], index) => <div key={title}><b>{String(index + 1).padStart(2, "0")}</b><strong>{title}</strong><p>{detail}</p></div>)}</div>
+            <div className="query-exception-grid">{[["口径不明确", "确认合同金额还是付款金额、时间范围、税口径和采购类型。"], ["结果为空", "检查权限、时间、指标、数据更新时间和字段映射。"], ["语句失败", "读取错误、修正后重新校验；限制最大重试，仍失败转技术人员。"], ["敏感信息", "拒绝、聚合、脱敏或要求额外审批。"], ["数据异常", "保留原始结果，执行复算、勾稽和数量级检查。"], ["资源风险", "先检查执行计划，限制扫描范围、返回行数和超时。"]].map(([title, detail]) => <div key={title}><strong>{title}</strong><p>{detail}</p></div>)}</div>
           </section>
           <LessonTakeaway>智能问数不是单纯把自然语言转换为查询语句，而是语义、身份权限、安全执行、结果校验、统计分析和可追溯记录的组合系统。</LessonTakeaway>
           <TeacherNote time="12分钟" question="只读查询是否一定安全？同一问题为什么三个角色看到的单位数量不同？" misconception="模型不能决定用户权限；前端不得连接生产数据库；数据库返回也不等于数字已校验。" mustSay="语义层、权限注入、安全校验、只读环境、分析和追溯必须完整。" canSkip="查询步骤可点击到权限注入与执行，至少切换总部和分公司两个身份。" />
@@ -2995,7 +3067,7 @@ export default function Home() {
           <section className="chapter-step"><div className="chapter-step-head"><span>17.2 · 三层架构与技术路线</span><h3>先事实证据，再审计分析，最后报告表达</h3><p>历史报告需要分类、版本、批准状态和保密等级；个人风格转成可查看、可编辑、可确认的规则。</p></div><ReportArchitectureBoard /></section>
           <section className="chapter-step"><div className="chapter-step-head"><span>17.3 · 生成与审核工作台</span><h3>选择类型与范围 → 导入发现 → 检查证据 → 确认提纲 → 分段生成 → 人工审核</h3><p>尝试切换报告类型、风格，调整提纲顺序，并接受或退回当前段落。</p></div><ReportGenerationStudio /></section>
           <section className="chapter-step"><div className="chapter-step-head"><span>17.4 · 质量门与版本记录</span><h3>事实、数字、制度、证据、模板和风格逐项检查</h3><p>表达层不能修改事实；证据不足时保留不确定性并阻断确定性结论。</p></div>
-            <div className="report-quality-gates">{[["数字一致", "金额、合计、百分比、时间范围和单位统一"], ["事实一致", "主体、项目、日期、合同编号和结论状态"], ["证据覆盖", "关键事实、数字和制度引用均可回查"], ["不确定性", "已确认、高概率、待核实和建议检查严格区分"], ["模板合规", "必填章节、标题层级、附件、审批和保密标识"], ["风格一致", "句式、术语、语气、篇幅、建议与禁止词"]].map(([title, detail], index) => <div key={title}><b>{String(index + 1).padStart(2, "0")}</b><strong>{title}</strong><p>{detail}</p></div>)}</div>
+            <div className="report-quality-gates">{[["数字一致", "金额、合计、百分比、时间范围和单位统一"], ["事实一致", "主体、项目、日期、合同编号和结论状态"], ["证据覆盖", "关键事实、数字和制度引用均可回查"], ["不确定性", "已确认、高概率、待核实和建议检查严格区分"], ["模板合规", "必填章节、标题层级、附件、审批和保密标识"], ["风格一致", "句式、术语、语气、篇幅、建议与禁止词"]].map(([title, detail]) => <div key={title}><strong>{title}</strong><p>{detail}</p></div>)}</div>
             <div className="report-version-log"><span>每次人工修改保留</span><b>修改人员</b><b>修改时间</b><b>修改前内容</b><b>修改后内容</b><b>修改原因</b><b>证据版本</b><b>审批状态</b></div>
           </section>
           <LessonTakeaway>报告生成必须从证据向报告生成，而不是从语言向事实倒推；先确认提纲、再分段生成、逐句复核，正式报告责任仍由审计人员承担。</LessonTakeaway>
@@ -3003,10 +3075,10 @@ export default function Home() {
         </section>
 
         <section id="audit-collaboration" className="lesson course-slide" hidden={activeCoursePage.id !== "audit-collaboration"}>
-          <SectionTitle no="18" time="第三部分 · 约7分钟" title="三个智能体如何组成完整审计协作系统" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>18.1 · 完整演示任务</span><h3>项目资料、平台数据和报告草稿沿同一证据链流转</h3><p>逐步运行“对项目甲开展初步采购与合同分析，并形成供项目组讨论的报告草稿”。</p></div><AuditCollaborationLab /></section>
+          <SectionTitle no="18" time="第三部分 · 约7分钟" title="构想：智能体协作完成审计任务" />
+          <section className="chapter-step"><div className="chapter-step-head"><span>18.1 · 完整演示任务</span><h3>审计任务：对项目甲做采购与合同初步分析</h3><p>项目组交来合同扫描件、付款台账、供应商材料，以及平台采购宽表。需要核对合同金额与台账是否一致，查清近三年供应商趋势和单一来源是否异常，并形成供项目组讨论的报告草稿；正式定性仍由审计人员复核。</p></div><AuditCollaborationLab /></section>
           <section className="chapter-step"><div className="chapter-step-head"><span>18.2 · 统一底座</span><h3>三个智能体不能各建一套数据、权限和日志</h3><p>统一证据对象、查询结果对象、审计发现对象和报告对象，让每条报告句子可以回到数据或文件。</p></div>
-            <div className="audit-shared-stack"><div><b>05</b><strong>审计人员与审批</strong><p>确认事实、判断风险、审核报告并承担责任。</p></div><div><b>04</b><strong>三个智能体与任务状态</strong><p>资料解析、智能问数、报告生成共享项目目标。</p></div><div><b>03</b><strong>证据、查询、发现和报告对象</strong><p>统一编号、版本、权限范围、状态和责任人。</p></div><div><b>02</b><strong>工具、知识与权限服务</strong><p>文件解析、只读查询、制度检索、质量校验和人工关口。</p></div><div><b>01</b><strong>文件、审计宽表与制度来源</strong><p>只访问项目与组织已授权的数据和资料。</p></div></div>
+            <div className="audit-shared-stack"><div><strong>审计人员与审批</strong><p>确认事实、判断风险、审核报告并承担责任。</p></div><div><strong>三个智能体与任务状态</strong><p>资料解析、智能问数、报告生成共享项目目标。</p></div><div><strong>证据、查询、发现和报告对象</strong><p>统一编号、版本、权限范围、状态和责任人。</p></div><div><strong>工具、知识与权限服务</strong><p>文件解析、只读查询、制度检索、质量校验和人工关口。</p></div><div><strong>文件、审计宽表与制度来源</strong><p>只访问项目与组织已授权的数据和资料。</p></div></div>
           </section>
           <LessonTakeaway>三个智能体通过统一身份、权限、证据编号、任务状态和审核记录串成系统；报告中的事实可以逐级回到发现、查询结果和原始资料。</LessonTakeaway>
           <TeacherNote time="7分钟" question="如果资料解析、智能问数和报告生成分别使用不同证据编号，最后会发生什么？" misconception="共享同一个模型不等于共享证据和权限底座。" mustSay="沿十二步演示完整任务；四类对象接口与统一底座是串联关键。" />

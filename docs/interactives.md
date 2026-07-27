@@ -27,12 +27,12 @@
 | `LlmContextDemo` / `LlmConstructionExplorer` / `Gpt2PretrainingLab` 等 | llm备用素材 | 检查点、真实训练、论文原图等细节不进入当前 `Home` 的05主线 |
 | `InlinePythonLab(rule / ml / neural / …)` | 各章 | 浏览器内可运行代码；`neural` 右侧带 `NeuralTrainMonitor` 回放 epoch/Loss |
 | `InlinePythonLab(attention / language / llm_call)` | llm备用素材 | 微型Attention、神经语言模型训练和无网络调用模拟，不进入当前05主线 |
-| `FoundationChapterRoute` | part-1 | 章节02—05四章目录：规则→机器学习→神经网络→大语言模型，可点击跳转 |
-| `AgentPartRoute` | part-2 | 章节06—13八章可跳转路线：先提出主合同甲贯穿任务，再走结构→循环→三类能力→组合应用→边界 |
-| `AgentArchitectureMap` | agent-definition | 承接06提出的主合同甲任务，用八个可点选模块展示智能体系统的输入、产出与风险 |
+| `FoundationChapterRoute` | part-1 | 章节02—05四章目录：基于任务逻辑的编程→机器学习→神经网络→大语言模型，可点击跳转 |
+| `AgentPartRoute` | part-2 | 章节06—13八章可跳转目录；标题区仅保留「第二部分 · 学习路线」 |
+| `AgentArchitectureMap` | agent-definition | 承接06提出的主合同甲任务，用八个**并列**可点选模块（无序号）展示智能体系统的输入、产出与风险 |
 | `AgentLoopSimulator` | agent-loop | 继续运行06的同一任务；九步转分包检查模拟逐步/自动展示目标、状态、工具输入输出与下一判断 |
 | `AgentTypeSwitcher` | agent-knowledge / agent-task / agent-planning | 09—11沿用统一的三类智能体框架并分别默认选中知识型、任务型、规划型；切换时同步改变结构、输入、步骤、输出、场景、自主度与人工介入 |
-| `PlanningAdjustmentLab` | agent-planning | 近三年相关合同风险筛查六阶段；先立案例再演示名称匹配升级为语义匹配、缺正文触发补充任务 |
+| `PlanningAdjustmentLab` | agent-planning | 近一年核心系统故障根因专项排查；顶部交代目标/交付/难点，再演示六阶段：标题匹配升级为语义匹配、缺日志触发补充任务 |
 | `CombinedContractCaseLab` | agent-case | 主合同/候选合同、八步组合时间线、判断卡片和六个人工确认节点 |
 | `AgentFitLab` | agent | 四类任务互动判断：程序、工作流、大语言模型应用或智能体 |
 | `AgentArchitectureExplorer` | agent | 六块智能体架构的输入、产出与失败风险 |
@@ -40,15 +40,15 @@
 | `AgentStateExplorer` | agent | 区分状态、记忆、轨迹并展示五类停止条件 |
 | `AgentControlLab` | agent | 建议、只读、受控执行三种自主度与动作权限 |
 | `AgentBranchLab` | agent | BX-42017行程矛盾 / 行程一致 / 工具失败三分支 |
-| `AuditApplicationRoute` | part-3 | 章节14—19六章可跳转路线：工作链→三案例→协作→治理 |
+| `AuditApplicationRoute` | part-3 | 章节14—19六章可跳转目录；标题区仅保留「第三部分 · 学习路线」 |
 | `AuditChainChallenge` | audit | “全部资料交给模型/先路由/统一转图片”三选一，解释每种后果 |
-| `AuditDesignWorkbench` | audit | 三个案例共用的目标、输入、知识、工具、权限、验证六问工作台 |
+| `AuditDesignWorkbench` | audit | 三个案例共用的目标、输入、知识、工具、权限、验证六问工作台（并列检查项，无序号） |
 | `DocumentParsingLab` | audit-documents | 切换扫描件、电子表格、文字处理文档和图片；展示解析路线、置信度、来源与处理决策 |
 | `EvidenceConflictBoard` | audit-documents | 合同正文、付款台账和审批表金额冲突；保留多来源并提出核查方向 |
 | `SecureQueryLab` | audit-data | 三个身份权限切换、查询计划、安全校验、权限注入、模拟查询与分析追溯 |
 | `ReportArchitectureBoard` | audit-report | 事实证据→审计分析→报告表达三层架构与克制技术路线 |
 | `ReportGenerationStudio` | audit-report | 报告类型、六层知识、风格、提纲排序、三栏审核和接受/退回状态 |
-| `AuditCollaborationLab` | audit-collaboration | 十二步完整任务、共享底座和四类对象接口 |
+| `AuditCollaborationLab` | audit-collaboration | 十二步完整任务并标注责任智能体；共享底座与四类对象接口 |
 | `AuditGovernanceDashboard` | audit-governance | 具体效果、分功能指标与治理边界切换 |
 | `CaseMatrix` | audit（折叠扩展） | 六类事项在五种技术下的结果差异 |
 | `Quiz` | audit 收束 | 九题自测，新增智能问数与报告生成边界 |

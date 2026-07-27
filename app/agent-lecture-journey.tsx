@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 
 type AgentTypeKey = "knowledge" | "task" | "planning";
 
@@ -140,7 +140,7 @@ const agentTypes: Record<AgentTypeKey, {
     input: "复杂目标 + 约束 + 可用知识和工具",
     steps: ["分析目标", "拆分子任务", "形成初步计划", "执行一项", "观察结果", "调整计划", "汇总成果"],
     output: "多阶段执行结果、专项分析、完整解决方案与综合报告",
-    scenes: "专项调查、跨系统分析、资料不完整的复杂研究任务",
+    scenes: "故障根因排查、跨系统分析、资料不完整的复杂研究任务",
     autonomy: "较高但受控：路径可动态变化，权限和停止机制更严格。",
     human: "证据不足、访问敏感系统、改变范围或形成正式结论前确认。",
     structure: ["复杂目标", "任务拆分", "动态计划", "工具执行", "观察反馈", "修改计划", "综合成果"],
@@ -150,39 +150,39 @@ const agentTypes: Record<AgentTypeKey, {
 const planPhases = [
   {
     name: "理解目标",
-    detail: "任务是：筛查近三年合同中可能存在相关关系或风险的合同，形成专项分析材料。先明确时间范围、相关合同定义、交付物，以及只读权限与禁止自动定性。",
-    result: "范围：近三年合同台账；交付：候选清单与分析材料；禁止：未经人工确认形成正式结论。",
+    detail: "任务是：排查近一年核心业务系统故障工单，找出可能同根因、同影响面的相关故障，形成专项分析材料。先明确时间范围、相关故障定义、交付物，以及只读权限与禁止自动定性根因。",
+    result: "范围：近一年故障工单与关联监控；交付：相关故障簇与分析材料；禁止：未经人工确认形成正式根因结论。",
     focus: "先把任务边界说清楚，再谈怎么拆步骤。",
   },
   {
     name: "制定初步计划",
-    detail: "按常见路径拆出子任务：取台账 → 名称/关键词初筛 → 获取正文 → 深度比较 → 分级汇总 → 生成报告。此时默认主要依赖合同名称匹配。",
-    result: "得到一条有依赖关系的初步计划；初筛方法暂定为名称与关键词。",
+    detail: "按常见路径拆出子任务：取工单台账 → 标题/关键词初筛 → 拉取日志与监控截图 → 交叉比对 → 分级汇总 → 生成报告。此时默认主要依赖工单标题与错误码匹配。",
+    result: "得到一条有依赖关系的初步计划；初筛方法暂定为标题与关键词。",
     focus: "初步计划只是起点，不是最终路径。",
   },
   {
     name: "全量初筛",
-    detail: "对五千二百八十六份教学模拟合同执行初筛。名称相近的合同被召回，但真正工作内容相关、名称却不同的合同可能漏掉；另有一批台账缺正文。",
-    result: "初步候选三百一十二份，高潜七十六份；二十五份缺少正文附件。",
+    detail: "对三千八百四十份教学模拟工单执行初筛。标题相近的工单被召回，但现象相同、表述却不同的故障可能漏掉（如“网关超时”“连接失败”“上游无响应”）；另有一批工单缺日志附件。",
+    result: "初步候选二百一十六份，高潜六十八份；三十一份缺少日志或监控截图。",
     focus: "执行结果暴露了初步计划的盲区。",
   },
   {
     name: "发现并调整",
-    detail: "审计人员与系统共同看到：只看名称会遗漏；缺正文则无法比较工作范围。于是改写计划——加入语义匹配，并为缺材料合同新增补充子任务。",
-    result: "计划更新：名称匹配 → 工作范围/交付成果语义匹配；新增材料补充任务。",
+    detail: "运维与系统共同看到：只看标题会遗漏；缺日志则无法比对时间线与调用链。于是改写计划——加入故障现象/错误语义匹配，并为缺材料工单新增补充子任务。",
+    result: "计划更新：标题匹配 → 现象与错误语义匹配；新增材料补充任务。",
     focus: "这是规划型智能体的关键：观察结果后改方法，而不是硬走原清单。",
     highlight: true,
   },
   {
     name: "深度分析",
-    detail: "对高潜候选比较工作承接、签约主体、时间顺序、金额关系、交付物一致性和证据完整性；材料不足的合同单独排队，不与证据完整的候选混谈。",
-    result: "分成两类：证据较完整的高风险候选，以及需补材料后再判断的候选。",
+    detail: "对高潜候选比较故障时间簇、受影响服务、调用链节点、变更窗口和证据完整性；材料不足的工单单独排队，不与证据完整的候选混谈。",
+    result: "分成两类：证据较完整的同根因候选簇，以及需补材料后再判断的候选。",
     focus: "调整后的计划开始真正用于分析，而不是停留在口号。",
   },
   {
     name: "分级与交付",
-    detail: "按证据强度分级，整理关系图、典型案例、材料补齐清单和审计建议；系统只提交分析材料，不替代人签字。",
-    result: "专项材料就绪；正式结论仍由审计人员复核批准。",
+    detail: "按证据强度分级，整理故障簇关系图、典型工单、材料补齐清单和处置建议；系统只提交分析材料，不替代人签字。",
+    result: "专项材料就绪；正式根因结论仍由运维负责人复核批准。",
     focus: "计划可以动态改写，责任边界不能动态放宽。",
   },
 ] as const;
@@ -200,7 +200,7 @@ const combinedTimeline = [
 
 export function AgentPartRoute({ onSelect }: { onSelect: (id: string) => void }) {
   return <nav className="agent-route" aria-label="第二部分章节目录">
-    <div className="agent-route-head"><span>第二部分 · 学习路线</span><strong>提出贯穿任务 → 搭建系统 → 运行循环 → 三类能力 → 组合应用 → 治理边界</strong></div>
+    <div className="agent-route-head"><span>第二部分 · 学习路线</span></div>
     <ol>{agentRoute.map(item => <li key={item.id}><button type="button" onClick={() => onSelect(item.id)}><b>{item.no}</b><span><strong>{item.title}</strong><small>{item.detail}</small></span></button></li>)}</ol>
   </nav>;
 }
@@ -214,7 +214,7 @@ export function AgentArchitectureMap() {
       <i>↓</i>
       <div className="architecture-core"><span>智能体运行机制</span><strong>组织判断、行动、反馈与停止</strong></div>
       <i>↓</i>
-      <div className="architecture-module-grid">{architectureModules.map((module, index) => <button type="button" key={module.name} className={active === index ? "active" : ""} onClick={() => setActive(index)}><b>{String(index + 1).padStart(2, "0")}</b><strong>{module.name}</strong></button>)}</div>
+      <div className="architecture-module-grid">{architectureModules.map((module, index) => <button type="button" key={module.name} className={active === index ? "active" : ""} onClick={() => setActive(index)}><strong>{module.name}</strong></button>)}</div>
       <i>↓</i>
       <div className="architecture-feedback"><span>结果与外部反馈</span><strong>重新进入状态，供下一轮判断使用</strong></div>
     </div>
@@ -242,7 +242,12 @@ export function AgentLoopSimulator() {
 
   return <div className="agent-loop-simulator">
     <div className="loop-simulator-head"><div><span>承接 06 · 同一贯穿任务 · 前端教学模拟</span><h3>主合同甲转分包风险识别：九步运行轨迹</h3></div><div><button type="button" onClick={() => { setRunning(false); setActive(0); }}>重置</button><button type="button" className="primary" onClick={() => { if (active === loopSteps.length - 1) setActive(0); setRunning(value => !value); }}>{running ? "暂停" : active === loopSteps.length - 1 ? "重新运行" : "自动运行"}</button></div></div>
-    <div className="loop-stepper">{loopSteps.map((step, index) => <button type="button" key={step.title} className={index === active ? "active" : index < active ? "done" : ""} onClick={() => { setRunning(false); setActive(index); }}><b>{String(index + 1).padStart(2, "0")}</b><span>{step.title}</span></button>)}</div>
+    <div className="loop-stepper" aria-label="九步运行轨迹">{loopSteps.map((step, index) => (
+      <Fragment key={step.title}>
+        <button type="button" className={index === active ? "active" : index < active ? "done" : ""} onClick={() => { setRunning(false); setActive(index); }}><b>{String(index + 1).padStart(2, "0")}</b><span>{step.title}</span></button>
+        {index < loopSteps.length - 1 && <i aria-hidden="true">→</i>}
+      </Fragment>
+    ))}</div>
     <div className="loop-live" aria-live="polite">
       <section><span>当前目标 · 与 06 相同</span><strong>检查主合同甲是否存在转分包风险，并形成可复核的初步分析报告。</strong><div className="loop-status"><small>当前步骤</small><b>{active + 1} / {loopSteps.length}</b><small>当前状态</small><b>{item.status}</b></div></section>
       <section><span>选择的工具</span><strong>{item.tool}</strong><small>工具输入</small><p>{item.input}</p><small>工具输出</small><p>{item.output}</p></section>
@@ -267,25 +272,33 @@ export function PlanningAdjustmentLab() {
   return <div className="planning-adjustment-lab">
     <header className="planning-case-head">
       <div>
-        <span>承接 11.1 · 规划型怎么改计划</span>
-        <h4>案例：近三年相关合同风险筛查</h4>
-        <p>目标复杂、材料可能不全。系统先有一条初步计划，再根据初筛结果改写方法。请重点看第 03—04 步：名称匹配为何不够，以及缺正文如何触发补充任务。</p>
+        <p>运维中心发起排查：在近一年核心业务系统故障工单中，找出可能同根因、同影响面的相关故障（例如标题不同，但现象、错误语义或调用链节点高度重合），并整理成可供人工复核的分析材料。</p>
+        <dl className="planning-case-brief">
+          <div><dt>要做什么</dt><dd>全量初筛 → 锁定高潜故障簇 → 比对时间线与调用链 → 按证据强度分级</dd></div>
+          <div><dt>交付什么</dt><dd>相关故障簇、典型工单、缺材料清单与处置建议；不作正式根因定性</dd></div>
+          <div><dt>为何难</dt><dd>三千多份工单、标题常对不上、部分缺日志——初步计划会被结果改写</dd></div>
+        </dl>
       </div>
       <aside>
-        <span>与任务型的差别</span>
-        <strong>不是走完固定清单就结束</strong>
-        <p>观察结果可以新增子任务、改匹配方法；权限与停条件仍由应用控制。</p>
+        <span>课堂看点</span>
+        <strong>重点看第 03—04 步</strong>
+        <p>标题匹配为何漏召；缺日志如何触发补充子任务。权限与停条件仍由应用控制，不随计划扩大。</p>
       </aside>
     </header>
     <div className="planning-adjustment-body">
-      <div className="planning-phase-list">{planPhases.map((phase, index) => <button type="button" key={phase.name} className={active === index ? "active" : index < active ? "done" : ""} onClick={() => setActive(index)}><b>{String(index + 1).padStart(2, "0")}</b><span>{phase.name}</span></button>)}</div>
+      <div className="planning-phase-list" aria-label="专项排查阶段">{planPhases.map((phase, index) => (
+        <Fragment key={phase.name}>
+          <button type="button" className={active === index ? "active" : index < active ? "done" : ""} onClick={() => setActive(index)}><b>{String(index + 1).padStart(2, "0")}</b><span>{phase.name}</span></button>
+          {index < planPhases.length - 1 && <i aria-hidden="true">↓</i>}
+        </Fragment>
+      ))}</div>
       <section aria-live="polite">
-        <span>专项调查阶段 {active + 1}/{planPhases.length}</span>
+        <span>专项排查阶段 {active + 1}/{planPhases.length}</span>
         <h3>{item.name}</h3>
         <p>{item.detail}</p>
         <div><small>本阶段结果</small><strong>{item.result}</strong></div>
         <p className="planning-phase-focus"><b>看点</b>{item.focus}</p>
-        {"highlight" in item && item.highlight && <blockquote><b>计划发生变化：</b>不再只看合同名称；新增工作范围、服务内容和交付成果的语义匹配，并把缺少正文的合同加入材料补充清单。</blockquote>}
+        {"highlight" in item && item.highlight && <blockquote><b>计划发生变化：</b>不再只看工单标题；新增故障现象与错误语义匹配，并把缺少日志或监控截图的工单加入材料补充清单。</blockquote>}
         <button type="button" onClick={() => setActive((active + 1) % planPhases.length)}>{active === planPhases.length - 1 ? "重新查看" : "执行下一阶段 →"}</button>
       </section>
     </div>
@@ -297,7 +310,12 @@ export function CombinedContractCaseLab() {
   const item = combinedTimeline[active];
   return <div className="combined-contract-case">
     <div className="combined-case-summary"><div><span>主合同</span><strong>生产数据治理及质量提升项目</strong><p>历史数据清洗、标准化、质量检查和数据入湖；金额八百六十万元。</p></div><i>⇄</i><div><span>高潜候选</span><strong>历史数据标准化及入湖技术服务</strong><p>清洗、映射、标准化及入湖；金额二百一十万元；主合同签订后三个月。</p></div></div>
-    <div className="combined-timeline">{combinedTimeline.map((step, index) => <button type="button" key={step.title} className={active === index ? "active" : index < active ? "done" : ""} onClick={() => setActive(index)}><b>{String(index + 1).padStart(2, "0")}</b><span>{step.title}</span><small>{step.kind}</small></button>)}</div>
+    <div className="combined-timeline" aria-label="组合案例时间线">{combinedTimeline.map((step, index) => (
+      <Fragment key={step.title}>
+        <button type="button" className={active === index ? "active" : index < active ? "done" : ""} onClick={() => setActive(index)}><b>{String(index + 1).padStart(2, "0")}</b><span>{step.title}</span><small>{step.kind}</small></button>
+        {index < combinedTimeline.length - 1 && <i aria-hidden="true">→</i>}
+      </Fragment>
+    ))}</div>
     <section aria-live="polite"><div><span>{item.kind}能力</span><h3>{item.title}</h3><p>{item.detail}</p><strong>{item.state}</strong></div><div className="combined-proof"><span>最终判断卡片</span><strong>关联程度：高</strong><ol><li>工作内容与主合同核心范围高度重合。</li><li>候选合同签订时间晚于主合同。</li><li>交付成果均涉及标准化数据与入湖成果。</li><li>候选合同可能承接主合同中的部分工作。</li></ol><p><b>不确定项：</b>尚未取得项目任务分工说明。</p><p><b>建议：</b>核实实际执行主体与内部审批材料。</p></div></section>
     <div className="human-gates"><span>必须暂停并请人确认</span>{["正文无法获取", "证据互相冲突", "访问高敏感系统", "形成正式审计结论", "向业务系统写入", "对外发送报告"].map(gate => <b key={gate}>{gate}</b>)}</div>
   </div>;

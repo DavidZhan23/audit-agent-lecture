@@ -366,7 +366,8 @@ footer,
 
 .agent-route button strong,
 .architecture-module-grid strong,
-.call-task-compare strong,
+.call-once-flow strong,
+.call-cycle-track strong,
 .task-planning-compare strong,
 .agent-core-loop strong,
 .agent-core-loop-steps strong,
@@ -378,10 +379,26 @@ footer,
 .document-evidence-flow strong,
 .audit-responsibility-chain strong,
 .query-stepper span,
-.collaboration-timeline strong {
+.collaboration-timeline strong,
+.knowledge-case-ask > strong,
+.knowledge-case-reply,
+.knowledge-case-flow > li span {
   font-size: var(--projection-node);
   font-weight: 680;
   line-height: 1.48;
+}
+
+.agent-route-head span {
+  font-size: 15px;
+  letter-spacing: .04em;
+}
+
+.chapter-step-head > span,
+.llm-step-title > span,
+.foundation-toc-head span,
+.audit-app-route header > span {
+  font-size: 15px;
+  letter-spacing: .04em;
 }
 
 .agent-route button small,
@@ -391,7 +408,6 @@ footer,
   line-height: 1.45;
 }
 
-.architecture-module-grid b,
 .agent-core-loop-steps b,
 .task-case-flow b,
 .agent-evolution-chain b,
@@ -409,10 +425,10 @@ footer,
   padding: 14px 10px;
 }
 
-.call-task-compare strong,
 .task-planning-compare strong {
-  min-height: 46px;
-  padding: 11px 13px;
+  min-height: 0;
+  padding: 10px 12px;
+  white-space: nowrap;
 }
 
 .agent-core-loop-steps > div,
@@ -457,15 +473,27 @@ footer,
 .query-stepper button,
 .collaboration-timeline button {
   min-width: 148px;
-  min-height: 106px;
+  min-height: 118px;
   padding: 15px 14px;
 }
 
 .loop-stepper span,
 .combined-timeline span,
-.query-stepper span,
-.collaboration-timeline strong {
+.query-stepper span {
   margin-top: 9px;
+}
+
+.collaboration-timeline strong {
+  min-height: 2.8em;
+}
+
+.collaboration-owner > strong {
+  font-size: var(--projection-node);
+}
+
+.collaboration-owner > span,
+.collaboration-owner > p {
+  font-size: var(--projection-label);
 }
 
 .parse-route > div,
@@ -488,28 +516,40 @@ footer,
  * 流程方向一致性：横排向右、竖排向下。
  * 保留原有箭头字符，通过布局断点旋转，避免改动教学内容。
  */
-.call-task-compare > div:first-child {
-  display: grid;
-  grid-template-columns: minmax(128px, 1fr) 42px minmax(158px, 1.2fr) 42px minmax(128px, 1fr);
-  align-items: center;
-  gap: 10px;
+.call-once-panel,
+.call-cycle-panel {
+  border-color: color-mix(in srgb, var(--page-accent) 18%, white);
+  box-shadow: inset 0 1px rgba(255,255,255,.9);
 }
 
-.call-task-compare > div:first-child > span {
-  grid-column: 1 / -1;
+.call-once-flow > li:not([aria-hidden]),
+.call-cycle-row > li:not([aria-hidden]) {
+  border-color: color-mix(in srgb, var(--page-accent) 14%, white);
+  background: color-mix(in srgb, var(--page-accent) 5%, white);
 }
 
-.call-task-compare > div:first-child > strong {
-  justify-content: center;
-  width: 100%;
-  min-height: 64px;
-  padding: 13px 16px;
-  border: 1px solid color-mix(in srgb, var(--page-accent) 15%, white);
-  border-radius: 8px;
-  text-align: center;
+.call-once-flow strong,
+.call-cycle-track strong {
+  font-size: var(--projection-node);
 }
 
-.call-task-compare i,
+.call-once-panel > span,
+.call-cycle-panel > span {
+  font-size: 15px;
+}
+
+.call-once-panel > p,
+.call-cycle-panel > p,
+.call-cycle-track small {
+  font-size: var(--projection-label);
+}
+
+.call-once-flow > li[aria-hidden],
+.call-cycle-row > li[aria-hidden],
+.call-cycle-turn {
+  color: var(--page-accent);
+}
+
 .query-control-architecture > i,
 .report-architecture-board > i,
 .transformer-stack-visual > i,
@@ -625,6 +665,150 @@ footer,
     inset 0 1px rgba(255,255,255,.95);
 }
 
+/* 封面 / 三部分首页：白卡铺满可视区，内容在卡内水平+垂直居中 */
+.paginated-course .page:has(> .hero.course-slide:not([hidden]), > .part-overview.course-slide:not([hidden])) {
+  display: flex;
+  flex-direction: column;
+}
+
+.paginated-course .hero.course-slide:not([hidden]) {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 1460px;
+  min-height: 0;
+  box-sizing: border-box;
+  padding-top: clamp(40px, 4.5vw, 72px);
+  padding-bottom: clamp(40px, 4.5vw, 72px);
+}
+
+.paginated-course .hero.course-slide:not([hidden]) .hero-head {
+  width: 100%;
+}
+
+.paginated-course .hero.course-slide:not([hidden]) .hero-path {
+  width: 100%;
+  margin-top: clamp(28px, 3.2vw, 44px);
+}
+
+.paginated-course .part-overview.course-slide:not([hidden]) {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  width: 100%;
+  max-width: 1460px;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+.paginated-course .part-overview .part-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  flex: 0 0 auto;
+  text-align: center;
+  grid-template-columns: none;
+}
+
+.paginated-course .part-overview .part-title-meta {
+  width: fit-content;
+  margin: 0 auto;
+  padding-top: 10px;
+  text-align: center;
+}
+
+.paginated-course .part-overview .part-title-body {
+  width: 100%;
+}
+
+.paginated-course .part-overview .part-title-body p {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.paginated-course .part-overview .part-route-wrap {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  padding: 28px 36px 36px;
+  background: linear-gradient(180deg, rgba(255,255,255,.36), transparent);
+}
+
+.paginated-course .part-overview .agent-route,
+.paginated-course .part-overview .audit-app-route,
+.paginated-course .part-overview .foundation-toc {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+}
+
+.paginated-course .part-overview .agent-route ol,
+.paginated-course .part-overview .audit-app-route ol {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  align-content: stretch;
+  grid-auto-rows: 1fr;
+}
+
+.paginated-course .part-overview .agent-route li,
+.paginated-course .part-overview .audit-app-route li {
+  display: flex;
+  min-height: 0;
+}
+
+.paginated-course .part-overview .agent-route button,
+.paginated-course .part-overview .audit-app-route button {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.paginated-course .part-overview .agent-route button > b,
+.paginated-course .part-overview .audit-app-route button > b {
+  font-size: 13px;
+}
+
+.paginated-course .part-overview .agent-route button strong,
+.paginated-course .part-overview .audit-app-route button strong {
+  max-width: 18em;
+  font-size: clamp(15px, 1.05vw, 18px);
+  line-height: 1.45;
+}
+
+.paginated-course .part-overview .agent-route button small,
+.paginated-course .part-overview .audit-app-route button span {
+  max-width: 18em;
+  font-size: clamp(12px, .85vw, 14px);
+  line-height: 1.55;
+}
+
+.paginated-course .part-overview .foundation-toc-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  grid-auto-rows: 1fr;
+}
+
+.paginated-course .part-overview .foundation-toc {
+  min-height: 0;
+}
+
+.paginated-course .part-overview .foundation-toc-grid button {
+  min-height: 0;
+  height: 100%;
+}
+
 .paginated-course .lesson::before,
 .paginated-course .hero::before {
   height: 7px;
@@ -641,11 +825,6 @@ footer,
 .paginated-course .hero::after {
   border-width: 44px;
   opacity: .82;
-}
-
-.paginated-course .part-overview .part-route-wrap {
-  padding: 48px;
-  background: linear-gradient(180deg, rgba(255,255,255,.36), transparent);
 }
 
 .paginated-course.sidebar-collapsed .course-pager {
@@ -889,15 +1068,24 @@ footer,
 }
 
 @media (max-width: 520px) {
-  .call-task-compare > div:first-child {
+  .call-cycle-row {
     grid-template-columns: 1fr;
   }
 
-  .call-task-compare > div:first-child > span {
-    grid-column: 1;
+  .call-cycle-row > li[aria-hidden] {
+    height: 28px;
   }
 
-  .call-task-compare i {
+  .call-cycle-row > li[aria-hidden] i {
+    display: inline-block;
+    transform: rotate(90deg);
+  }
+
+  .query-control-architecture > i,
+  .report-architecture-board > i,
+  .transformer-stack-visual > i,
+  .llm-preprocess-zone i,
+  .llm-neural-network-zone i {
     transform: none;
   }
 }
