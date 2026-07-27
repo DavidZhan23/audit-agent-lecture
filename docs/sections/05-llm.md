@@ -1,115 +1,146 @@
-# 05 · llm — 从 ANN 到 LLM（七步详稿）
+# 05 · 从神经网络到大语言模型
 
 - **锚点：** `#llm`
-- **侧栏：** 从 ANN 到 LLM（30′；可压到 18—20′）
-- **标题：** 从 ANN 到 LLM
-- **课纲边界：** 只讲模型怎样理解、训练、保存和调用；工具循环与自主行动留到第二部分 Agent
+- **侧栏：** 从神经网络到大语言模型（20′）
+- **课纲边界：** 回答神经网络怎样扩展为大语言模型，并区分模型、调用接口、网页产品与智能体；智能体完整架构留到下一章
 
-## 本章要交付的六个学习结果
+## 核心问题
 
-初学者学完后必须能够用自己的话回答：
+> 普通神经网络已经可以通过训练学习规律，那么它还需要哪些关键变化，才能成为大语言模型？
 
-1. LLM 是什么，以及为什么它仍然属于神经网络
-2. 相比上一章的简单 ANN，LLM 为处理语言增加了什么
-3. 为什么“下一 Token 预测”能形成总结、抽取、问答和生成能力
-4. LLM 怎样从语料、Loss、反向传播和参数更新中训练出来
-5. 一个训练好的 LLM 在磁盘和内存中究竟长什么样
-6. 网页或 Python 程序怎样通过请求调用推理服务
+本章不写成技术发展史或术语百科。只沿一条连续因果链推进：
 
-## 唯一叙事顺序
+`神经网络的基本学习机制 → 文字数字化 → Transformer 联系上下文 → 海量文本预训练 → 指令训练 → 调用接口与网页产品 → 智能体行动缺口`
 
-`LlmContextDemo` 不再按零散组件堆知识点，而是严格使用以下七步：
+前五段贯穿同一句话：
 
-### 5.1 它是什么：从 ANN 连续走到 LLM
+> 审计人员发现这份合同存在异常，因此决定进一步核查。
 
-- BX-42519 多段文字冲突作为问题入口
-- `AnnToLlmGapDiagram`：ANN 可以“认出文字”，但本题需要联系多段语境
-- `llm-upgrade-grid`：一项保持不变、四项关键改进
-  - 保持：仍是层、权重、Loss、反向传播组成的神经网络
-  - 改进：Token 序列、Transformer、开放式序列输出、大规模预训练/对齐
-- `AnnLlmSideBySide`：Softmax(10) 与 Softmax(|V|) 对照
-- `Definition`：给出通俗与精确定义
+第六段继续使用同一份合同，演示工程师怎样请求总结、检查转分包风险，并逐层补充合同正文、审计规则、历史、数据库工具和智能体循环。
 
-本节记忆条：
+## 六段教学结构
 
-> LLM = 神经网络底座 + Token 序列 + Transformer + 下一 Token 目标 + 大规模预训练
+### 5.1 大语言模型并不是另一种完全不同的人工智能
 
-### 5.2 文字怎样进去：Token → ID → 向量 → 位置
+先回到 04：神经网络通过输入样本、作出预测、计算误差和调整权重学习。大语言模型保留前向计算、损失、反向传播与权重更新，变化的是输入、骨干结构、训练任务与训练规模。
 
-- `TokenizeDiagram`
-- 三个概念严格分开：Tokenizer 负责切分编号；Embedding 是可训练向量表；Position 表达先后关系
+`AnnContinuityBoard` 将普通神经网络与大语言模型并排：
 
-本节记忆条：
+- 输入：像素 / 表格 → Token 向量
+- 结构：普通网络 / 卷积神经网络 → Transformer
+- 训练任务：分类或数值预测 → 预测下一个 Token
+- 规模：一个专用任务 → 海量文本、模型与计算
 
-> 文字 → Token → Token ID → Embedding 向量 + 位置信息
+记忆句：
 
-### 5.3 网络怎样读写：Transformer 与逐 Token 生成
+> 大语言模型不是取代了神经网络，而是把神经网络用于理解和生成语言，并将它推向更大的规模。
 
-- `AttentionHeatmapDiagram` + `AttentionLab`：有重点地联系上下文，但关联权重不是事实证据
-- `InlinePythonLab(attention)`：直接计算一次 Query/Key 相似度、Softmax 权重和 Value 加权汇总
-- `TransformerStackDiagram`：Attention + MLP + 残差/归一化，堆叠为骨干
-- `TransformerReferenceFigure`：在中文简化图之后展示论文原始编码器—解码器架构，并用四步导读区分 Encoder、Decoder、重复 Block 与现代生成式 LLM；图片本地保存，图注保留论文、Wikimedia Commons 与 CC BY-SA 4.0 许可链接
-- `LlmPipeline`：Token 到 LM Head 的五步前向流程
-- 唯一主线公式：`P(t_{n+1} | t_1...t_n)`
-- `GenerationLoopDiagram` + `TokenLab`：选一个 Token、追加、再预测
+### 5.2 第一个变化：让文字成为神经网络可以处理的数字
 
-本节记忆条：
+`LanguageEncodingLab` 通过四个可点击步骤展示：
 
-> 读：Attention 联系上下文；写：预测一个 Token，再循环
+1. 原始句子；
+2. Token 序列；
+3. Embedding 数字向量；
+4. 向量序列进入 Transformer。
 
-### 5.4 怎样训练：误差怎样变成参数更新
+只解释两个必要概念：Token 是模型处理文字的基本单位；Embedding 是包含可学习语义关系的数字向量，不是普通流水号。用“合同—协议”“核查—检查”说明语义相近的词通常也会在向量空间中更接近；不展开字节对编码、子词切分算法、维度数量或公式。
 
-- 五步训练数据链：治理语料 → 错位构造目标 → 前向与交叉熵 → 反向传播/优化器 → 验证并保存检查点
-- `LanguageTrainingShift`：训练答案来自原文下一个 Token
-- `LlmTrainingWorkbench`：随机初始化、训练开始、训练中、检查点四状态；同步显示预测、Loss 和参数状态
-- `LlmLifecycleDiagram`：预训练 / 指令微调与对齐 / 推理必须分开
-- `InlinePythonLab(language)`：可运行的微型神经语言模型，真实执行 Softmax、交叉熵、梯度更新、检查点保存和推理
+记忆句：
 
-本节记忆条：
+> 文字没有直接进入模型；模型实际接收和计算的是由文字转换而来的数字向量。
 
-> 预测 → 算 Loss → 反向传播 → 更新参数 → 重复；训练改变的是参数
+### 5.3 第二个变化：Transformer 让模型结合上下文处理语言
 
-### 5.5 训练后剩什么：检查点解剖
+`TransformerVisualJourney` 使用固定的六场景导航，按“整体→局部→整体”推进：
 
-- `LlmCheckpointExplorer` 正式进入主线，不再作为散落的备用组件
-- 四类文件：`config.json`、`tokenizer.json`、`model.safetensors`、`generation_config.json`
-- 张量浏览：Embedding、Q/K/V、MLP、Norm、LM Head
-- 明确加载关系：检查点被推理服务加载到 CPU/GPU；一次聊天通常不改权重
+1. **从普通神经网络开始：** 点击四步把`输入→隐藏层→输出`逐项替换为`Token Embedding→Transformer Block × N→下一个Token概率`，强调Transformer是神经网络架构，不是神经元或外挂插件；
+2. **完整大语言模型神经网络：** 把Tokenization单独标在神经网络外部；在神经网络内部框出Embedding、Transformer Block × N和语言模型输出层，并醒目标注Transformer位于Embedding和最终输出层之间；
+3. **放大一个Decoder-only Block：** 展示Masked Self-Attention、前馈神经网络、Residual和Normalization四类核心结构；Causal Mask只允许参考当前位置之前的内容；
+4. **上下文计算示例：** 选择“进一步核查”或“这份合同”，用简洁关联条显示可能重点参考的Token；连线与权重均为教学模拟，不表示意识、唯一关系或固定Head职责；
+5. **多层堆叠：** 用Block 1、Block 2…、Block N表现同一Token表示逐层更新，并用浅层/中间层/深层说明由局部关系走向任务相关表示；明确这只是概括，不是固定层职责；
+6. **回到完整模型输出：** `前文→Embedding→Transformer × N→最后位置表示→语言模型输出层`，输出核查/调查/分析/处理等模拟概率，并自然提出下一节的预训练问题。
 
-本节记忆条：
+必须讲清分工：
 
-> 训练成品 = Tokenizer + 模型结构配置 + 训练后权重张量（+ 生成默认设置）
+> Attention负责从上下文中寻找和汇总相关信息；MLP负责进一步加工每个Token当前携带的信息。
 
-### 5.6 怎样调用：应用与推理服务
+Tokenizer不是Transformer内部层；Transformer是大语言模型的核心隐藏计算架构，但不等于整个模型产品。主页面不讲查询/键/值投影、归一化概率推导、多头维度或论文级编码器—解码器结构。
 
-- `LlmCallLab`：应用组织 messages → HTTPS 请求 → 推理服务编码/生成 → 结构化响应
-- 展示 request / response 的主要字段：model、messages、temperature、max_output_tokens、output、usage、stop_reason
-- `ContextWindowDiagram`：系统提示、资料、对话历史和生成输出共同占用上下文窗口
-- 静态 HTML 安全边界：密钥不可放在浏览器；生产调用应经过受控后端
-- `InlinePythonLab(llm_call)`：可运行的无网络教学模拟器，完整打印 request、服务内部四步和 response
+记忆句：
 
-本节记忆条：
+> Attention 解决的核心问题，是“当前这个词应该重点参考上下文中的哪些信息”。
 
-> 应用 → 请求(messages + 参数) → 推理服务 → Tokenizer/模型生成 → 响应
+### 5.4 第三个变化：从一个任务，变成在海量文本中学习语言
 
-### 5.7 会什么、不会什么：能力与 Agent 缺口
+`PretrainingLoopLab` 使用同一句话的填空：
 
-- `WhyNextTokenDiagram`：语言结构、知识共现、长程依赖和规模效应
-- `CapabilityBoundaryStrip`：总结、抽取、问答、改写等能力；幻觉、系统外未知和职业判断边界
-- BX-42519 输出边界：可以形成矛盾点/缺失证据/核对建议；不能直接形成已核验事实或审计结论
-- 结尾明确：LLM 只处理当前上下文；不会根据结果主动选择工具并循环，因此引出 Agent
+`审计人员发现这份合同存在异常，因此决定进一步＿＿`
 
-## 讲师压缩策略
+候选包括核查、调查、分析、处理。点击“训练一轮”依次观察候选概率、损失和说明变化，并始终与普通神经网络训练循环对应：
 
-30分钟完整讲七步。压到18—20分钟时：
+```text
+普通神经网络：输入样本 → 作出预测 → 计算误差 → 调整权重
+大语言模型：Token 上文 → 预测下一个 Token → 与真实 Token 比较 → 计算误差 → 调整大量权重 → 海量重复
+```
 
-- 必须保留：5.1 定义与改进、5.2 Token、5.3 下一Token与Transformer、5.4 训练循环、5.5 检查点、5.6 调用、5.7 边界
-- 可以压缩：Attention 数值互动、Python 训练日志逐行解释、生成采样参数
-- 不可删除：检查点解剖和调用流程；它们直接对应“训练后长什么样、程序怎样使用”两个核心学习结果
+强调单次目标简单，但在海量文本上长期重复时，为降低误差，模型会学习词义、语法、上下文关系、文本结构与大量知识模式。翻译、总结、问答和写作等能力在很大程度上来自同一套预训练，不是开发者分别编写独立规则。
+
+“Large”由数据规模、模型规模和计算规模共同支撑；不能简化成“参数越多越聪明”。
+
+### 5.5 从基础语言模型到能够对话的大语言模型
+
+`AlignmentLab` 对比同一输入“请总结这份合同的异常点”：
+
+- 基础模型首先擅长续写，可能继续模仿网页、文章或问答文本；
+- 指令模型更能识别这是一项任务，并按要求给出摘要。
+
+用一条短链说明后训练：`预训练 → 指令微调 → 人类偏好 / 反馈 → 安全与行为约束`。不展开具体算法；不把指令微调描述为安装知识库，也不暗示它从此不会犯错。
+
+记忆句：
+
+> 预训练让模型学会语言和广泛模式，指令训练让它更擅长按照人的要求使用这些能力。
+
+### 5.6 工程师实际上怎样调用大语言模型？
+
+承接5.5：模型已经能按要求生成回答，但聊天网页不是模型本身。工程师通常通过推理服务、SDK或API发送输入，再接收模型生成结果；API只是访问模型能力的接口。
+
+`EngineeringCallLab` 把必要内容合成一个互动调用台：
+
+1. **最基础调用：** 输入一句合同总结要求，模型逐Token生成一段文本；
+2. **核心字段：** 点击解释 `model`、`messages`、生成参数；
+3. **真实链路：** 网页输入→前端→后端组织请求→调用接口→模型→网页展示；
+4. **模型实际上下文：** system、历史、解析后的合同片段、检索规则与当前user问题；
+5. **模拟API面板：** 左侧显示通用伪代码，右侧根据开关更新返回结果；
+6. **四层对比：** 大语言模型、模型调用接口、大模型应用、智能体。
+
+五个开关依次加入合同正文、审计规则、历史对话、合同数据库查询和智能体循环。必须随互动说明：
+
+- 文件需要先解析、筛选或检索，不等于模型直接看见完整文件；
+- 历史由应用保存并在后续请求中重新提供，模型不会自动永久记住；
+- 工具由应用在权限边界内执行，不是模型绕过系统直连数据库；
+- 一次预先编排的工具查询仍是固定流程，不一定是智能体；
+- 智能体的关键是让工具结果返回模型，形成“决策—行动—观察—再决策”循环。
+
+主页面不展示API Key、复杂Header、流式协议、错误码、计费、部署或厂商差异；演示只使用前端模拟数据。
+
+记忆句：
+
+> 网页输入框中的一句话，往往只是最终模型上下文的一部分；API负责访问模型，网页产品负责把模型变得可用。
+
+## 结尾：自然过渡到智能体
+
+`AgentTransitionBoard` 用一个问题收束：
+
+> 如果任务不是回答一句话，而是让模型自己判断下一步做什么，会发生什么？
+
+大语言模型更接近智能体的“大脑”。普通调用是`输入→大语言模型→输出`；智能体运行机制则是`目标→大语言模型判断→工具执行→观察结果→再决策`，并在完成、失败或触发控制条件时停止。这里仅建立行动循环，工具契约、状态和完整架构留到06—07。
 
 ## 对应代码
 
-- `app/page.tsx`：`LlmContextDemo`、`LlmChapterRoute`、`LlmTrainingWorkbench`、`LlmCallLab`、`LlmCheckpointExplorer`
-- `app/page.tsx`：`kernelExamples.language`、`kernelExamples.llm_call`
-- `app/llm-diagrams.tsx`：Token / 生成 / Attention / Transformer / 生命周期 / 能力边界图示
-- `app/course-interactives.tsx`：`LanguageTrainingShift`、`AttentionLab`
+- `app/page.tsx` → 当前 `Home` 中 `section#llm`
+- `app/ann-to-llm-journey.tsx` → `AnnToLlmJourney` 与六段互动，含 `EngineeringCallLab`
+- `app/transformer-visual-journey.tsx` → `TransformerVisualJourney` 六场景可视化
+- `app/globals.css` → `.ann-to-llm-*`、`.language-encoding-*`、`.context-attention-*`、`.pretraining-*`、`.alignment-*`、`.engineering-call-*` / `.api-*`
+
+原有的检查点解剖、tiny-gpt2真实训练代码和论文原图仍可作为备用素材，但不进入当前 `Home` 的05主线；当前API环节只保留理解四层边界所需的通用伪代码。

@@ -53,7 +53,7 @@ function httpsHintUrl(): string {
   const { hostname, protocol, port } = window.location;
   if (protocol === "https:") return window.location.href;
   const host = hostname || "服务器IP";
-  // 常见课堂部署：HTTP 8080 ↔ HTTPS 8443
+  // 常见课堂部署：普通网络连接 8080 ↔ 加密网络连接 8443
   if (port === "8080" || port === "") {
     return `https://${host}:8443/`;
   }
@@ -161,7 +161,7 @@ export function FacePredictLab() {
     setResult(null);
     if (!isSecureForCamera()) {
       setError(
-        `网页内摄像头需要 HTTPS（或本机 localhost）。请打开 ${httpsHintUrl()} （需已运行 ./deploy/enable-https.sh，首次接受自签名证书），或改用「上传照片 / 拍照上传（手机）」。`,
+        `网页内摄像头需要加密连接（或本机地址）。请打开 ${httpsHintUrl()} （需已运行加密连接脚本，首次接受自签名证书），或改用「上传照片 / 拍照上传（手机）」。`,
       );
       return;
     }
@@ -228,7 +228,7 @@ export function FacePredictLab() {
 
       <section className="xiaoyu-training-map" aria-label="从照片到双人限定识别器的训练流程">
         <div className="xiaoyu-training-head">
-          <span>把上面的 ANN 机制换一组像素，再走一遍</span>
+          <span>把上面的神经网络机制换一组像素，再走一遍</span>
           <h4>他“喂给网络”的不是一个名字，而是一组带答案的照片</h4>
         </div>
         <div className="xiaoyu-training-flow">
@@ -252,7 +252,7 @@ export function FacePredictLab() {
       <div className="face-lab interactive">
         <div className="interactive-head">
           <div>
-            <span>模型亮相 · 真实 ANN · ResNet34 迁移学习</span>
+            <span>模型亮相 · 真实神经网络 · 34层残差网络迁移学习</span>
             <h3>双人限定识别器 v0.1：让训练后的权重回答</h3>
           </div>
           <button
@@ -297,7 +297,7 @@ export function FacePredictLab() {
         </button>
         {!cameraOn ? (
           <button type="button" disabled={busy} onClick={() => void startCamera()}>
-            {secureOk ? "打开摄像头" : "打开摄像头（需 HTTPS :8443）"}
+            {secureOk ? "打开摄像头" : "打开摄像头（需加密连接端口 8443）"}
           </button>
         ) : (
           <>
@@ -363,7 +363,7 @@ export function FacePredictLab() {
         </div>
 
         <p className="lab-disclaimer">
-          故事的反转：模型能把像素分进某一类，却不知道“被认错为什么让人难过”。Softmax 概率也不等于真实身份匹配概率；本演示仅用于理解 ANN，不可用于门禁或身份认证。人脸属敏感信息，请获授权后使用。
+          故事的反转：模型能把像素分进某一类，却不知道“被认错为什么让人难过”。归一化概率也不等于真实身份匹配概率；本演示仅用于理解神经网络，不可用于门禁或身份认证。人脸属敏感信息，请获授权后使用。
         </p>
       </div>
     </div>

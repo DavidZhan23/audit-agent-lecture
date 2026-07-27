@@ -19,7 +19,7 @@ export function KnownUnknownBridge() {
     ["判断已经知道", "规则", "金额 > 标准且无审批", "把明确条件交给程序。"],
     ["关系无法完整写出", "学习", "哪些组合更像历史真实疑点？", "给出案例，让模型寻找近似关系。"],
   ];
-  return <div className="known-unknown"><div className="concept-question"><span>先不要急着说“AI”</span><h3>计算机面对的三类问题，有什么不同？</h3></div><div>{items.map((item, index) => <section key={item[1]}><b>0{index + 1}</b><small>{item[0]}</small><strong>{item[1]}</strong><code>{item[2]}</code><p>{item[3]}</p></section>)}</div><blockquote><b>严谨提醒：</b>机器学习不等于“没有解析解”。真正的分界是：判断关系能否被人完整写出，还是需要从历史案例中估计。</blockquote></div>;
+  return <div className="known-unknown"><div className="concept-question"><span>先不要急着说“人工智能”</span><h3>计算机面对的三类问题，有什么不同？</h3></div><div>{items.map((item, index) => <section key={item[1]}><b>0{index + 1}</b><small>{item[0]}</small><strong>{item[1]}</strong><code>{item[2]}</code><p>{item[3]}</p></section>)}</div><blockquote><b>严谨提醒：</b>机器学习不等于“没有解析解”。真正的分界是：判断关系能否被人完整写出，还是需要从历史案例中估计。</blockquote></div>;
 }
 
 const fitStates = [
@@ -294,30 +294,30 @@ export function DigitsImageLab() {
 }
 
 export function LanguageTrainingShift() {
-  const tokens = ["客户", "招待", "证据", "相互", "矛盾", "时", "转", "人工复核"];
+  const tokens = ["报告", "草稿", "还", "缺", "两处", "证据", "。", "待补充"];
   const [target, setTarget] = useState(5);
   return <div className="shift-lab interactive"><div className="interactive-head"><div><span>核心互动 · 训练答案从哪里来</span><h3>把同一句话错开一位，就得到下一个Token训练样本</h3></div><button onClick={() => setTarget(5)}>重置</button></div><div className="shift-row"><span>输入上下文</span><div>{tokens.map((token, index) => <button key={index} className={index < target ? "context" : "future"} disabled={index > 6} onClick={() => index >= 1 && index <= 6 && setTarget(index)}>{index < target ? token : "·"}</button>)}</div></div><div className="shift-row target"><span>正确答案</span><div>{tokens.map((token, index) => <b key={index} className={index === target ? "active" : ""}>{index === target ? token : "·"}</b>)}</div></div><div className="shift-result"><span>模型当前任务</span><strong>看到“{tokens.slice(0, target).join("")}”，预测下一个Token是“{tokens[target]}”</strong><p>真实文本自动提供答案；预测错误产生Loss，反向传播继续调整神经网络权重。</p></div></div>;
 }
 
 const attentionSets = {
   comparison: {
-    label: "招待目的",
-    focus: "是否像真实客户招待",
-    tokens: [["周日", .54], ["客户招待", .72], ["儿童套餐", .91], ["生日蛋糕", 1]],
-    conclusion: "模型判断业务目的时，会联系日期、申报说明和小票明细中的语义线索。",
+    label: "联系句中语义",
+    focus: "“报告草稿还缺两处证据”表达了什么？",
+    tokens: [["报告草稿", .64], ["还缺", 1], ["两处", .86], ["证据", .72]],
+    conclusion: "模型理解这句话时，需要把对象、状态、数量和关系联系起来，而不是只捕捉“证据”一个关键词。",
   },
   policy: {
-    label: "交叉印证",
-    focus: "还需参考哪些上下文",
-    tokens: [["CRM无拜访", 1], ["联系人休假", .78], ["家属生日", .91], ["转人工复核", .84]],
-    conclusion: "Attention帮助模型联系多段上下文，但这些关联仍需回到原始系统核验。",
+    label: "回应追问",
+    focus: "如果其中一处暂时拿不到呢？",
+    tokens: [["前文：两处证据", .65], ["缺失状态", .91], ["待补充", 1], ["不能补写", .88]],
+    conclusion: "Attention 帮助模型把当前追问与前文的对象、数量和回答原则联系起来；这能支持针对性反馈，却不代表回答已被事实证明。",
   },
 } as const;
 
 export function AttentionLab() {
   const [mode, setMode] = useState<keyof typeof attentionSets>("comparison");
   const item = attentionSets[mode];
-  return <div className="attention-lab interactive"><div className="interactive-head"><div><span>核心互动 · Attention</span><h3>理解当前问题时，模型应该重点参考哪些Token？</h3></div><button onClick={() => setMode("comparison")}>重置</button></div><div className="attention-tabs"><button className={mode === "comparison" ? "active" : ""} onClick={() => setMode("comparison")}>步骤1 · 理解票据语义</button><button className={mode === "policy" ? "active" : ""} onClick={() => setMode("policy")}>步骤2 · 联系业务记录</button></div><div className="attention-focus"><span>当前要理解</span><strong>{item.focus}</strong></div><div className="attention-tokens">{item.tokens.map(([token, weight]) => <div key={token}><span style={{ opacity: .28 + weight * .72 }}>{token}</span><i style={{ width: `${weight * 100}%` }}/><small>关联程度 {(weight * 100).toFixed(0)}%</small></div>)}</div><p>{item.conclusion}</p></div>;
+  return <div className="attention-lab interactive"><div className="interactive-head"><div><span>核心互动 · Attention</span><h3>理解当前问题时，模型应该重点参考哪些Token？</h3></div><button onClick={() => setMode("comparison")}>重置</button></div><div className="attention-tabs"><button className={mode === "comparison" ? "active" : ""} onClick={() => setMode("comparison")}>步骤1 · 联系句中语义</button><button className={mode === "policy" ? "active" : ""} onClick={() => setMode("policy")}>步骤2 · 用前文理解追问</button></div><div className="attention-focus"><span>当前要理解</span><strong>{item.focus}</strong></div><div className="attention-tokens">{item.tokens.map(([token, weight]) => <div key={token}><span style={{ opacity: .28 + weight * .72 }}>{token}</span><i style={{ width: `${weight * 100}%` }}/><small>关联程度 {(weight * 100).toFixed(0)}%</small></div>)}</div><p>{item.conclusion}</p></div>;
 }
 
 type AgentScenario = "mismatch" | "consistent" | "error";
@@ -326,7 +326,7 @@ const agentScenarios: Record<AgentScenario, { label: string; steps: Array<[strin
     ["读取报销", "BX-42017：上海机场→苏州客户，出租车费468元", "金额不显眼，但目标要求核验真实行程。"],
     ["查询航班", "员工当天由北京飞抵南京", "落地城市与报销起点、目的地矛盾，继续查询住宿。"],
     ["查询酒店", "员工当晚入住南京酒店", "第二个独立来源继续指向南京，需要核实业务目的。"],
-    ["查询CRM与日历", "无苏州拜访；日历为南京内部会议", "事实来源已经能够形成可复核的行程疑点。"],
+    ["查询客户关系管理系统与日历", "无苏州拜访；日历为南京内部会议", "事实来源已经能够形成可复核的行程疑点。"],
     ["停止并升级", "形成“声称苏州 vs 证据南京”证据包", "提交审计人员复核，不自动认定违规。"],
   ]},
   consistent: { label: "行程一致", steps: [

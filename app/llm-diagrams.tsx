@@ -12,22 +12,22 @@ const blue = "#1d4f91";
 const blueSoft = "#e8eef6";
 const line = "#d8ddda";
 
-/** ANN 能认出字，却串不起多段业务语境 */
+/** 专用神经网络适合固定输入输出，却不适合开放式语言讨论 */
 export function AnnToLlmGapDiagram() {
   return (
     <div className="llm-diagram">
       <div className="llm-diagram-head">
         <span>图示 01 · 为什么还要再走一步</span>
-        <h4>ANN 解决「看见」，LLM 接手「读懂并对照」</h4>
+        <h4>专用神经网络完成固定任务，大语言模型接手开放式理解与反馈</h4>
       </div>
-      <svg viewBox="0 0 920 280" role="img" aria-label="从 ANN 到 LLM 的能力缺口">
+      <svg viewBox="0 0 920 280" role="img" aria-label="从神经网络到大语言模型的能力缺口">
         <rect x="20" y="36" width="280" height="200" rx="12" fill="#fff" stroke={line} />
-        <text x="40" y="68" fill={accent} fontSize="13" fontWeight="700">ANN 已经能做</text>
-        <text x="40" y="100" fill={ink} fontSize="15" fontFamily="Georgia, serif">小票像素 →「儿童套餐」</text>
-        <text x="40" y="128" fill={ink} fontSize="15" fontFamily="Georgia, serif">说明字段 → 一串字符</text>
-        <text x="40" y="156" fill={ink} fontSize="15" fontFamily="Georgia, serif">CRM 截图 → 「无拜访」字样</text>
-        <text x="40" y="198" fill={muted} fontSize="12">输出：局部识别结果</text>
-        <text x="40" y="218" fill={muted} fontSize="12">不问：合起来像不像客户招待</text>
+        <text x="40" y="68" fill={accent} fontSize="13" fontWeight="700">专用神经网络已经能做</text>
+        <text x="40" y="100" fill={ink} fontSize="15" fontFamily="Georgia, serif">固定输入 → 风险等级</text>
+        <text x="40" y="128" fill={ink} fontSize="15" fontFamily="Georgia, serif">一段文字 → 意图类别</text>
+        <text x="40" y="156" fill={ink} fontSize="15" fontFamily="Georgia, serif">预设特征 → 若干标签</text>
+        <text x="40" y="198" fill={muted} fontSize="12">输出：预先定义的类别或分数</text>
+        <text x="40" y="218" fill={muted} fontSize="12">不擅长：随着追问开放讨论</text>
 
         <path d="M320 136 H390" stroke={ink} strokeWidth="2" markerEnd="url(#gap-arrow)" />
         <defs>
@@ -38,21 +38,21 @@ export function AnnToLlmGapDiagram() {
 
         <rect x="410" y="36" width="220" height="200" rx="12" fill={warmSoft} stroke="#e0c9b4" />
         <text x="430" y="68" fill={warm} fontSize="13" fontWeight="700">缺口</text>
-        <text x="430" y="108" fill={ink} fontSize="14" fontFamily="Georgia, serif">多段文字要互相</text>
-        <text x="430" y="132" fill={ink} fontSize="14" fontFamily="Georgia, serif">参照、对照、质疑</text>
-        <text x="430" y="168" fill={muted} fontSize="12">制度例外、语气、隐含关系</text>
-        <text x="430" y="192" fill={muted} fontSize="12">长度可变、结构不规整</text>
-        <text x="430" y="216" fill={muted} fontSize="12">不是固定维数的像素表</text>
+        <text x="430" y="108" fill={ink} fontSize="14" fontFamily="Georgia, serif">问题包含目标、</text>
+        <text x="430" y="132" fill={ink} fontSize="14" fontFamily="Georgia, serif">背景、约束与取舍</text>
+        <text x="430" y="168" fill={muted} fontSize="12">当前追问会指向前文</text>
+        <text x="430" y="192" fill={muted} fontSize="12">输入可长可短、问法不固定</text>
+        <text x="430" y="216" fill={muted} fontSize="12">输出也不是少数预设类别</text>
 
         <path d="M650 136 H720" stroke={ink} strokeWidth="2" markerEnd="url(#gap-arrow)" />
 
         <rect x="740" y="36" width="160" height="200" rx="12" fill={accentSoft} stroke="#b7cfc6" />
-        <text x="760" y="68" fill={accent} fontSize="13" fontWeight="700">LLM 接手</text>
-        <text x="760" y="112" fill={ink} fontSize="14" fontFamily="Georgia, serif">把说明、小票、</text>
-        <text x="760" y="136" fill={ink} fontSize="14" fontFamily="Georgia, serif">CRM、日历当作</text>
-        <text x="760" y="160" fill={ink} fontSize="14" fontFamily="Georgia, serif">同一段上下文</text>
-        <text x="760" y="200" fill={muted} fontSize="12">生成解释与疑点</text>
-        <text x="760" y="220" fill={muted} fontSize="12">（仍不是定论）</text>
+        <text x="760" y="68" fill={accent} fontSize="13" fontWeight="700">大语言模型接手</text>
+        <text x="760" y="112" fill={ink} fontSize="14" fontFamily="Georgia, serif">把问题、背景、</text>
+        <text x="760" y="136" fill={ink} fontSize="14" fontFamily="Georgia, serif">历史对话和追问</text>
+        <text x="760" y="160" fill={ink} fontSize="14" fontFamily="Georgia, serif">放进同一上下文</text>
+        <text x="760" y="200" fill={muted} fontSize="12">生成理解与针对性反馈</text>
+        <text x="760" y="220" fill={muted} fontSize="12">（仍可能误解或幻觉）</text>
       </svg>
     </div>
   );
@@ -61,15 +61,15 @@ export function AnnToLlmGapDiagram() {
 /** 连续关系：对象变了，训练逻辑没变 */
 export function ContinuityLadderDiagram() {
   const rows = [
-    { stage: "经典 ML", sees: "人工表格特征", train: "拟合标签", out: "异常概率" },
-    { stage: "ANN / CNN", sees: "像素等高维输入", train: "拟合标签", out: "数字 / 类别" },
-    { stage: "LLM", sees: "Token 序列", train: "拟合「下一个」", out: "文字 / 解释" },
+    { stage: "经典机器学习", sees: "人工表格特征", train: "拟合标签", out: "异常概率" },
+    { stage: "神经网络 / 卷积神经网络", sees: "像素等高维输入", train: "拟合标签", out: "数字 / 类别" },
+    { stage: "大语言模型", sees: "Token 序列", train: "拟合「下一个」", out: "文字 / 解释" },
   ];
   return (
     <div className="llm-diagram">
       <div className="llm-diagram-head">
         <span>图示 02 · 连续关系</span>
-        <h4>LLM 不是外星人：仍是「参数化函数 + 损失训练」</h4>
+        <h4>大语言模型不是外星人：仍是「参数化函数 + 损失训练」</h4>
       </div>
       <div className="continuity-table">
         <div className="continuity-row head">
@@ -97,13 +97,13 @@ export function ContinuityLadderDiagram() {
 /** 分词示意 */
 export function TokenizeDiagram() {
   const pieces = [
-    { t: "周日", tip: "日期词" },
-    { t: "接待", tip: "动作" },
-    { t: "重要", tip: "修饰" },
-    { t: "客户", tip: "对象" },
-    { t: "，", tip: "标点也是 Token" },
-    { t: "儿童", tip: "…" },
-    { t: "套餐", tip: "…" },
+    { t: "报告", tip: "对象" },
+    { t: "草稿", tip: "状态" },
+    { t: "还", tip: "时间" },
+    { t: "缺", tip: "关系" },
+    { t: "两处", tip: "数量" },
+    { t: "证据", tip: "对象" },
+    { t: "。", tip: "标点" },
   ];
   return (
     <div className="llm-diagram">
@@ -114,7 +114,7 @@ export function TokenizeDiagram() {
       <div className="tokenize-flow">
         <div className="tokenize-raw">
           <span>原文</span>
-          <strong>周日接待重要客户，儿童套餐……</strong>
+          <strong>报告草稿还缺两处证据。</strong>
         </div>
         <i>→ 切分 →</i>
         <div className="tokenize-chips">
@@ -133,7 +133,7 @@ export function TokenizeDiagram() {
         </div>
       </div>
       <p className="llm-diagram-note">
-        词表往往有数万到十余万项。英文常按子词切（BPE 等）；中文也可能是字、词或子词混合。课堂只需记住：<b>离散符号 → 连续向量</b>，后面全是神经网络运算。
+        词表往往有数万到十余万项。英文常按子词切（例如字节对编码）；中文也可能是字、词或子词混合。课堂只需记住：<b>离散符号 → 连续向量</b>，后面全是神经网络运算。
       </p>
     </div>
   );
@@ -142,10 +142,10 @@ export function TokenizeDiagram() {
 /** 生成 = 反复下一个 Token */
 export function GenerationLoopDiagram() {
   const steps = [
-    { n: "1", ctx: "周日接待", pick: "重要", probs: "客户 18% · 重要 41% · 领导 9%" },
-    { n: "2", ctx: "周日接待重要", pick: "客户", probs: "客户 62% · 嘉宾 11% · …" },
-    { n: "3", ctx: "……儿童套餐", pick: "生日", probs: "生日 48% · 薯条 7% · …" },
-    { n: "4", ctx: "……矛盾时", pick: "转", probs: "转 55% · 应 12% · …" },
+    { n: "1", ctx: "报告草稿还缺两处", pick: "证据", probs: "证据 54% · 结论 11% · …" },
+    { n: "2", ctx: "……两处证据。", pick: "因此", probs: "因此 42% · 但是 20% · …" },
+    { n: "3", ctx: "……证据。因此", pick: "需要", probs: "需要 48% · 应当 22% · …" },
+    { n: "4", ctx: "……因此需要先", pick: "补齐", probs: "补齐 51% · 确认 19% · …" },
   ];
   return (
     <div className="llm-diagram">
@@ -181,11 +181,11 @@ export function WhyNextTokenDiagram() {
     },
     {
       title: "要预测对，必须学世界里的共现",
-      body: "「发票」后常接「号码 / 金额」；「CRM」后常接「拜访 / 商机」。这不是数据库查询，是统计规律。",
+      body: "「证据」后常接「来源 / 完整 / 缺失」；「待补充」常与「尚未取得」一起出现。这不是数据库查询，是统计规律。",
     },
     {
       title: "要预测对，必须学长程依赖",
-      body: "前面写了「客户招待」，后面出现「儿童餐」时，模型应感到不协调——这正是 Attention 要帮忙的地方。",
+      body: "前面说「还缺两处证据」，后面追问「其中一处暂时拿不到」时，模型要把代词和前文数量联系起来——这正是 Attention 要帮忙的地方。",
     },
     {
       title: "规模放大后，能力「看起来像推理」",
@@ -212,9 +212,9 @@ export function WhyNextTokenDiagram() {
 
 /** Attention 热力图示意 */
 export function AttentionHeatmapDiagram() {
-  const tokens = ["周日", "客户招待", "儿童套餐", "生日蛋糕", "CRM无拜访", "家属生日"];
-  // 当前查询：「是否真实招待」——对后几项更敏感
-  const weights = [0.08, 0.14, 0.22, 0.24, 0.18, 0.14];
+  const tokens = ["报告草稿", "两处证据", "先补齐", "暂时拿不到", "待补充", "不能补写"];
+  // 当前查询需要把追问中的“其中一处”与前文和回答原则联系起来
+  const weights = [0.08, 0.2, 0.16, 0.12, 0.24, 0.2];
   return (
     <div className="llm-diagram">
       <div className="llm-diagram-head">
@@ -224,7 +224,7 @@ export function AttentionHeatmapDiagram() {
       <div className="attn-heat">
         <div className="attn-heat-query">
           <span>Query（当前关注）</span>
-          <strong>这笔报销是否像真实客户招待？</strong>
+          <strong>其中一处证据暂时拿不到，应怎样处理？</strong>
         </div>
         <div className="attn-heat-bars">
           {tokens.map((token, i) => (
@@ -276,7 +276,7 @@ export function TransformerStackDiagram() {
               </text>
               <rect x={x + 14} y="156" width="102" height="48" rx="6" fill={warmSoft} />
               <text x={x + 36} y="186" fill={ink} fontSize="12">
-                FFN 前馈
+                前馈神经网络
               </text>
               <text x={x + 22} y="230" fill={muted} fontSize="10">
                 + 残差 / 归一化
@@ -313,7 +313,7 @@ export function LlmLifecycleDiagram() {
     },
     {
       title: "指令微调与对齐",
-      body: "用「指令—回答」数据、偏好数据等，让模型更听话、更安全、输出格式更稳。审计场景里常见的「按要点列疑点」习惯，多在这一阶段强化。",
+      body: "用「指令—回答」数据、偏好数据等，让模型更听话、更安全、输出格式更稳。「先复述理解，再权衡方案」这类回答习惯，多在这一阶段强化。",
       tag: "学怎么按人的要求说",
     },
     {
@@ -348,9 +348,9 @@ export function LlmLifecycleDiagram() {
 export function ContextWindowDiagram() {
   const slots = [
     { name: "系统提示", desc: "角色、禁止事项、输出格式", tone: "sys" },
-    { name: "制度摘录", desc: "招待费规定、例外条款", tone: "doc" },
-    { name: "本案材料", desc: "说明 / OCR / CRM / 日历", tone: "case" },
-    { name: "对话历史", desc: "已问已答（若多轮）", tone: "chat" },
+    { name: "问题背景", desc: "报告缺两处证据，尚未取得的内容不能补写", tone: "doc" },
+    { name: "首轮问答", desc: "先补齐可取得材料，其余明确标为待补充", tone: "case" },
+    { name: "对话历史", desc: "新追问所需的已问已答", tone: "chat" },
     { name: "正在生成", desc: "模型一个 Token 一个 Token 往外写", tone: "out" },
   ];
   return (
@@ -368,8 +368,8 @@ export function ContextWindowDiagram() {
         ))}
       </div>
       <p className="llm-diagram-note">
-        窗口有长度上限。超长制度与底稿需要摘要、分段或 RAG 检索后再塞入。
-        <b>没写进窗口的 CRM 记录，模型不会「偷偷连库」看到。</b>
+        窗口有长度上限。长对话可能需要摘要、分段或重新提供关键背景。
+        <b>没写进窗口的原始材料，模型不会「偷偷连库」看到。</b>
       </p>
     </div>
   );
@@ -387,19 +387,19 @@ export function CapabilityBoundaryStrip() {
         <div>
           <span>擅长</span>
           <ul>
-            <li>归纳多段文字矛盾</li>
-            <li>按制度语言起草疑点说明</li>
-            <li>把非结构化材料整理成核对清单</li>
-            <li>在给定资料内做对比与改写</li>
+            <li>归纳问题的目标、约束与取舍</li>
+            <li>比较方案并解释权衡逻辑</li>
+            <li>结合对话历史回应新的追问</li>
+            <li>指出还需要补充的信息</li>
           </ul>
         </div>
         <div>
           <span>不擅长 / 不能替代</span>
           <ul>
-            <li>保证事实正确（会幻觉）</li>
-            <li>自动进入企业系统取数</li>
-            <li>替代审计职业判断与定性</li>
-            <li>在资料缺失时「诚实沉默」——它仍可能写得流畅</li>
+            <li>保证它对问题的理解一定正确</li>
+            <li>自动读取对话中未提供的最新事实</li>
+            <li>替代用户承担决策与结果责任</li>
+            <li>在信息不足时必然停止——它仍可能写得流畅</li>
           </ul>
         </div>
       </div>
@@ -407,7 +407,7 @@ export function CapabilityBoundaryStrip() {
   );
 }
 
-/** 从 ANN 像素头到 LLM 语言头的并排对比 */
+/** 从神经网络像素头到大语言模型语言头的并排对比 */
 export function AnnLlmSideBySide() {
   return (
     <div className="llm-diagram">
@@ -417,12 +417,12 @@ export function AnnLlmSideBySide() {
       </div>
       <div className="side-by-side">
         <article>
-          <span>ANN 数字识别</span>
+          <span>神经网络数字识别</span>
           <code>256 → 隐藏层×L → Softmax(10)</code>
           <p>10 个类别：数字 0—9。一张图一个答案。</p>
         </article>
         <article>
-          <span>LLM 语言建模</span>
+          <span>大语言模型语言建模</span>
           <code>Token 序列 → Transformer×N → Softmax(|V|)</code>
           <p>|V| 可达数万级。每一步在整个词表上选一个，再进入下一步。</p>
         </article>

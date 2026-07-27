@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DIGIT_SIZE, digitSamples } from "./digit-samples";
 
-/** 神经网络结构示意图：投屏清晰；MLP / CNN 同框切换对比 */
+/** 神经网络结构示意图：投屏清晰；前馈神经网络 / 卷积神经网络同框切换对比 */
 
 const ink = "#24302c";
 const muted = "#5f6d68";
@@ -534,13 +534,13 @@ const MODES = {
     lead: "与上方示意同一套层数：16×16 像素拉成 256 维，经过可叠很多层的隐藏层，最后 Softmax 得到 0—9 共 10 类。相邻层全连接。",
   },
   cnn: {
-    tab: "卷积神经网络 CNN",
+    tab: "卷积神经网络",
     sub: `16×16 → 卷积×多层 → 10`,
     lead: "同样从 16×16 出发、同样输出 10 类；中间改用卷积叠很多层，先保留邻域再学边缘与笔画。",
   },
 } as const;
 
-/** MLP / CNN 同框切换，便于课堂对比 */
+/** 前馈神经网络 / 卷积神经网络同框切换，便于课堂对比 */
 export function NetworkComparePanel() {
   const [mode, setMode] = useState<"mlp" | "cnn">("mlp");
   const meta = MODES[mode];
