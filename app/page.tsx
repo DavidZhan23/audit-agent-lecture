@@ -2908,7 +2908,7 @@ export default function Home() {
             <AgentTypeSwitcher initial="planning" />
             <div className="task-planning-compare"><div><span>任务型</span><strong>明确任务</strong><i>→</i><strong>相对固定流程</strong><i>→</i><strong>节点判断</strong><i>→</i><strong>输出</strong></div><div><span>规划型</span><strong>复杂目标</strong><i>→</i><strong>初步计划</strong><i>→</i><strong>执行与观察</strong><i>→</i><strong>修改计划</strong><i>→</i><strong>完成</strong></div></div>
           </section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>11.2 · 专项调查</span><h3>新信息会改变方法和子任务</h3><p>观察名称匹配怎样升级为语义匹配，材料缺失怎样触发补充任务。</p></div><PlanningAdjustmentLab /></section>
+          <section className="chapter-step"><div className="chapter-step-head"><span>11.2 · 专项调查</span><h3>复杂目标先有初步计划，新信息再改写方法和子任务</h3><p>承接 11.1：规划型不是走完固定清单。下面用「近三年相关合同风险筛查」看计划如何被初筛结果改写——名称匹配升级为语义匹配，缺正文触发补充任务。</p></div><PlanningAdjustmentLab /></section>
           <section className="chapter-step"><div className="chapter-step-head"><span>11.3 · 运行边界</span><h3>规划能力越强，权限、资源、停止与接管越重要</h3><p>不能无限循环、绕过审批或在没有证据时形成最终结论。</p></div><div className="planning-guardrails">{["最大执行步骤", "时间与资源限制", "工具白名单", "数据访问权限", "高风险操作审批", "运行日志", "异常中止", "人工接管", "结果复核"].map(item => <span key={item}>{item}</span>)}</div></section>
           <LessonTakeaway>规划型智能体让模型决定“先做什么、再做什么”；它通常更难稳定实施，也必须在受控范围内运行。</LessonTakeaway>
           <TeacherNote time="7分钟" question="名称完全不同的合同被遗漏时，系统怎样调整？" misconception="规划型不代表完全自主，动态计划也不能动态扩大权限。" mustSay="计划可以改，权限不能由模型自己扩大。" />
@@ -2948,7 +2948,7 @@ export default function Home() {
 
         <section id="audit" className="lesson course-slide" hidden={activeCoursePage.id !== "audit"}>
           <SectionTitle no="14" time="第三部分 · 约6分钟" title="从审计工作链理解三个智能体" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>14.1 · 真实任务</span><h3>数百份异构资料、平台数据和正式报告，不能一次交给模型解决</h3><p>文件格式、证据定位、业务口径、数据权限、报告类型与人工责任都需要专门系统处理。</p></div><AuditChainChallenge /></section>
+          <section className="chapter-step"><div className="chapter-step-head"><span>14.1 · 真实任务</span><h3>数百份异构资料的集成、平台数据智能取数和分析以及审计报告的智能撰写，不能一次交给模型解决</h3><p>文件格式、证据定位、业务口径、数据权限、报告类型与人工责任界定等都需要专门系统处理。</p></div><AuditChainChallenge /></section>
           <section className="chapter-step"><div className="chapter-step-head"><span>14.2 · 三个环节</span><h3>资料进入、可信分析和成果形成组成完整审计工作链</h3><p>三个智能体可以单独工作，也通过统一证据、权限、任务状态和人工审批串联。</p></div>
             <div className="audit-three-chain"><div><b>01</b><span>资料</span><strong>异构审计资料解析</strong><p>识别格式、调用解析工具、恢复结构、定位来源并形成证据。</p></div><i>→</i><div><b>02</b><span>数据</span><strong>智能问数与分析</strong><p>理解业务问题、匹配指标口径、强制权限、安全查询并分析。</p></div><i>→</i><div><b>03</b><span>成果</span><strong>智能生成审计报告</strong><p>依据已确认发现、证据、制度和模板形成可审核草稿。</p></div></div>
           </section>

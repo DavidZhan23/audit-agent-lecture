@@ -3764,18 +3764,30 @@ footer a, footer button { margin-left: auto; border: 0; background: transparent;
 .workflow-boundary strong { font-family: var(--serif); font-size: 15px; }
 .workflow-boundary p { margin: 6px 0 0; color: #705b4c; font-size: 9px; line-height: 1.7; }
 
-.planning-adjustment-lab { display: grid; grid-template-columns: 220px 1fr; }
+.planning-adjustment-lab { display: grid; }
+.planning-case-head { display: grid; grid-template-columns: 1.35fr .85fr; gap: 0; border-bottom: 1px solid var(--line); background: #f7f8f6; }
+.planning-case-head > div, .planning-case-head > aside { padding: 18px 22px; }
+.planning-case-head > aside { border-left: 1px solid var(--line); background: var(--accent-soft); }
+.planning-case-head span { color: var(--accent); font-size: 9px; font-weight: 800; }
+.planning-case-head h4 { margin: 8px 0 8px; font-family: var(--serif); font-size: 20px; line-height: 1.4; }
+.planning-case-head p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.7; }
+.planning-case-head aside strong { display: block; margin: 8px 0 6px; font-family: var(--serif); font-size: 15px; }
+.planning-adjustment-body { display: grid; grid-template-columns: 220px 1fr; }
 .planning-phase-list { border-right: 1px solid var(--line); background: #f6f7f5; }
 .planning-phase-list button { display: grid; grid-template-columns: 28px 1fr; width: 100%; padding: 13px 15px; border: 0; border-bottom: 1px solid var(--line); background: transparent; text-align: left; }
 .planning-phase-list button.active { color: #fff; background: var(--accent); }
+.planning-phase-list button.done { background: #eef3f0; }
 .planning-phase-list b { color: #9aa5a1; font: 8px ui-monospace, monospace; }
+.planning-phase-list button.active b { color: #c9ddd5; }
 .planning-phase-list span { font-size: 9px; font-weight: 700; }
-.planning-adjustment-lab > section { padding: 24px; }
+.planning-adjustment-lab > section, .planning-adjustment-body > section { padding: 24px; }
 .planning-adjustment-lab h3 { margin: 8px 0; font-family: var(--serif); font-size: 24px; }
 .planning-adjustment-lab p { color: var(--muted); font-size: 10px; line-height: 1.75; }
 .planning-adjustment-lab section > div { padding: 13px; background: var(--accent-soft); }
 .planning-adjustment-lab small { display: block; color: var(--accent); font-size: 8px; font-weight: 800; }
 .planning-adjustment-lab section > div strong { display: block; margin-top: 6px; font-size: 10px; }
+.planning-phase-focus { margin: 14px 0 0; padding: 11px 13px; border-left: 3px solid var(--accent); background: #f4f7f5; color: #3f524a; font-size: 9px; line-height: 1.65; }
+.planning-phase-focus b { margin-right: 6px; color: var(--accent); }
 .planning-adjustment-lab blockquote { margin: 14px 0; padding: 13px; background: var(--warm-soft); color: #735e4c; font-size: 9px; line-height: 1.7; }
 .planning-guardrails { grid-template-columns: repeat(3, 1fr); }
 .planning-guardrails span { padding: 14px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 9px; font-weight: 700; text-align: center; }
@@ -3815,8 +3827,10 @@ footer a, footer button { margin-left: auto; border: 0; background: transparent;
 @media (max-width: 980px) {
   .agent-route ol { grid-template-columns: repeat(2, 1fr); }
   .agent-route li:nth-child(2n) { border-right: 0; }
-  .agent-architecture-map, .loop-live, .agent-type-detail, .planning-adjustment-lab, .combined-contract-case > section { grid-template-columns: 1fr; }
+  .agent-architecture-map, .loop-live, .agent-type-detail, .planning-adjustment-body, .combined-contract-case > section { grid-template-columns: 1fr; }
   .agent-architecture-flow, .planning-phase-list, .loop-live > section, .agent-type-detail > section, .combined-contract-case > section > div { border-right: 0; border-bottom: 1px solid var(--line); }
+  .planning-case-head { grid-template-columns: 1fr; }
+  .planning-case-head > aside { border-left: 0; border-top: 1px solid var(--line); }
   .agent-value-shifts { grid-template-columns: repeat(2, 1fr); }
   .agent-evolution-chain { grid-template-columns: repeat(8, minmax(115px, 1fr)); }
   .agent-core-loop { overflow-x: auto; }

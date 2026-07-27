@@ -148,12 +148,43 @@ const agentTypes: Record<AgentTypeKey, {
 };
 
 const planPhases = [
-  { name: "理解目标", detail: "确定近三年、相关合同、风险识别、专项报告和权限范围。", result: "形成范围、交付物与禁止事项。" },
-  { name: "制定初步计划", detail: "取清单、初筛、获取正文、深度分析、分级、汇总、生成报告。", result: "得到十项有依赖关系的子任务。" },
-  { name: "全量初筛", detail: "对五千二百八十六份教学模拟合同进行规则与语义筛选。", result: "初步候选三百一十二份，高潜七十六份；二十五份缺少正文。" },
-  { name: "发现并调整", detail: "合同名称差异过大，只有名称匹配会遗漏；部分台账没有正文。", result: "新增工作范围与交付成果的语义匹配，并增加材料补充任务。" },
-  { name: "深度分析", detail: "比较工作承接、主体、时间、金额、交付物、证据完整性与合理解释。", result: "证据完整的高风险候选与材料不足候选分开处理。" },
-  { name: "分级与交付", detail: "按证据强度分级，形成关系图、典型案例、材料清单和审计建议。", result: "正式结论仍由审计人员复核和批准。" },
+  {
+    name: "理解目标",
+    detail: "任务是：筛查近三年合同中可能存在相关关系或风险的合同，形成专项分析材料。先明确时间范围、相关合同定义、交付物，以及只读权限与禁止自动定性。",
+    result: "范围：近三年合同台账；交付：候选清单与分析材料；禁止：未经人工确认形成正式结论。",
+    focus: "先把任务边界说清楚，再谈怎么拆步骤。",
+  },
+  {
+    name: "制定初步计划",
+    detail: "按常见路径拆出子任务：取台账 → 名称/关键词初筛 → 获取正文 → 深度比较 → 分级汇总 → 生成报告。此时默认主要依赖合同名称匹配。",
+    result: "得到一条有依赖关系的初步计划；初筛方法暂定为名称与关键词。",
+    focus: "初步计划只是起点，不是最终路径。",
+  },
+  {
+    name: "全量初筛",
+    detail: "对五千二百八十六份教学模拟合同执行初筛。名称相近的合同被召回，但真正工作内容相关、名称却不同的合同可能漏掉；另有一批台账缺正文。",
+    result: "初步候选三百一十二份，高潜七十六份；二十五份缺少正文附件。",
+    focus: "执行结果暴露了初步计划的盲区。",
+  },
+  {
+    name: "发现并调整",
+    detail: "审计人员与系统共同看到：只看名称会遗漏；缺正文则无法比较工作范围。于是改写计划——加入语义匹配，并为缺材料合同新增补充子任务。",
+    result: "计划更新：名称匹配 → 工作范围/交付成果语义匹配；新增材料补充任务。",
+    focus: "这是规划型智能体的关键：观察结果后改方法，而不是硬走原清单。",
+    highlight: true,
+  },
+  {
+    name: "深度分析",
+    detail: "对高潜候选比较工作承接、签约主体、时间顺序、金额关系、交付物一致性和证据完整性；材料不足的合同单独排队，不与证据完整的候选混谈。",
+    result: "分成两类：证据较完整的高风险候选，以及需补材料后再判断的候选。",
+    focus: "调整后的计划开始真正用于分析，而不是停留在口号。",
+  },
+  {
+    name: "分级与交付",
+    detail: "按证据强度分级，整理关系图、典型案例、材料补齐清单和审计建议；系统只提交分析材料，不替代人签字。",
+    result: "专项材料就绪；正式结论仍由审计人员复核批准。",
+    focus: "计划可以动态改写，责任边界不能动态放宽。",
+  },
 ] as const;
 
 const combinedTimeline = [
@@ -234,8 +265,30 @@ export function PlanningAdjustmentLab() {
   const [active, setActive] = useState(0);
   const item = planPhases[active];
   return <div className="planning-adjustment-lab">
-    <div className="planning-phase-list">{planPhases.map((phase, index) => <button type="button" key={phase.name} className={active === index ? "active" : ""} onClick={() => setActive(index)}><b>{String(index + 1).padStart(2, "0")}</b><span>{phase.name}</span></button>)}</div>
-    <section aria-live="polite"><span>专项调查阶段 {active + 1}/{planPhases.length}</span><h3>{item.name}</h3><p>{item.detail}</p><div><small>本阶段结果</small><strong>{item.result}</strong></div>{active === 3 && <blockquote><b>计划发生变化：</b>不再只看合同名称；新增工作范围、服务内容和交付成果的语义匹配，并把缺少正文的合同加入材料补充清单。</blockquote>}<button type="button" onClick={() => setActive((active + 1) % planPhases.length)}>{active === planPhases.length - 1 ? "重新查看" : "执行下一阶段 →"}</button></section>
+    <header className="planning-case-head">
+      <div>
+        <span>承接 11.1 · 规划型怎么改计划</span>
+        <h4>案例：近三年相关合同风险筛查</h4>
+        <p>目标复杂、材料可能不全。系统先有一条初步计划，再根据初筛结果改写方法。请重点看第 03—04 步：名称匹配为何不够，以及缺正文如何触发补充任务。</p>
+      </div>
+      <aside>
+        <span>与任务型的差别</span>
+        <strong>不是走完固定清单就结束</strong>
+        <p>观察结果可以新增子任务、改匹配方法；权限与停条件仍由应用控制。</p>
+      </aside>
+    </header>
+    <div className="planning-adjustment-body">
+      <div className="planning-phase-list">{planPhases.map((phase, index) => <button type="button" key={phase.name} className={active === index ? "active" : index < active ? "done" : ""} onClick={() => setActive(index)}><b>{String(index + 1).padStart(2, "0")}</b><span>{phase.name}</span></button>)}</div>
+      <section aria-live="polite">
+        <span>专项调查阶段 {active + 1}/{planPhases.length}</span>
+        <h3>{item.name}</h3>
+        <p>{item.detail}</p>
+        <div><small>本阶段结果</small><strong>{item.result}</strong></div>
+        <p className="planning-phase-focus"><b>看点</b>{item.focus}</p>
+        {"highlight" in item && item.highlight && <blockquote><b>计划发生变化：</b>不再只看合同名称；新增工作范围、服务内容和交付成果的语义匹配，并把缺少正文的合同加入材料补充清单。</blockquote>}
+        <button type="button" onClick={() => setActive((active + 1) % planPhases.length)}>{active === planPhases.length - 1 ? "重新查看" : "执行下一阶段 →"}</button>
+      </section>
+    </div>
   </div>;
 }
 

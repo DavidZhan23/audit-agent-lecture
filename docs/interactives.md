@@ -32,7 +32,7 @@
 | `AgentArchitectureMap` | agent-definition | 承接06提出的主合同甲任务，用八个可点选模块展示智能体系统的输入、产出与风险 |
 | `AgentLoopSimulator` | agent-loop | 继续运行06的同一任务；九步转分包检查模拟逐步/自动展示目标、状态、工具输入输出与下一判断 |
 | `AgentTypeSwitcher` | agent-knowledge / agent-task / agent-planning | 09—11沿用统一的三类智能体框架并分别默认选中知识型、任务型、规划型；切换时同步改变结构、输入、步骤、输出、场景、自主度与人工介入 |
-| `PlanningAdjustmentLab` | agent-planning | 专项调查六阶段；展示名称匹配升级为语义匹配和新增材料补充任务 |
+| `PlanningAdjustmentLab` | agent-planning | 近三年相关合同风险筛查六阶段；先立案例再演示名称匹配升级为语义匹配、缺正文触发补充任务 |
 | `CombinedContractCaseLab` | agent-case | 主合同/候选合同、八步组合时间线、判断卡片和六个人工确认节点 |
 | `AgentFitLab` | agent | 四类任务互动判断：程序、工作流、大语言模型应用或智能体 |
 | `AgentArchitectureExplorer` | agent | 六块智能体架构的输入、产出与失败风险 |
