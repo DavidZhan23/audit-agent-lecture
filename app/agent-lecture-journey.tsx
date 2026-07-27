@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 type AgentTypeKey = "knowledge" | "task" | "planning";
 
 const agentRoute = [
-  { id: "agent", no: "06", title: "为什么仅有大语言模型还不够", detail: "从会回答到真正完成工作的行动缺口" },
+  { id: "agent", no: "06", title: "为什么仅有大语言模型还不够", detail: "提出贯穿案例，明确任务、交付物与行动缺口" },
   { id: "agent-definition", no: "07", title: "什么是智能体", detail: "定义、组成结构与清晰边界" },
   { id: "agent-loop", no: "08", title: "智能体是怎样工作的", detail: "目标—行动—观察—再判断循环" },
   { id: "agent-knowledge", no: "09", title: "知识型智能体", detail: "检索、阅读、综合回答与引用" },
@@ -169,7 +169,7 @@ const combinedTimeline = [
 
 export function AgentPartRoute({ onSelect }: { onSelect: (id: string) => void }) {
   return <nav className="agent-route" aria-label="第二部分章节目录">
-    <div className="agent-route-head"><span>第二部分 · 学习路线</span><strong>发现缺口 → 搭建系统 → 运行循环 → 三类能力 → 组合应用 → 治理边界</strong></div>
+    <div className="agent-route-head"><span>第二部分 · 学习路线</span><strong>提出贯穿任务 → 搭建系统 → 运行循环 → 三类能力 → 组合应用 → 治理边界</strong></div>
     <ol>{agentRoute.map(item => <li key={item.id}><button type="button" onClick={() => onSelect(item.id)}><b>{item.no}</b><span><strong>{item.title}</strong><small>{item.detail}</small></span></button></li>)}</ol>
   </nav>;
 }
@@ -179,7 +179,7 @@ export function AgentArchitectureMap() {
   const item = architectureModules[active];
   return <div className="agent-architecture-map">
     <div className="agent-architecture-flow" aria-label="智能体系统结构">
-      <div className="architecture-goal"><span>用户目标</span><strong>检查合同并形成初步报告</strong></div>
+      <div className="architecture-goal"><span>用户目标</span><strong>检查主合同甲的转分包风险，形成可复核的初步分析报告</strong></div>
       <i>↓</i>
       <div className="architecture-core"><span>智能体运行机制</span><strong>组织判断、行动、反馈与停止</strong></div>
       <i>↓</i>
@@ -210,14 +210,13 @@ export function AgentLoopSimulator() {
   }, [active, running]);
 
   return <div className="agent-loop-simulator">
-    <div className="loop-simulator-head"><div><span>前端教学模拟 · 不连接真实企业系统</span><h3>转分包风险检查：九步运行轨迹</h3></div><div><button type="button" onClick={() => { setRunning(false); setActive(0); }}>重置</button><button type="button" className="primary" onClick={() => { if (active === loopSteps.length - 1) setActive(0); setRunning(value => !value); }}>{running ? "暂停" : active === loopSteps.length - 1 ? "重新运行" : "自动运行"}</button></div></div>
+    <div className="loop-simulator-head"><div><span>承接 06 · 同一贯穿任务 · 前端教学模拟</span><h3>主合同甲转分包风险识别：九步运行轨迹</h3></div><div><button type="button" onClick={() => { setRunning(false); setActive(0); }}>重置</button><button type="button" className="primary" onClick={() => { if (active === loopSteps.length - 1) setActive(0); setRunning(value => !value); }}>{running ? "暂停" : active === loopSteps.length - 1 ? "重新运行" : "自动运行"}</button></div></div>
     <div className="loop-stepper">{loopSteps.map((step, index) => <button type="button" key={step.title} className={index === active ? "active" : index < active ? "done" : ""} onClick={() => { setRunning(false); setActive(index); }}><b>{String(index + 1).padStart(2, "0")}</b><span>{step.title}</span></button>)}</div>
     <div className="loop-live" aria-live="polite">
-      <section><span>当前目标</span><strong>检查主合同甲是否存在转分包风险，并形成初步分析报告。</strong><div className="loop-status"><small>当前步骤</small><b>{active + 1} / {loopSteps.length}</b><small>当前状态</small><b>{item.status}</b></div></section>
+      <section><span>当前目标 · 与 06 相同</span><strong>检查主合同甲是否存在转分包风险，并形成可复核的初步分析报告。</strong><div className="loop-status"><small>当前步骤</small><b>{active + 1} / {loopSteps.length}</b><small>当前状态</small><b>{item.status}</b></div></section>
       <section><span>选择的工具</span><strong>{item.tool}</strong><small>工具输入</small><p>{item.input}</p><small>工具输出</small><p>{item.output}</p></section>
       <section className="loop-decision"><span>智能体下一步判断</span><strong>{item.decision}</strong><div><b>应用程序执行</b><p>参数、身份、权限和风险级别由运行层校验。</p></div></section>
     </div>
-    <p className="simulation-note">核心信息始终可读；动画只帮助观察状态如何更新。页面中的数量与执行结果均为教学模拟。</p>
   </div>;
 }
 

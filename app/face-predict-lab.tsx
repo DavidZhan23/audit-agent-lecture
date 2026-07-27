@@ -219,17 +219,17 @@ export function FacePredictLab() {
         </div>
         <div className="xiaoyu-premise">
           <span>案例支线 · 5—7分钟 · 课堂虚构故事</span>
-          <h3 id="xiaoyu-story-title">两个室友，<br /><em>怎样教会模型分清彼此？</em></h3>
-          <p>笑雨和骐源是合住一套公寓的室友。一次整理共同相册时，他们发现聚餐、旅行和日常照片混在一起，逐张按人物归类很费时间。于是两人把它改造成一个小型人脸识别实验：输入一张照片，模型只回答<strong>“笑雨”“骐源”或“其他”</strong>。他们先约定照片仅用于这次课堂实验，不接入门禁，也不用于身份认证；随后各自挑选不同角度、表情和光线下的照片并完成标注，再补充不属于两人的人物照片作为“其他”类。训练完成后，他们用从未参与训练的照片测试模型：它既要分清两位室友，也要在没有把握时承认“无法确定”。</p>
-          <blockquote>“一个可用的识别器，不只要会认人，也要会说不知道。”</blockquote>
-          <div className="xiaoyu-binary"><span>一张新的相册照片</span><i>→</i><strong>笑雨</strong><b>或</b><strong>骐源</strong><b>或</b><strong>其他</strong></div>
+          <h3 id="xiaoyu-story-title">两个室友，<br /><em>想给自家门禁装上“眼睛”。</em></h3>
+          <p>笑雨和骐源是合住一套公寓的室友。两人想自己做一个简易的人脸识别门禁：门口摄像头拍到人脸后，模型只判断<strong>“笑雨”“骐源”或“其他”</strong>。如果模型有把握认出笑雨或骐源，门禁程序就执行开门；如果识别为“其他”，或者置信度没有达到阈值，门就保持关闭。两人先在彼此同意的前提下，收集不同角度、表情和光线下的照片并贴好标签，再补充其他人物照片，让模型不只会认出室友，也会拒绝陌生人。</p>
+          <blockquote>“模型负责认人，门禁规则负责决定开不开门。”</blockquote>
+          <div className="xiaoyu-binary"><span>门口摄像头拍到人脸</span><i>→</i><strong>笑雨：开门</strong><b>或</b><strong>骐源：开门</strong><b>或</b><strong>其他：不开门</strong></div>
         </div>
       </section>
 
-      <section className="xiaoyu-training-map" aria-label="从照片到双人限定识别器的训练流程">
+      <section className="xiaoyu-training-map" aria-label="从照片到双人门禁识别器的训练流程">
         <div className="xiaoyu-training-head">
           <span>把上面的神经网络机制换一组像素，再走一遍</span>
-          <h4>两位室友提供的不是一张标准照，而是一组带标签的照片</h4>
+          <h4>两位室友用来训练的是一组带标签（他们的名字）的照片</h4>
         </div>
         <div className="xiaoyu-training-flow">
           <div className="xiaoyu-samples">
@@ -244,35 +244,14 @@ export function FacePredictLab() {
           <i>→</i>
           <div><span>04 · 输出</span><strong>3 类概率</strong><small>Softmax + 交叉熵</small></div>
           <i>→</i>
-          <div className="xiaoyu-decision"><span>05 · 上线规则</span><strong>目标身份 ≥ 70%</strong><small>否则：其他 / 无法确定</small></div>
+          <div className="xiaoyu-decision"><span>05 · 门禁规则</span><strong>笑雨 / 骐源 ≥ 70%</strong><small>模拟开门；其他 / 低置信度保持关闭</small></div>
         </div>
-        <p><b>关键设计：</b>这个模型的任务边界只有三类：准确区分<strong>笑雨与骐源</strong>，并把圈外人物送进“其他”。再用未参与训练的照片检验泛化能力；最大概率低于阈值时不强行判断。学会拒绝，和学会认出同样重要。</p>
       </section>
 
       <div className="face-lab interactive">
-        <div className="interactive-head">
-          <div>
-            <span>模型亮相 · 真实神经网络 · 34层残差网络迁移学习</span>
-            <h3>双人限定识别器 v0.1：让训练后的权重回答</h3>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setPreview(XIAOYU_SAMPLE);
-              setResult(null);
-              setError(null);
-              stopCamera();
-              if (fileRef.current) fileRef.current.value = "";
-              if (captureRef.current) captureRef.current.value = "";
-            }}
-          >
-            回到示例
-          </button>
-        </div>
-
         <div className="face-lab-actions">
           <button type="button" className="primary" disabled={busy} onClick={() => void runXiaoyuSample()}>
-            ▶ 让模型认认笑雨
+            ▶ 用笑雨照片测试开门
           </button>
           <button type="button" disabled={busy} onClick={() => fileRef.current?.click()}>
             换一张照片
@@ -343,6 +322,13 @@ export function FacePredictLab() {
                     : ""}
                 </em>
               </div>
+              <div
+                className={`face-access-decision ${result.label === "笑雨" || result.label === "骐源" ? "granted" : "denied"}`}
+                aria-live="polite"
+              >
+                <small>门禁动作 · 课堂模拟</small>
+                <strong>{result.label === "笑雨" || result.label === "骐源" ? "识别为室友，模拟开门" : "其他或无法确认，门保持关闭"}</strong>
+              </div>
               <div className="face-lab-probs" aria-label="三类概率">
                 {LABELS.map((name) => {
                   const p = result.probs[name] ?? 0;
@@ -362,9 +348,6 @@ export function FacePredictLab() {
           </div>
         </div>
 
-        <p className="lab-disclaimer">
-          案例边界：模型只是把像素映射到预设类别，并不理解“室友”这一关系；归一化概率也不等于真实身份匹配概率。本演示仅用于理解神经网络，不可用于门禁或身份认证。人脸属于敏感个人信息，采集和使用前必须取得明确授权。
-        </p>
       </div>
     </div>
   );

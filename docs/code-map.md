@@ -10,10 +10,11 @@
 | `docs/data-pack.md` | `public/toy_audit_case/**` |
 | 分页课件导航 | `app/page.tsx`（`coursePages` / `CoursePager` / `Home`）+ `app/globals.css` |
 | 神经网络人脸故事与演示 | `app/face-predict-lab.tsx` + `public/images/xiaoyu.jpg` + `services/face-predict/**` + `app/api/face-predict/route.ts` |
-| 大语言模型六段主线 | `app/ann-to-llm-journey.tsx`（`AnnToLlmJourney` / `LanguageEncodingLab` / `PretrainingLoopLab` / `AlignmentLab` / `EngineeringCallLab` / `AgentTransitionBoard`） |
+| 大语言模型五段主线 | `app/ann-to-llm-journey.tsx`（`AnnToLlmJourney` / `LanguageEncodingLab` / `PretrainingLoopLab` / `EngineeringCallLab` / `AgentTransitionBoard`） |
+| 5.5对话生成循环补充 | `app/llm-generation-lesson.tsx`（对话式LLM整体结构 / Prefill / 逐Token Decode / 生成循环 / Token循环与智能体循环对比） |
 | Transformer六场景可视化 | `app/transformer-visual-journey.tsx`（神经网络结构替换 / 完整大语言模型 / Block内部 / Attention示例 / Block堆叠 / 语言模型输出层） |
 | 大语言模型备用详稿与图示 | `app/page.tsx`（旧七步组件）+ `app/llm-diagrams.tsx`；不进入当前 `Home` 的05主线 |
-| Transformer 论文原图（备用） | `app/page.tsx`（`TransformerReferenceFigure`）+ `public/images/transformer-encoder-decoder-architecture.png` |
+| Transformer 论文原图 | `public/images/transformer-encoder-decoder-architecture.png`；5.2 `LanguageEncodingLab` 弹窗；备用组件 `app/page.tsx`（`TransformerReferenceFigure`） |
 | 智能体八章 / 审计六章 | `app/page.tsx`（智能体06—13；审计应用14—19） |
 | 第二部分智能体教学主线 | `app/agent-lecture-journey.tsx`（章节路线、组成结构、九步运行模拟、三类切换、规划调整、组合案例） |
 | 第三部分审计应用主线 | `app/audit-application-journey.tsx`（统一六问、资料解析、证据冲突、权限问数、报告工作台、协作系统、治理看板） |

@@ -377,9 +377,6 @@
 .xiaoyu-training-flow .xiaoyu-decision { color: #fff; background: var(--accent); }
 .xiaoyu-training-flow .xiaoyu-decision span, .xiaoyu-training-flow .xiaoyu-decision small { color: #c0d8d0; }
 .xiaoyu-training-flow .xiaoyu-decision strong { color: #fff; }
-.xiaoyu-training-map > p { margin: 0; padding: 18px 26px 23px; color: #6c665c; font-size: 10px; line-height: 1.75; }
-.xiaoyu-training-map > p b { color: var(--warm); }
-.xiaoyu-training-map > p strong { color: var(--accent); }
 
 .face-lab { margin: 0; border: 0; border-top: 1px solid #bfcfc9; background: #fbfbf8; }
 .face-lab-actions { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 21px; border-bottom: 1px solid var(--line); }
@@ -398,6 +395,11 @@
 .face-lab-label small { display: block; color: var(--muted); font-size: 9px; }
 .face-lab-label strong { display: block; margin: 8px 0 4px; font-family: var(--serif); font-size: 28px; }
 .face-lab-label em { color: var(--warm); font-style: normal; font-size: 12px; }
+.face-access-decision { margin: -7px 0 18px; padding: 12px 15px; border: 1px solid; }
+.face-access-decision small { display: block; margin-bottom: 5px; font-size: 8px; font-weight: 800; letter-spacing: .08em; }
+.face-access-decision strong { font-size: 12px; }
+.face-access-decision.granted { border-color: #9fc5b7; color: #1d5c49; background: #e9f4ef; }
+.face-access-decision.denied { border-color: #d7b2a8; color: #884737; background: #f8ece8; }
 .face-lab-probs { display: flex; flex-direction: column; gap: 10px; }
 .face-lab-probs > div > div { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 11px; }
 .face-lab-probs > div > div small { color: var(--muted); }
@@ -415,7 +417,7 @@
   .xiaoyu-story-hero { grid-template-columns: 1fr; }
   .xiaoyu-portrait, .xiaoyu-portrait img { min-height: 360px; height: 360px; }
   .xiaoyu-training-flow { margin: 0 18px; }
-  .xiaoyu-training-head, .xiaoyu-training-map > p { padding-right: 18px; padding-left: 18px; }
+  .xiaoyu-training-head { padding-right: 18px; padding-left: 18px; }
   .face-lab-stage { grid-template-columns: 1fr; }
   .face-lab-preview { border-right: 0; border-bottom: 1px solid var(--line); }
 }

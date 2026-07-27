@@ -137,7 +137,6 @@ export function TransformerVisualJourney() {
           <article><span>输出层</span><strong>语言模型输出层</strong></article>
         </div>
         <div className="next-token-probabilities"><span>教学模拟 · 不代表真实模型输出</span>{[["核查", 58], ["调查", 19], ["分析", 12], ["处理", 6], ["其他", 5]].map(([token, probability]) => <div key={token}><b>{token}</b><i><em style={{ width: `${probability}%` }} /></i><strong>{probability}%</strong></div>)}</div>
-        <p className="transformer-to-training"><b>自然进入下一节：</b>Transformer 负责结合上下文不断更新 Token 表示；输出层再计算下一个 Token 的概率。那么，模型怎样在海量文本中反复做这件事，并通过误差调整所有权重？</p>
       </section>
 
       <footer className="transformer-scene-footer">

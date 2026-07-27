@@ -369,6 +369,7 @@ footer,
 .call-task-compare strong,
 .task-planning-compare strong,
 .agent-core-loop strong,
+.agent-core-loop-steps strong,
 .task-case-flow strong,
 .agent-evolution-chain strong,
 .loop-stepper span,
@@ -391,7 +392,7 @@ footer,
 }
 
 .architecture-module-grid b,
-.agent-core-loop b,
+.agent-core-loop-steps b,
 .task-case-flow b,
 .agent-evolution-chain b,
 .loop-stepper b,
@@ -414,7 +415,7 @@ footer,
   padding: 11px 13px;
 }
 
-.agent-core-loop > div,
+.agent-core-loop-steps > div,
 .task-case-flow > div,
 .agent-evolution-chain > div {
   min-width: 146px;
@@ -428,12 +429,27 @@ footer,
   overflow-x: auto;
 }
 
-.agent-core-loop > div i,
+.agent-core-loop-steps > div i,
 .task-case-flow i,
 .agent-evolution-chain i {
-  top: 47px;
+  top: 50%;
   right: -9px;
   font-size: 20px;
+  transform: translateY(-50%);
+}
+
+.agent-core-loop-branch > section {
+  min-height: 112px;
+  padding: 18px 20px;
+}
+
+.agent-core-loop-branch strong {
+  font-size: var(--projection-node);
+}
+
+.agent-core-loop-branch span,
+.agent-core-loop-branch small {
+  font-size: var(--projection-label);
 }
 
 .loop-stepper button,
