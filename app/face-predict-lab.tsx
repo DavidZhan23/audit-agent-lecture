@@ -215,21 +215,21 @@ export function FacePredictLab() {
         <div className="xiaoyu-portrait">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={XIAOYU_SAMPLE} alt="笑雨举起剪刀手的课堂示例照片" />
-          <div><span>今日主角</span><strong>笑雨</strong><small>XIAO YU · 本人已上线</small></div>
+          <div><span>室友之一</span><strong>笑雨</strong><small>XIAO YU · 课堂示例照片</small></div>
         </div>
         <div className="xiaoyu-premise">
-          <span>趣味支线 · 5—7分钟 · 课堂虚构故事</span>
-          <h3 id="xiaoyu-story-title">不必认识全世界，<br /><em>只要一眼认出笑雨。</em></h3>
-          <p>笑雨住在一栋邻里热络、认人却有点马虎的公寓。每天清晨，他和许多年轻人一样，挤进电梯、穿过快递柜前白亮的灯光，再汇入一座脚步匆匆的城市。邻居们总会热情地向他点头，却常在下一秒叫出另一个名字；偶尔一句“你是不是住楼上的那位”，也会把刚刚升起的亲切感轻轻推远。被认错似乎只是一件微不足道的小事，可次数多了，笑雨渐渐觉得，自己像这座城市里一张没有被保存的面孔——每天与许多人擦肩，却很少真正被谁记住。一次深夜，他向小伙伴骐源说起这份难以启齿的失落，没想到骐源沉默片刻，也说自己常有同样的感受。两个<strong>“总被认错的人”</strong>一拍即合：既然邻居一时记不住，那就先教会一个模型。他们整理照片、贴上名字，看着一轮轮训练从屏幕上跑过。终于，模型一次次坚定地显示出“笑雨”。笑雨带着微笑看着电脑，轻声说：“能被你认识，真好啊。”</p>
-          <blockquote>“世界很大，而我想被认出来。”</blockquote>
-          <div className="xiaoyu-binary"><span>公寓里的所有人</span><i>→</i><strong>笑雨</strong><b>或</b><strong>骐源</strong><b>或</b><strong>其他</strong></div>
+          <span>案例支线 · 5—7分钟 · 课堂虚构故事</span>
+          <h3 id="xiaoyu-story-title">两个室友，<br /><em>怎样教会模型分清彼此？</em></h3>
+          <p>笑雨和骐源是合住一套公寓的室友。一次整理共同相册时，他们发现聚餐、旅行和日常照片混在一起，逐张按人物归类很费时间。于是两人把它改造成一个小型人脸识别实验：输入一张照片，模型只回答<strong>“笑雨”“骐源”或“其他”</strong>。他们先约定照片仅用于这次课堂实验，不接入门禁，也不用于身份认证；随后各自挑选不同角度、表情和光线下的照片并完成标注，再补充不属于两人的人物照片作为“其他”类。训练完成后，他们用从未参与训练的照片测试模型：它既要分清两位室友，也要在没有把握时承认“无法确定”。</p>
+          <blockquote>“一个可用的识别器，不只要会认人，也要会说不知道。”</blockquote>
+          <div className="xiaoyu-binary"><span>一张新的相册照片</span><i>→</i><strong>笑雨</strong><b>或</b><strong>骐源</strong><b>或</b><strong>其他</strong></div>
         </div>
       </section>
 
       <section className="xiaoyu-training-map" aria-label="从照片到双人限定识别器的训练流程">
         <div className="xiaoyu-training-head">
           <span>把上面的神经网络机制换一组像素，再走一遍</span>
-          <h4>他“喂给网络”的不是一个名字，而是一组带答案的照片</h4>
+          <h4>两位室友提供的不是一张标准照，而是一组带标签的照片</h4>
         </div>
         <div className="xiaoyu-training-flow">
           <div className="xiaoyu-samples">
@@ -246,7 +246,7 @@ export function FacePredictLab() {
           <i>→</i>
           <div className="xiaoyu-decision"><span>05 · 上线规则</span><strong>目标身份 ≥ 70%</strong><small>否则：其他 / 无法确定</small></div>
         </div>
-        <p><b>精妙之处：</b>这个模型不是要认识全世界，而是划出一个极小的“熟人圈”：准确区分<strong>笑雨与骐源</strong>，并把圈外的人送进“其他”。学会拒绝，和学会认出同样重要。</p>
+        <p><b>关键设计：</b>这个模型的任务边界只有三类：准确区分<strong>笑雨与骐源</strong>，并把圈外人物送进“其他”。再用未参与训练的照片检验泛化能力；最大概率低于阈值时不强行判断。学会拒绝，和学会认出同样重要。</p>
       </section>
 
       <div className="face-lab interactive">
@@ -363,7 +363,7 @@ export function FacePredictLab() {
         </div>
 
         <p className="lab-disclaimer">
-          故事的反转：模型能把像素分进某一类，却不知道“被认错为什么让人难过”。归一化概率也不等于真实身份匹配概率；本演示仅用于理解神经网络，不可用于门禁或身份认证。人脸属敏感信息，请获授权后使用。
+          案例边界：模型只是把像素映射到预设类别，并不理解“室友”这一关系；归一化概率也不等于真实身份匹配概率。本演示仅用于理解神经网络，不可用于门禁或身份认证。人脸属于敏感个人信息，采集和使用前必须取得明确授权。
         </p>
       </div>
     </div>

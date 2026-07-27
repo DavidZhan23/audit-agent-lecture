@@ -15,7 +15,7 @@
 | `KnownUnknownBridge` / `FunctionFittingLab` / `ConfusionMatrixLab` | 备用（当前 Home 的 ml 已精简） | 旧版机器学习互动 |
 | `NeuronContinuityLab` 等 | 备用（旧版 nn DeepDive） | 神经网络解剖 |
 | `DigitsImageLab` | nn（嵌在 AnnPixelDemo） | 自构 16×16 示意像素 → 数字 0—9 |
-| `FacePredictLab` | nn 趣味支线 | “笑雨与骐源的双人限定识别器”故事首屏 + 笑雨示例照片 + 训练流程图 + 真实 ResNet34（224，head_hidden=512）演示；可一键运行示例或上传/拍照，输出笑雨/骐源/其他三类概率并以0.70阈值拒识 |
+| `FacePredictLab` | nn 案例支线 | 两位室友为整理共同相册搭建人脸识别器的故事首屏 + 笑雨示例照片 + 数据授权/训练/测试流程 + 真实 ResNet34（224，head_hidden=512）演示；可一键运行示例或上传/拍照，输出笑雨/骐源/其他三类概率并以0.70阈值拒识 |
 | `AnnToLlmJourney` | llm（`app/ann-to-llm-journey.tsx`） | 当前05主线：神经网络连续性→文字数字化→Transformer上下文→海量预训练→指令训练→工程调用→智能体缺口 |
 | `LanguageEncodingLab` | llm 5.2 | 四步切换同一句合同文本：原文→Token→Embedding→向量序列进入神经网络 |
 | `TransformerVisualJourney` | llm 5.3（`app/transformer-visual-journey.tsx`） | 六场景从普通神经网络结构替换到完整大语言模型，定位Transformer，放大Decoder-only Block，切换上下文关联，展示多层堆叠，再回到语言模型输出层与下一个Token概率 |
