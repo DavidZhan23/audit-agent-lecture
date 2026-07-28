@@ -368,7 +368,6 @@ footer,
 .architecture-module-grid strong,
 .call-once-flow strong,
 .call-cycle-track strong,
-.task-planning-compare strong,
 .agent-core-loop strong,
 .agent-core-loop-steps strong,
 .task-case-flow strong,
@@ -427,8 +426,34 @@ footer,
 
 .task-planning-compare strong {
   min-height: 0;
-  padding: 10px 12px;
+  padding: 6px 2px;
+  font-size: 15px;
   white-space: nowrap;
+  text-align: center;
+}
+
+.planning-phase-list button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.planning-phase-list span {
+  font-size: 12pt;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.planning-phase-list b {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10pt;
+  text-align: left;
 }
 
 .agent-core-loop-steps > div,
@@ -709,8 +734,10 @@ footer,
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
-  flex: 0 0 auto;
+  gap: 10px;
+  flex: 0 1 auto;
+  max-height: 38%;
+  padding: clamp(18px, 2vw, 28px) clamp(24px, 3vw, 48px) clamp(16px, 1.8vw, 24px);
   text-align: center;
   grid-template-columns: none;
 }
@@ -718,7 +745,7 @@ footer,
 .paginated-course .part-overview .part-title-meta {
   width: fit-content;
   margin: 0 auto;
-  padding-top: 10px;
+  padding-top: 8px;
   text-align: center;
 }
 
@@ -726,9 +753,16 @@ footer,
   width: 100%;
 }
 
+.paginated-course .part-overview .part-title-body h2 {
+  font-size: clamp(26px, 2.4vw, 36px);
+  line-height: 1.25;
+}
+
 .paginated-course .part-overview .part-title-body p {
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 52rem;
+  margin: 8px auto 0;
+  font-size: clamp(13px, .85vw, 15px);
+  line-height: 1.6;
 }
 
 .paginated-course .part-overview .part-route-wrap {
@@ -737,7 +771,7 @@ footer,
   flex-direction: column;
   width: 100%;
   min-height: 0;
-  padding: 28px 36px 36px;
+  padding: 18px 28px 24px;
   background: linear-gradient(180deg, rgba(255,255,255,.36), transparent);
 }
 
@@ -794,19 +828,80 @@ footer,
   line-height: 1.55;
 }
 
+.paginated-course .part-overview .foundation-toc {
+  overflow: hidden;
+}
+
+.paginated-course .part-overview .foundation-toc-head {
+  flex: 0 0 auto;
+  padding: 12px 18px;
+}
+
+.paginated-course .part-overview .foundation-toc-flow {
+  flex: 0 0 auto;
+}
+
+.paginated-course .part-overview .foundation-toc-flow li {
+  min-height: 44px;
+  padding: 6px 10px;
+}
+
 .paginated-course .part-overview .foundation-toc-grid {
   flex: 1 1 auto;
   min-height: 0;
   grid-auto-rows: 1fr;
 }
 
-.paginated-course .part-overview .foundation-toc {
-  min-height: 0;
-}
-
 .paginated-course .part-overview .foundation-toc-grid button {
+  justify-content: center;
   min-height: 0;
   height: 100%;
+  padding: 56px clamp(18px, 1.7vw, 28px) 36px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(47, 107, 79, .075), transparent 46%),
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(247,249,247,.92));
+}
+
+.paginated-course .part-overview .foundation-toc-grid button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: var(--page-accent);
+  opacity: .22;
+  transition: opacity .18s ease;
+}
+
+.paginated-course .part-overview .foundation-toc-grid button:hover::before {
+  opacity: .9;
+}
+
+.paginated-course .part-overview .foundation-toc-grid > button > b {
+  position: absolute;
+  top: 20px;
+  left: clamp(18px, 1.7vw, 28px);
+  font-size: clamp(14px, 1vw, 17px);
+  letter-spacing: .08em;
+}
+
+.paginated-course .part-overview .foundation-toc-method {
+  display: none;
+}
+
+.paginated-course .part-overview .foundation-toc-grid strong {
+  max-width: 15em;
+  margin: 0 0 14px;
+  font-size: clamp(19px, 1.35vw, 24px);
+  line-height: 1.4;
+}
+
+.paginated-course .part-overview .foundation-toc-grid p {
+  max-width: 25em;
+  font-size: clamp(13px, .9vw, 15px);
+  line-height: 1.7;
 }
 
 .paginated-course .lesson::before,

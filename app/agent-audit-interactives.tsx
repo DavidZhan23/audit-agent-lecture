@@ -22,7 +22,7 @@ export function FoundationChapterRoute({ onSelect }: { onSelect?: (id: string) =
     { id: "code", no: "02", method: "基于任务逻辑的编程", title: "基于任务逻辑的编程", detail: "判断条件写得清时，用确定性程序直接解决。" },
     { id: "ml", no: "03", method: "机器学习", title: "经典机器学习", detail: "多个弱信号难以穷举，从历史结果学习组合权重。" },
     { id: "nn", no: "04", method: "神经网络", title: "神经网络", detail: "异常藏在高维像素里，需要直接处理图像输入。" },
-    { id: "llm", no: "05", method: "大语言模型", title: "从神经网络到大语言模型", detail: "开放问题里有目标、约束与取舍，需要理解语境并根据追问生成反馈。" },
+    { id: "llm", no: "05", method: "大语言模型", title: "从神经网络到大模型", detail: "开放问题里有目标、约束与取舍，需要理解语境并根据追问生成反馈。" },
   ];
   return (
     <nav className="foundation-toc" aria-label="第一部分章节目录">

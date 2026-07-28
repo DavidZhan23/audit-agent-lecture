@@ -58,7 +58,7 @@ test("server-renders the complete audit artificial-intelligence course", async (
   assert.match(html, /门禁程序就执行开门/);
   assert.match(html, /门就保持关闭/);
   assert.doesNotMatch(html, /整堂课只审这一笔/);
-  assert.match(html, /从神经网络到大语言模型/);
+  assert.match(html, /从神经网络到大模型/);
   assert.match(html, /普通神经网络已经可以通过训练学习规律，那么它还需要哪些关键变化，才能成为大语言模型/);
   assert.match(html, /同一套学习机制.*文字变成数字.*联系上下文.*海量文本预训练.*工程师怎样调用/s);
   assert.match(html, /大语言模型并不是另一种完全不同的人工智能/);
@@ -151,7 +151,7 @@ test("server-renders the complete audit artificial-intelligence course", async (
   assert.match(html, /异构审计资料解析/);
   assert.match(html, /智能问数与数据分析/);
   assert.match(html, /智能生成审计报告/);
-  assert.match(html, /三个智能体如何协作成完整审计系统/);
+  assert.match(html, /三个智能体协作系统/);
   assert.match(html, /目标是什么.*输入是什么.*需要什么知识.*可以调用什么工具.*权限和边界是什么.*输出怎样验证/s);
   assert.match(html, /主合同扫描件.*付款台账.*采购制度.*现场照片/s);
   assert.match(html, /页面拆分.*方向纠正.*去噪清晰化.*文字识别.*版面重建.*质量检测/s);

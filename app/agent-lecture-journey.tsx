@@ -5,7 +5,7 @@ import { Fragment, useEffect, useState } from "react";
 type AgentTypeKey = "knowledge" | "task" | "planning";
 
 const agentRoute = [
-  { id: "agent", no: "06", title: "为什么仅有大语言模型还不够", detail: "提出贯穿案例，明确任务、交付物与行动缺口" },
+  { id: "agent", no: "06", title: "为什么仅有大语言模型还不够", detail: "提出案例，任务、交付物与行动缺口" },
   { id: "agent-definition", no: "07", title: "什么是智能体", detail: "定义、组成结构与清晰边界" },
   { id: "agent-loop", no: "08", title: "智能体是怎样工作的", detail: "目标—行动—观察—再判断循环" },
   { id: "agent-knowledge", no: "09", title: "知识型智能体", detail: "检索、阅读、综合回答与引用" },

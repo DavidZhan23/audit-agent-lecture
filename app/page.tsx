@@ -79,7 +79,7 @@ const nav = [
   ["code", "基于任务逻辑的编程", "8′"],
   ["ml", "经典机器学习", "10′"],
   ["nn", "神经网络", "15′"],
-  ["llm", "从神经网络到大语言模型", "27′"],
+  ["llm", "从神经网络到大模型", "27′"],
   ["agent", "为什么仅有大语言模型还不够", "5′"],
   ["agent-definition", "什么是智能体", "6′"],
   ["agent-loop", "智能体是怎样工作的", "7′"],
@@ -110,7 +110,7 @@ const coursePages: CoursePage[] = [
   { id: "code", title: "基于任务逻辑的编程", group: "foundation", label: "02" },
   { id: "ml", title: "经典机器学习", group: "foundation", label: "03" },
   { id: "nn", title: "神经网络", group: "foundation", label: "04" },
-  { id: "llm", title: "从神经网络到大语言模型", group: "foundation", label: "05" },
+  { id: "llm", title: "从神经网络到大模型", group: "foundation", label: "05" },
   { id: "part-2", title: "智能体基础与架构路线", group: "agent", label: "第二部分" },
   { id: "agent", title: "为什么仅有大语言模型还不够", group: "agent", label: "06" },
   { id: "agent-definition", title: "什么是智能体", group: "agent", label: "07" },
@@ -2725,7 +2725,7 @@ export default function Home() {
             no="第一部分"
             title="大模型和智能体的技术基础"
             chapters="章节 02—05"
-            lead="从规则、机器学习、神经网络到大模型，说明这些技术为何会逐层出现，各自解决什么问题、卡在哪里。"
+            lead="从规则、机器学习、神经网络到大模型，说明这些技术为何会逐层出现，各自解决什么问题、劣势在哪里。"
           />
           <div className="part-route-wrap"><FoundationChapterRoute onSelect={goToId} /></div>
         </div>
@@ -2778,7 +2778,7 @@ export default function Home() {
         </section>
 
         <section id="llm" className="lesson course-slide" hidden={activeCoursePage.id !== "llm"}>
-          <SectionTitle no="05" time="第一部分 · 约27分钟" title="从神经网络到大语言模型" />
+          <SectionTitle no="05" time="第一部分 · 约27分钟" title="从神经网络到大模型" />
           <AnnToLlmJourney />
           <Bridge
             from="大语言模型的边界"
