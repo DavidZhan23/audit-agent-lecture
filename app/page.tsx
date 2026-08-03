@@ -1204,7 +1204,6 @@ function ChinaAgentPlatformGlance() {
     <section className="china-agent-glance" aria-labelledby="china-agent-glance-title">
       <header className="china-agent-glance-head">
         <div>
-          <span>开场速览 · 约 1 分钟</span>
           <h3 id="china-agent-glance-title">今天的智能体平台长什么样</h3>
           <p>点一个平台，看它怎样把对话、知识和工具放进同一张工作台。</p>
         </div>
