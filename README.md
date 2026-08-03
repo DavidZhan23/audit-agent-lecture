@@ -34,6 +34,14 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python server.py
+
+
+cd services/face-predict
+source .venv/bin/activate   # 若无：python3 -m venv .venv && pip install -r requirements.txt
+python server.py            # :8765
+
+# 另一终端
+npm run dev                 # 课件
 ```
 
 然后浏览器打开课程「ANN」中的「真实 ANN 演示」：上传照片、手机「拍照上传」，或（HTTPS/localhost 下）「打开摄像头」。  

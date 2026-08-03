@@ -153,6 +153,69 @@ const courseParts = [
   },
 ];
 
+const chinaAgentPlatforms = [
+  {
+    id: "coze",
+    name: "扣子 Coze",
+    ecosystem: "字节跳动",
+    image: "/images/agent-platforms/coze-workbench.png",
+    imageWidth: 1600,
+    imageHeight: 899,
+    view: "项目与 Agent 工作台",
+    positioning: "面向职场产出与协作的 AI 工作伙伴",
+    abilities: ["多轮对话拆解任务", "调用 Agent 技能与工具", "生成文档、表格、演示稿", "把同事与 Agents 拉进项目"],
+    deliverable: "把一份调研要求变成可继续协作的报告、表格或项目成果。",
+  },
+  {
+    id: "bailian",
+    name: "阿里云百炼",
+    ecosystem: "通义生态",
+    image: "/images/agent-platforms/bailian-agent.png",
+    imageWidth: 721,
+    imageHeight: 460,
+    view: "工具与 MCP 服务面板",
+    positioning: "企业智能体、知识与工作流开发平台",
+    abilities: ["接入企业知识库", "调用插件与 MCP 工具", "可视化编排工作流", "发布 API 或业务应用"],
+    deliverable: "把企业资料与工具串成可调用、可发布的业务助手。",
+  },
+  {
+    id: "wenxin",
+    name: "文心智能体平台",
+    ecosystem: "百度",
+    image: "/images/agent-platforms/wenxin-agent.png",
+    imageWidth: 1330,
+    imageHeight: 836,
+    view: "工作流编排与调试画布",
+    positioning: "零代码与工作流智能体开发",
+    abilities: ["配置角色与多轮对话", "挂载知识库与插件", "拖拽 LLM、判断与代码节点", "预览调试后多端发布"],
+    deliverable: "把制度或产品资料变成能问答、能分流的服务助手。",
+  },
+  {
+    id: "yuanqi",
+    name: "腾讯元器",
+    ecosystem: "混元生态",
+    image: "/images/agent-platforms/yuanqi-agent.png",
+    imageWidth: 1600,
+    imageHeight: 977,
+    view: "节点工作流与工具面板",
+    positioning: "智能体生产与企业知识应用",
+    abilities: ["组合大模型与知识检索", "设置条件判断与循环", "接入插件、工具与代码", "发布到客服或 IM 入口"],
+    deliverable: "把客服问题沿固定流程处理，并在多个入口保持一致回答。",
+  },
+  {
+    id: "kimi",
+    name: "Kimi",
+    ecosystem: "月之暗面",
+    image: "/images/agent-platforms/kimi-agent.png",
+    imageWidth: 1672,
+    imageHeight: 941,
+    view: "文档 Agent 与成果预览",
+    positioning: "搜索、长文档与办公成果型任务",
+    abilities: ["搜索并汇总多来源资料", "阅读长文档与附件", "生成文档、PPT、表格", "直接预览并下载成果"],
+    deliverable: "把一批资料变成有结构的报告、分析表或演示文稿。",
+  },
+] as const;
+
 const auditCases: Array<{
   id: string;
   title: string;
@@ -1131,6 +1194,62 @@ function CourseArchitecture() {
     <div className="course-architecture-head"><p>本课讨论大语言模型与智能体的基础概念、架构，以及它们在审计工作中的可能用法。课程分为三部分：</p></div>
     <div className="course-architecture-parts">{courseParts.map(part => <a href={part.href} key={part.no}><span>{part.no}</span><small>章节 {part.range}</small><h4>{part.title}</h4><p>{part.description}</p></a>)}</div>
   </div>;
+}
+
+function ChinaAgentPlatformGlance() {
+  const [selectedId, setSelectedId] = useState<(typeof chinaAgentPlatforms)[number]["id"]>(chinaAgentPlatforms[0].id);
+  const selectedPlatform = chinaAgentPlatforms.find(platform => platform.id === selectedId) ?? chinaAgentPlatforms[0];
+
+  return (
+    <section className="china-agent-glance" aria-labelledby="china-agent-glance-title">
+      <header className="china-agent-glance-head">
+        <div>
+          <span>开场速览 · 约 1 分钟</span>
+          <h3 id="china-agent-glance-title">今天的智能体平台长什么样</h3>
+          <p>点一个平台，看它怎样把对话、知识和工具放进同一张工作台。</p>
+        </div>
+      </header>
+      <div className="china-agent-board">
+        <nav className="china-agent-platform-rail" aria-label="选择智能体平台">
+          {chinaAgentPlatforms.map(platform => (
+            <button
+              type="button"
+              className={platform.id === selectedPlatform.id ? "active" : ""}
+              aria-pressed={platform.id === selectedPlatform.id}
+              onClick={() => setSelectedId(platform.id)}
+              key={platform.id}
+            >
+              <span className="china-agent-thumb">
+                {/* Public product screenshots are cached locally for stable classroom use. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={platform.image} alt="" width={platform.imageWidth} height={platform.imageHeight} />
+              </span>
+              <span><strong>{platform.name}</strong><small>{platform.view}</small></span>
+            </button>
+          ))}
+        </nav>
+        <div className="china-agent-stage">
+          <figure className="china-agent-preview" key={selectedPlatform.id}>
+            <div className="china-agent-preview-media">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={selectedPlatform.image}
+                alt={`${selectedPlatform.name}的${selectedPlatform.view}公开界面截图`}
+                width={selectedPlatform.imageWidth}
+                height={selectedPlatform.imageHeight}
+              />
+            </div>
+            <figcaption><span>{selectedPlatform.view}</span></figcaption>
+          </figure>
+          <aside className="china-agent-platform-detail" aria-live="polite">
+            <header><span>{selectedPlatform.ecosystem}</span><h4>{selectedPlatform.name}</h4><p>{selectedPlatform.positioning}</p></header>
+            <ul>{selectedPlatform.abilities.map(ability => <li key={ability}>{ability}</li>)}</ul>
+            <div className="china-agent-deliverable"><span>能交付什么</span><strong>{selectedPlatform.deliverable}</strong></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  );
 }
 
 function CapabilityBoundary({ method, input, output, unique, limit }: { method: string; input: string; output: string; unique: string; limit: string }) {
@@ -2701,21 +2820,22 @@ export default function Home() {
         <section id="problem" className="lesson course-slide" hidden={activeCoursePage.id !== "problem"}>
           <SectionTitle no="01" time="导言 · 约5分钟" title="导言" />
           <CourseArchitecture />
+          <ChinaAgentPlatformGlance />
           <div className="content-block lesson-takeaways">
             <h3>主要收获</h3>
             <ol className="takeaway-grid">
               <li><span>能按问题类型选择方法，并分清：基于任务逻辑的编程、经典机器学习、神经网络与大模型——各自能解决什么、解决不了什么。</span></li>
               <li><span>分得清大语言模型与智能体：前者擅长理解与生成；后者围绕目标调用工具、根据反馈决策并受控停止。</span></li>
-              <li><span>理解智能体的运行逻辑：能说出基本模块与工具反馈循环，并对权限、日志、人在回路等落地约束有初步了解。</span></li>
+              <li><span>能说出智能体的基本组成——目标、大模型、知识、工具与状态，并理解它怎样围绕目标一步步完成任务，而不是只做一次问答。</span></li>
               <li><span>独立思考在审计场景下，自己该如何针对性地构建智能体。</span></li>
             </ol>
           </div>
           <TeacherNote
             time="5分钟"
             question="学完这堂课，你最想带走的是一张技术名词表，还是一套选方法的判断习惯？"
-            misconception="导言不是要把三部分讲完；只是建立地图，细节在后续章节展开。"
-            mustSay="三部分分工清楚；主要收获里要分清经典机器学习与神经网络；证据与复核优先于黑箱分数。"
-            canSkip="具体案例编号，后面章节会逐一出现。"
+            misconception="平台速览不是产品排名或技术定义；导言只是建立兴趣和课程地图。"
+            mustSay="先用场景到结果说明智能体为何值得关注；再交代三部分分工，以及证据与复核优先于黑箱分数。"
+            canSkip="五个平台逐一介绍；现场切换两三个代表界面即可。"
           />
         </section>
 

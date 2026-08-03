@@ -1090,6 +1090,43 @@ footer,
   background-color: rgba(255, 255, 255, .78);
 }
 
+.paginated-course .course-slide .china-agent-glance {
+  box-shadow: 0 14px 32px rgba(20, 43, 35, .07);
+}
+
+.paginated-course .course-slide .china-agent-glance-head h3 {
+  font-size: clamp(25px, 1.65vw, 31px);
+}
+
+.paginated-course .course-slide .china-agent-glance-head > div > span,
+.paginated-course .course-slide .china-agent-platform-detail header > span,
+.paginated-course .course-slide .china-agent-deliverable span {
+  font-size: var(--projection-micro);
+}
+
+.paginated-course .course-slide .china-agent-glance-head p {
+  font-size: var(--projection-label);
+}
+
+.paginated-course .course-slide .china-agent-platform-rail small,
+.paginated-course .course-slide .china-agent-preview figcaption span {
+  font-size: var(--projection-micro);
+}
+
+.paginated-course .course-slide .china-agent-platform-rail strong {
+  font-size: var(--projection-label);
+}
+
+.paginated-course .course-slide .china-agent-platform-detail h4 {
+  font-size: clamp(23px, 1.4vw, 28px);
+}
+
+.paginated-course .course-slide .china-agent-platform-detail header p,
+.paginated-course .course-slide .china-agent-platform-detail li,
+.paginated-course .course-slide .china-agent-deliverable strong {
+  font-size: var(--projection-label);
+}
+
 .paginated-course button:focus-visible,
 .paginated-course a:focus-visible,
 .paginated-course input:focus-visible,
