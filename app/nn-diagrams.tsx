@@ -531,12 +531,12 @@ const MODES = {
   mlp: {
     tab: "全连接网络",
     sub: `16×16（256）→ 隐藏层×L → 10`,
-    lead: "与上方示意同一套层数：16×16 像素拉成 256 维，经过可叠很多层的隐藏层，最后 Softmax 得到 0—9 共 10 类。相邻层全连接。",
+    lead: <>与上方示意同一套层数：16×16 像素<strong className="key-term">拉成 256 维</strong>，经过可叠很多层的隐藏层，最后 Softmax 得到 0—9 共 10 类。<strong className="key-term">相邻层全连接</strong>。</>,
   },
   cnn: {
     tab: "卷积神经网络",
     sub: `16×16 → 卷积×多层 → 10`,
-    lead: "同样从 16×16 出发、同样输出 10 类；中间改用卷积叠很多层，先保留邻域再学边缘与笔画。",
+    lead: <>同样从 16×16 出发、同样输出 10 类；中间改用<strong className="key-term">卷积叠很多层</strong>，先<strong className="key-term">保留邻域</strong>再学边缘与笔画。</>,
   },
 } as const;
 

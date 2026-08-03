@@ -297,7 +297,7 @@ function TeacherNote({ time, question, misconception, mustSay, canSkip, children
   return <aside className="teacher-note"><strong>讲师提示</strong><div>{time && <p><b>预计时间：</b>{time}</p>}{question && <p><b>现场提问：</b>{question}</p>}{misconception && <p><b>常见误解：</b>{misconception}</p>}{mustSay && <p><b>必须讲出：</b>{mustSay}</p>}{canSkip && <p><b>时间不足可跳过：</b>{canSkip}</p>}{children && <p>{children}</p>}</div></aside>;
 }
 
-function Definition({ term, simple, precise }: { term: string; simple: string; precise: string }) {
+function Definition({ term, simple, precise }: { term: string; simple: React.ReactNode; precise: React.ReactNode }) {
   return (
     <div className="definition">
       <span>定义</span><h3>{term}</h3><p className="simple">{simple}</p><p className="precise">更准确地说：{precise}</p>
@@ -305,7 +305,7 @@ function Definition({ term, simple, precise }: { term: string; simple: string; p
   );
 }
 
-function Bridge({ from, problem, to, lead = "所以，我们需要引入：" }: { from: string; problem: string; to: string; lead?: string }) {
+function Bridge({ from, problem, to, lead = "所以，我们需要引入：" }: { from: string; problem: React.ReactNode; to: string; lead?: string }) {
   return (
     <div className="bridge">
       <span>{from}</span><p>{problem}</p><strong>{lead}{to} →</strong>
@@ -1191,7 +1191,7 @@ function TransformerReferenceFigure() {
 
 function CourseArchitecture() {
   return <div className="course-architecture">
-    <div className="course-architecture-head"><p>本课讨论大语言模型与智能体的基础概念、架构，以及它们在审计工作中的可能用法。课程分为三部分：</p></div>
+    <div className="course-architecture-head"><p>本课讨论<strong className="key-term">大语言模型</strong>与<strong className="key-term">智能体</strong>的基础概念、架构，以及它们在审计工作中的可能用法。课程分为三部分：</p></div>
     <div className="course-architecture-parts">{courseParts.map(part => <a href={part.href} key={part.no}><span>{part.no}</span><small>章节 {part.range}</small><h4>{part.title}</h4><p>{part.description}</p></a>)}</div>
   </div>;
 }
@@ -2824,10 +2824,10 @@ export default function Home() {
           <div className="content-block lesson-takeaways">
             <h3>主要收获</h3>
             <ol className="takeaway-grid">
-              <li><span>能按问题类型选择方法，并分清：基于任务逻辑的编程、经典机器学习、神经网络与大模型——各自能解决什么、解决不了什么。</span></li>
-              <li><span>分得清大语言模型与智能体：前者擅长理解与生成；后者围绕目标调用工具、根据反馈决策并受控停止。</span></li>
-              <li><span>能说出智能体的基本组成——目标、大模型、知识、工具与状态，并理解它怎样围绕目标一步步完成任务，而不是只做一次问答。</span></li>
-              <li><span>独立思考在审计场景下，自己该如何针对性地构建智能体。</span></li>
+              <li><span>能按<strong className="key-term">问题类型选择方法</strong>，并分清：基于任务逻辑的编程、经典机器学习、神经网络与大模型——各自<strong className="key-term">能解决什么</strong>、<strong className="key-term">解决不了什么</strong>。</span></li>
+              <li><span>分得清<strong className="key-term">大语言模型与智能体</strong>：前者擅长<strong className="key-term">理解与生成</strong>；后者围绕目标<strong className="key-term">调用工具</strong>、根据反馈决策并受控停止。</span></li>
+              <li><span>能说出智能体的基本组成——<strong className="key-term">目标</strong>、<strong className="key-term">大模型</strong>、<strong className="key-term">知识</strong>、<strong className="key-term">工具</strong>与<strong className="key-term">状态</strong>，并理解它怎样围绕目标一步步完成任务，而不是只做一次问答。</span></li>
+              <li><span>独立思考在审计场景下，自己该如何针对性地<strong className="key-term">构建智能体</strong>。</span></li>
             </ol>
           </div>
           <TeacherNote
@@ -2857,7 +2857,7 @@ export default function Home() {
             example="rule"
             guide="先按发票号把报销单映射到台账，再比较金额。只看报销明细时 286 元看不出问题；映射后才能发现台账是 86 元。"
           />
-          <Bridge from="任务逻辑编程的边界" problem="若每个字段单独看都既可能正常也可能异常，需要借助历史上已经核实过的结果，学习哪些特征组合更值得优先核查。" to="经典机器学习" />
+          <Bridge from="任务逻辑编程的边界" problem={<>若每个字段单独看都既可能正常也可能异常，需要借助<strong className="key-term">历史上已经核实过的结果</strong>，学习哪些<strong className="key-term">特征组合</strong>更值得优先核查。</>} to="经典机器学习" />
           <TeacherNote time="8分钟" question="只看报销明细，你能发现 BX-42306 的问题吗？还缺哪张表？" misconception="能写清的判断不必先上模型；程序只执行人事先写明的逻辑。" mustSay="必须先按发票号映射到台账，再比较金额；单看报销表发现不了 286 vs 86。" canSkip="语法细节。" />
         </section>
 
@@ -2869,7 +2869,7 @@ export default function Home() {
             guide="表中 H01—H12 是训练集；NEW 是未见过的第 13 种组合。运行后对照下方代入板书。"
           />
           <NewSampleInferenceBoard />
-          <Bridge from="经典机器学习的边界" problem="下一笔报销的表格特征看起来正常，真正异常却藏在票据图片里：金额数字的像素可能被改过。人工造几个表格特征已经不够。" to="人工神经网络" />
+          <Bridge from="经典机器学习的边界" problem={<>下一笔报销的表格特征看起来正常，真正异常却藏在票据图片里：金额数字的<strong className="key-term">像素可能被改过</strong>。<strong className="key-term">人工造几个表格特征</strong>已经不够。</>} to="人工神经网络" />
           <TeacherNote time="10分钟" question="模型给出 80% 核查概率，这是证据吗？" misconception="机器学习不是自动发现真相；Loss 下降也不等于可以直接定性。" mustSay="弱信号单独定不了性；用历史核实结果拟合组合权重，给新单排序。" canSkip="梯度公式细节。" />
         </section>
 
@@ -2885,7 +2885,7 @@ export default function Home() {
           </div>
           <Bridge
             from="神经网络的边界"
-            problem="通过这一章我们学习到，神经网络可以从高维输入中识别数字或类别，但现在我想用自然语言描述一个开放式问题：让模型读懂目标、背景与顾虑，并随着追问给出针对性反馈。我们可以通过训练某种神经网络来实现这个目标吗？"
+            problem={<>通过这一章我们学习到，神经网络可以从<strong className="key-term">高维输入</strong>中识别数字或类别，但现在我想用自然语言描述一个开放式问题：让模型读懂<strong className="key-term">目标、背景与顾虑</strong>，并随着追问给出针对性反馈。我们可以通过训练某种神经网络来实现这个目标吗？</>}
             to="大语言模型"
           />
           <TeacherNote
@@ -2902,7 +2902,7 @@ export default function Home() {
           <AnnToLlmJourney />
           <Bridge
             from="大语言模型的边界"
-            problem="大语言模型可以理解和生成语言，但仅靠它通常还不能持续保存状态、调用外部工具并执行现实任务。要把“会说、会分析”变成“能受控地完成任务”，还需要在它周围加入记忆、规划、工具、行动和反馈机制。"
+            problem={<>大语言模型可以理解和生成语言，但仅靠它通常还不能<strong className="key-term">持续保存状态</strong>、<strong className="key-term">调用外部工具</strong>并执行现实任务。要把“会说、会分析”变成“<strong className="key-term">能受控地完成任务</strong>”，还需要在它周围加入记忆、规划、工具、行动和反馈机制。</>}
             to="智能体 + 大语言模型"
           />
           <TeacherNote
@@ -2921,10 +2921,10 @@ export default function Home() {
 
         <section id="agent" className="lesson course-slide" hidden={activeCoursePage.id !== "agent"}>
           <SectionTitle no="06" time="第二部分 · 约5分钟" title="为什么仅有大语言模型还不够" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>6.1 · 承接第一部分</span><h3>会回答一个问题，不等于能够完成一项工作</h3><p>模型能给出合理建议，但没有真正获取合同、查询系统、比较证据或提交成果。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>6.1 · 承接第一部分</span><h3>会回答一个问题，不等于能够完成一项工作</h3><p>模型能给出合理建议，但没有<strong className="key-term">真正获取合同、查询系统、比较证据或提交成果</strong>。</p></div>
             <div className="answer-work-gap"><div className="answer-sample"><span>用户</span><p>请检查这份合同是否存在转分包风险。</p><span>大语言模型</span><p>可能需要结合合同工作范围、签约主体、时间和金额进行综合判断。</p></div><div className="work-gap-list"><strong>这段回答没有完成</strong>{["获取合同与正文", "查询企业合同数据库", "搜索潜在关联合同", "调用企业判断规则", "比较工作内容与交付物", "保存分析过程", "形成报告并提交复核"].map(item => <span key={item}>{item}</span>)}</div></div>
           </section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>6.2 · 贯穿第二部分的案例</span><h3>接下来，用“合同甲的转分包风险识别”智能体为例，梳理智能体的架构</h3><p>用户要检查合同甲是否存在转分包风险，交付带有证据、判断依据、不确定项和复核建议的可复核的初步分析报告，而不是一句聊天回答。一次模型调用无法自行取得资料、执行查询并保存完整过程，这正是后续要补上的行动缺口。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>6.2 · 贯穿第二部分的案例</span><h3>接下来，用“合同甲的转分包风险识别”智能体为例，梳理智能体的架构</h3><p>用户要检查合同甲是否存在转分包风险，交付带有证据、判断依据、不确定项和复核建议的<strong className="key-term">可复核的初步分析报告</strong>，而不是一句聊天回答。一次模型调用无法自行取得资料、执行查询并保存完整过程，这正是后续要补上的<strong className="key-term">行动缺口</strong>。</p></div>
             <div className="call-task-compare">
               <article className="call-once-panel">
                 <span>一句模型回答</span>
@@ -2971,32 +2971,60 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <p>不是一次生成，而是沿目标持续行动，直到可交付或转人工。</p>
+                <p>不是一次生成，而是沿目标<strong className="key-term">持续行动</strong>，直到可交付或<strong className="key-term">转人工</strong>。</p>
               </article>
             </div>
           </section>
-          <LessonTakeaway>大语言模型提供语言理解、内容生成和推理能力；完成现实任务还需要连接外部世界并持续运行的系统。</LessonTakeaway>
+          <LessonTakeaway>大语言模型提供<strong className="key-term">语言理解、内容生成和推理能力</strong>；完成现实任务还需要<strong className="key-term">连接外部世界并持续运行</strong>的系统。</LessonTakeaway>
           <TeacherNote time="5分钟" question="这段模型回答里，哪一件真实工作已经被执行了？" misconception="回答看起来专业，不代表任务已经完成。" mustSay="先明确贯穿案例的任务与可复核交付物；再说明会回答不等于会完成工作，合同、工具、状态和正式产出仍有缺口。" />
         </section>
 
         <section id="agent-definition" className="lesson course-slide" hidden={activeCoursePage.id !== "agent-definition"}>
           <SectionTitle no="07" time="第二部分 · 约6分钟" title="什么是智能体" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>7.1 · 定义</span><h3>智能体不是单一模型，而是一套运行系统</h3><p>它围绕目标获取信息、作出判断、调用工具、执行动作，并根据结果继续工作。</p></div>
-            <Definition term="智能体" simple="一套能够围绕目标获取信息、作出判断、调用工具、执行动作，并根据执行结果继续工作的人工智能系统。" precise="智能体通常以大语言模型作为理解和推理核心，并由上下文、知识、状态、工具、权限、运行机制和人工监督共同组成；不同系统具有不同自主程度。" />
-            <div className="agent-boundary-strip"><div><span>大语言模型</span><strong>能力核心</strong><p>理解上下文，输出文字、判断或行动请求。</p></div><div><span>应用程序</span><strong>运行与执行</strong><p>校验权限、调用工具、保存状态并控制循环。</p></div><div><span>智能体</span><strong>完整系统</strong><p>依据反馈继续、改道或停止。</p></div><div><span>人工</span><strong>监督与责任</strong><p>确认高风险操作并承担最终专业判断。</p></div></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>7.1 · 定义</span><h3>智能体不是单一模型，而是一套运行系统</h3><p>它围绕目标获取信息、作出判断、<strong className="key-term">调用工具</strong>、执行动作，并<strong className="key-term">根据结果继续工作</strong>。</p></div>
+            <Definition term="智能体" simple={<>一套能够围绕<strong className="key-term">目标</strong>获取信息、作出判断、<strong className="key-term">调用工具</strong>、执行动作，并根据执行结果继续工作的人工智能系统。</>} precise={<>智能体通常以<strong className="key-term">大语言模型</strong>作为理解和推理核心，并由上下文、知识、状态、工具、权限、运行机制和人工监督共同组成；不同系统具有不同自主程度。</>} />
+            <div className="agent-composition-board">
+              <p className="agent-composition-lead">下面四块<strong className="key-term">共同构成</strong>一套智能体，缺一不可。</p>
+              <div className="agent-boundary-strip" aria-label="智能体的四个组成部分">
+                <article>
+                  <span>组成 01</span>
+                  <strong>大语言模型</strong>
+                  <p>理解上下文，输出文字、判断与下一步建议。</p>
+                  <b className="key-term">提供能力核心</b>
+                </article>
+                <article>
+                  <span>组成 02</span>
+                  <strong>应用程序</strong>
+                  <p>真正调用工具、保存状态，并执行受控操作。</p>
+                  <b className="key-term">负责落地执行</b>
+                </article>
+                <article>
+                  <span>组成 03</span>
+                  <strong>运行机制</strong>
+                  <p>依据反馈继续、改道或停止，把各部分串成闭环。</p>
+                  <b className="key-term">推动持续运转</b>
+                </article>
+                <article>
+                  <span>组成 04</span>
+                  <strong>人工监督</strong>
+                  <p>确认关键操作，承担最终专业判断与责任。</p>
+                  <b className="key-term">守住高风险关口</b>
+                </article>
+              </div>
+            </div>
           </section>
           <section className="chapter-step"><div className="chapter-step-head"><span>7.2 · 系统组成</span><h3>在模型周围加入知识、工具、状态、权限与运行机制</h3></div><AgentArchitectureMap /></section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>7.3 · 边界</span><h3>聊天网页、检索问答和一次工具调用都不等价于智能体</h3><p>关键是系统能否围绕目标读取反馈，更新状态，并受控选择下一步。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>7.3 · 边界</span><h3>聊天网页、检索问答和一次工具调用都不等价于智能体</h3><p>关键是系统能否围绕目标<strong className="key-term">读取反馈、更新状态</strong>，并<strong className="key-term">受控选择下一步</strong>。</p></div>
             <div className="agent-definition-boundaries">{[["聊天网页", "只是交互界面。"], ["固定工作流", "路径主要预先确定，可以与智能体组合。"], ["知识检索问答", "有知识能力不等于具备完整行动循环。"], ["一次工具调用", "还要看反馈是否改变后续路径。"], ["对话历史", "由应用保存、筛选并重新提供，不等于永久记忆。"], ["完全自主", "不是智能体的必要条件。"]].map(([title, detail]) => <div key={title}><strong>{title}</strong><p>{detail}</p></div>)}</div>
           </section>
-          <LessonTakeaway>模型提出工具请求，应用程序校验身份、参数和权限后真正执行，再把结果送回智能体状态。</LessonTakeaway>
+          <LessonTakeaway>模型提出<strong className="key-term">工具请求</strong>，应用程序校验<strong className="key-term">身份、参数和权限</strong>后真正执行，再把结果送回<strong className="key-term">智能体状态</strong>。</LessonTakeaway>
           <TeacherNote time="6分钟" question="模型生成“查询合同甲”的请求后，谁有权真正进入合同系统？" misconception="模型不是业务系统执行者；智能体也不意味着完全自主。" mustSay="讲清目标、模型、知识、状态、工具、权限和运行机制。" />
         </section>
 
         <section id="agent-loop" className="lesson course-slide" hidden={activeCoursePage.id !== "agent-loop"}>
           <SectionTitle no="08" time="第二部分 · 约7分钟" title="智能体是怎样工作的" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>8.1 · 完整运行</span><h3>沿用同一任务，逐步观察目标、工具、状态和判断怎样变化</h3><p>下面继续运行 06 提出的主合同甲任务；每一步展示当前目标、工具输入、工具输出和下一步判断，数据均为前端教学模拟。</p></div><AgentLoopSimulator /></section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>8.2 · 核心循环</span><h3>任务没有完成，就依据新观察继续行动</h3><p>完成、失败、证据不足、权限阻断或触发人工关口时停止。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>8.1 · 完整运行</span><h3>沿用同一任务，逐步观察目标、工具、状态和判断怎样变化</h3><p>下面继续运行 06 提出的主合同甲任务；每一步展示当前目标、<strong className="key-term">工具输入、工具输出</strong>和<strong className="key-term">下一步判断</strong>，数据均为前端教学模拟。</p></div><AgentLoopSimulator /></section>
+          <section className="chapter-step"><div className="chapter-step-head"><span>8.2 · 核心循环</span><h3>任务没有完成，就依据新观察继续行动</h3><p>完成、失败、<strong className="key-term">证据不足</strong>、权限阻断或触发<strong className="key-term">人工关口</strong>时停止。</p></div>
             <div className="agent-core-loop">
               <div className="agent-core-loop-steps" aria-label="核心循环六步">
                 {["目标", "判断下一步", "调用工具", "获得结果", "更新状态", "是否完成"].map((item, index) => (
@@ -3021,13 +3049,13 @@ export default function Home() {
               </div>
             </div>
           </section>
-          <LessonTakeaway>智能体与普通聊天调用最重要的区别，不是回答更长，而是在目标尚未完成时，根据执行结果继续采取下一步行动。</LessonTakeaway>
+          <LessonTakeaway>智能体与普通聊天调用最重要的区别，不是回答更长，而是在<strong className="key-term">目标尚未完成</strong>时，根据<strong className="key-term">执行结果</strong>继续采取下一步行动。</LessonTakeaway>
           <TeacherNote time="7分钟" question="为什么取得主合同后不能直接生成结论？" misconception="静态步骤清单不等于智能体循环；无结果也不能当作没有风险。" mustSay="模型选择工具，运行层执行，观察进入状态，系统继续、停止或转人工。" />
         </section>
 
         <section id="agent-knowledge" className="lesson course-slide" hidden={activeCoursePage.id !== "agent-knowledge"}>
           <SectionTitle no="09" time="第二部分 · 约5分钟" title="知识型智能体" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>9.1 · 定义与结构</span><h3>检索、理解、归纳知识，并给出有依据的回答</h3><p>回答受知识版本、检索结果和访问权限约束。</p></div><AgentTypeSwitcher initial="knowledge" /></section>
+          <section className="chapter-step"><div className="chapter-step-head"><span>9.1 · 定义与结构</span><h3>检索、理解、归纳知识，并给出有依据的回答</h3><p>回答受<strong className="key-term">知识版本、检索结果和访问权限</strong>约束。</p></div><AgentTypeSwitcher initial="knowledge" /></section>
           <section className="chapter-step"><div className="chapter-step-head"><span>9.2 · 制度知识助手</span><h3>答案之外，还要展示条款位置、生效时间与限制</h3><p>制度冲突或材料不全时提示核实，不补出一个确定答案。</p></div>
             <div className="knowledge-case">
               <section className="knowledge-case-ask">
@@ -3057,19 +3085,19 @@ export default function Home() {
               </section>
             </div>
           </section>
-          <LessonTakeaway>知识型智能体让模型更好地“知道”：答案要有来源，材料不足要说不足，用户只能看到被授权的知识。</LessonTakeaway>
+          <LessonTakeaway>知识型智能体让模型更好地“知道”：<strong className="key-term">答案要有来源</strong>，材料不足要说不足，用户只能看到<strong className="key-term">被授权的知识</strong>。</LessonTakeaway>
           <TeacherNote time="5分钟" question="检索不到制度原文时，系统应该凭模型常识回答吗？" misconception="知识库接入不代表知识永远正确。" mustSay="这是海能智能体平台的业务分类，不是唯一行业标准；重要判断仍需核实。" />
         </section>
 
         <section id="agent-task" className="lesson course-slide" hidden={activeCoursePage.id !== "agent-task"}>
           <SectionTitle no="10" time="第二部分 · 约5分钟" title="任务型智能体" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>10.1 · 定义与结构</span><h3>按照相对明确的流程，调用工具完成具体任务</h3><p>如果系统只按固定条件机械执行，不需要模型理解非结构化信息，它更接近传统自动化流程。</p></div><AgentTypeSwitcher initial="task" /></section>
+          <section className="chapter-step"><div className="chapter-step-head"><span>10.1 · 定义与结构</span><h3>按照相对明确的流程，调用工具完成具体任务</h3><p>如果系统只按<strong className="key-term">固定条件机械执行</strong>，不需要模型理解非结构化信息，它更接近<strong className="key-term">传统自动化流程</strong>。</p></div><AgentTypeSwitcher initial="task" /></section>
           <section className="chapter-step"><div className="chapter-step-head"><span>10.2 · 案例：会议纪要录音批量结构化入湖</span><h3>将会议的录音材料转化为结构化纪要，再按流程写入任务系统</h3><p>当负责人或截止时间缺失时，暂停并请求人工补充。</p></div>
             <div className="task-case-flow">{["获取录音和材料", "语音转换为文字", "识别人员与议题", "提取决定和待办", "识别负责人和时间", "生成结构化纪要", "写入任务系统", "发送确认"].map((item, index) => <div key={item}><b>{String(index + 1).padStart(2, "0")}</b><strong>{item}</strong>{index < 7 && <i>→</i>}</div>)}</div>
             <div className="task-meeting-case">
-              <section className="meeting-case-context"><span>输入 · 非结构化材料</span><h4>会议录音，外加议程与参会名单</h4><p>讨论内容还散落在口语和附件里。系统要先转写成文字，再抽出议题、决定、待办、负责人和时间，才能进入任务系统。</p><ul className="meeting-input-list"><li>会议录音（口头决定、口头分工）</li><li>议程草稿与参会名单</li><li>会前说明材料</li></ul></section>
+              <section className="meeting-case-context"><span>输入 · 非结构化材料</span><h4>会议录音，外加议程与参会名单</h4><p>讨论内容还散落在口语和附件里。系统要先<strong className="key-term">转写成文字</strong>，再抽出<strong className="key-term">议题、决定、待办、负责人和时间</strong>，才能进入任务系统。</p><ul className="meeting-input-list"><li>会议录音（口头决定、口头分工）</li><li>议程草稿与参会名单</li><li>会前说明材料</li></ul></section>
               <section className="meeting-case-extraction"><span>模型理解 · 结构化结果</span><dl><dt>议题</dt><dd>合同审计智能体试点</dd><dt>决定</dt><dd>先验证转分包识别</dd><dt>待办</dt><dd>准备脱敏合同样本；形成试点评估表</dd><dt>负责人</dt><dd>张某 <em className="confirmed">已确认</em></dd><dt>截止时间</dt><dd>“8 月中旬前” <em className="pending">表述含糊</em></dd></dl></section>
-              <section className="meeting-case-control"><span>应用校验 · 受控写入</span><h4>日期不明确，先暂停写入</h4><p>系统不能把“8 月中旬前”猜成某一天，而是请求会议主持人补充具体日期。</p><ol className="meeting-control-flow" aria-label="受控写入校验">{[["01", "确认负责人和具体截止日期"], ["02", "校验任务系统写入权限"], ["03", "发送前确认接收人与内容"]].map(([no, text], index, list) => (
+              <section className="meeting-case-control"><span>应用校验 · 受控写入</span><h4>日期不明确，先暂停写入</h4><p>系统不能把“8 月中旬前”<strong className="key-term">猜成某一天</strong>，而是请求会议主持人<strong className="key-term">补充具体日期</strong>。</p><ol className="meeting-control-flow" aria-label="受控写入校验">{[["01", "确认负责人和具体截止日期"], ["02", "校验任务系统写入权限"], ["03", "发送前确认接收人与内容"]].map(([no, text], index, list) => (
                 <Fragment key={no}>
                   <li><b>{no}</b><span>{text}</span></li>
                   {index < list.length - 1 && <li aria-hidden="true"><i>↓</i></li>}
@@ -3077,7 +3105,7 @@ export default function Home() {
               ))}</ol><div className="meeting-write-result"><small>人工补充并通过校验后</small><strong>生成结构化会议纪要 → 写入两项待办 → 保存写入回执与通知结果</strong></div></section>
             </div>
           </section>
-          <LessonTakeaway>任务型智能体让模型按流程“去做”；高风险操作必须审批，工具结果必须校验，模型不能绕过业务权限。</LessonTakeaway>
+          <LessonTakeaway>任务型智能体让模型按流程“去做”；<strong className="key-term">高风险操作必须审批</strong>，<strong className="key-term">工具结果必须校验</strong>，模型不能绕过业务权限。</LessonTakeaway>
           <TeacherNote time="5分钟" question="固定规则已经能处理的流程，加入模型会增加什么风险？" misconception="跨多个系统不自动等于智能体。" mustSay="总体流程预设，关键节点由模型处理；写入和通知前要有权限与确认。" />
         </section>
 
@@ -3101,35 +3129,35 @@ export default function Home() {
             </div>
           </section>
           <section className="chapter-step"><div className="chapter-step-head"><span>11.2 · 案例：近一年核心系统故障根因专项排查</span></div><PlanningAdjustmentLab /></section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>11.3 · 运行边界</span><h3>规划能力越强，权限、资源、停止与接管越重要</h3><p>不能无限循环、绕过审批或在没有证据时形成最终结论。</p></div><div className="planning-guardrails">{["最大执行步骤", "时间与资源限制", "工具白名单", "数据访问权限", "高风险操作审批", "运行日志", "异常中止", "人工接管", "结果复核"].map(item => <span key={item}>{item}</span>)}</div></section>
-          <LessonTakeaway>规划型智能体让模型决定“先做什么、再做什么”；它通常更难稳定实施，也必须在受控范围内运行。</LessonTakeaway>
+          <section className="chapter-step"><div className="chapter-step-head"><span>11.3 · 运行边界</span><h3>规划能力越强，权限、资源、停止与接管越重要</h3><p>不能<strong className="key-term">无限循环、绕过审批</strong>或在<strong className="key-term">没有证据</strong>时形成最终结论。</p></div><div className="planning-guardrails">{["最大执行步骤", "时间与资源限制", "工具白名单", "数据访问权限", "高风险操作审批", "运行日志", "异常中止", "人工接管", "结果复核"].map(item => <span key={item}>{item}</span>)}</div></section>
+          <LessonTakeaway>规划型智能体让模型决定“<strong className="key-term">先做什么、再做什么</strong>”；它通常更难稳定实施，也必须在<strong className="key-term">受控范围</strong>内运行。</LessonTakeaway>
           <TeacherNote time="7分钟" question="标题完全不同、现象却相同的故障被遗漏时，系统怎样调整？" misconception="规划型不代表完全自主，动态计划也不能动态扩大权限。" mustSay="计划可以改，权限不能由模型自己扩大。" />
         </section>
 
         <section id="agent-case" className="lesson course-slide" hidden={activeCoursePage.id !== "agent-case"}>
           <SectionTitle no="12" time="第二部分 · 约7分钟" title="一个完整的组合型智能体应用" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>12.1 · 转分包风险识别</span><h3>规划、知识与任务执行能力围绕同一目标协同</h3><p>沿时间线查看合同获取、规则检索、候选召回、证据比较、人工确认和报告生成。</p></div><CombinedContractCaseLab /></section>
+          <section className="chapter-step"><div className="chapter-step-head"><span>12.1 · 转分包风险识别</span><h3>规划、知识与任务执行能力围绕同一目标协同</h3><p>沿时间线查看合同获取、规则检索、候选召回、<strong className="key-term">证据比较</strong>、<strong className="key-term">人工确认</strong>和报告生成。</p></div><CombinedContractCaseLab /></section>
           <section className="chapter-step"><div className="chapter-step-head"><span>12.2 · 能力组合</span><h3>三类能力是同一应用中的不同职责</h3><p>规划决定下一步，知识提供依据，任务能力受控执行工具。</p></div>
             <div className="combined-capabilities"><div><span>规划能力</span><strong>决定检查路径</strong><p>获取主合同、搜索候选、判断证据强度。</p></div><div><span>知识能力</span><strong>提供专业依据</strong><p>检索制度、案例和风险标准。</p></div><div><span>任务能力</span><strong>调用工具完成动作</strong><p>查询、读取、检索、分析和生成报告。</p></div><div><span>人工监督</span><strong>把守高风险节点</strong><p>处理冲突、敏感访问、正式结论和外发。</p></div></div>
           </section>
-          <LessonTakeaway>完整交付不是一个风险标签，而是结论、证据、推理依据、不确定性、后续建议和人工确认记录。</LessonTakeaway>
+          <LessonTakeaway>完整交付不是一个风险标签，而是<strong className="key-term">结论、证据、推理依据</strong>、不确定性、后续建议和<strong className="key-term">人工确认记录</strong>。</LessonTakeaway>
           <TeacherNote time="7分钟" question="时间线上哪一步体现知识、规划和人工责任？" misconception="三类智能体不是互斥产品，风险分也不是审计结论。" mustSay="走到证据链、不确定性、人工确认和安全停止。" />
         </section>
 
         <section id="agent-value" className="lesson course-slide" hidden={activeCoursePage.id !== "agent-value"}>
           <SectionTitle no="13" time="第二部分 · 约5分钟" title="智能体带来的价值与边界" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>13.1 · 工作方式变化</span><h3>价值不只是节省成本，而是任务怎样被重新组织</h3><p>系统扩大覆盖、串联信息和保留过程；人转向关键判断、异常处理和最终决策。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>13.1 · 工作方式变化</span><h3>价值不只是节省成本，而是任务怎样被重新组织</h3><p>系统<strong className="key-term">扩大覆盖、串联信息和保留过程</strong>；人转向<strong className="key-term">关键判断、异常处理和最终决策</strong>。</p></div>
             <div className="agent-value-shifts">{[["从问答到任务", "人查资料、操作系统、整理结果", "用户提出目标，系统协助完成中间过程"], ["从信息分散到统一调用", "制度、合同和案例分散", "按权限检索并组织相关信息"], ["从逐份检查到穿透分析", "人工抽样有限合同", "系统全量初筛，人工复核重点"], ["从固定流程到处理异常", "材料缺失时停止", "调整步骤或请求人工"], ["从黑盒到可追溯", "只看到风险标签", "保留资料、工具、理由与人工决定"]].map(([title, before, after]) => <div key={title}><strong>{title}</strong><p><span>以前</span>{before}</p><p><span>现在</span>{after}</p></div>)}</div>
           </section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>13.2 · 风险与治理</span><h3>工具行动会放大错误影响，权限要比文字生成更谨慎</h3><p>模型和工具都可能出错；无结果、错误结果和权限拒绝不能被改写成正常。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>13.2 · 风险与治理</span><h3>工具行动会放大错误影响，权限要比文字生成更谨慎</h3><p>模型和工具都可能出错；<strong className="key-term">无结果、错误结果和权限拒绝</strong>不能被改写成正常。</p></div>
             <div className="agent-risk-governance"><div><span>可能出错</span>{["误解任务", "忽略证据", "选择错误工具", "错误解释结果"].map(item => <b key={item}>{item}</b>)}</div><div><span>行动放大影响</span>{["错误写入", "错误通知", "错误提交", "数据泄露"].map(item => <b key={item}>{item}</b>)}</div><div><span>必须治理</span>{["身份与权限", "工具白名单", "输入输出校验", "操作日志", "人工审批", "资源限制", "异常中止", "结果复核", "责任边界"].map(item => <b key={item}>{item}</b>)}</div></div>
           </section>
           <section className="chapter-step"><div className="chapter-step-head"><span>13.3 · 总结</span><h3>模型是能力核心，企业智能体是完整运行系统</h3><p>逐步加入知识、工具、状态、计划、权限、流程和人工监督。</p></div>
             <div className="agent-evolution-chain">{["大语言模型", "加入企业知识", "知识型智能体", "加入工具与流程", "任务型智能体", "加入状态与动态计划", "规划型智能体", "企业智能体系统"].map((item, index) => <div key={item}><b>{String(index + 1).padStart(2, "0")}</b><strong>{item}</strong>{index < 7 && <i>→</i>}</div>)}</div>
-            <blockquote className="agent-closing-quote">第一部分中，大语言模型是理解语言并生成回答的能力核心。第二部分中，我们在它周围加入知识、工具、状态、规划、行动、反馈、权限和人工监督，使系统开始在明确边界内协助人完成真实工作。</blockquote>
+            <blockquote className="agent-closing-quote">第一部分中，大语言模型是<strong className="key-term">理解语言并生成回答</strong>的能力核心。第二部分中，我们在它周围加入知识、工具、状态、规划、行动、反馈、权限和人工监督，使系统开始在<strong className="key-term">明确边界</strong>内协助人完成真实工作。</blockquote>
           </section>
-          <LessonTakeaway>智能体能力越强、可以采取的行动越多，就越需要清晰的权限、规则、监督和责任机制。</LessonTakeaway>
-          <Bridge from="通用企业智能体" problem="进入审计后，还要把目标改写为审计工作产品，并将职业判断、复核与签发责任明确留给审计人员。" to="智能体在审计中的应用" />
+          <LessonTakeaway>智能体能力越强、可以采取的行动越多，就越需要清晰的<strong className="key-term">权限、规则、监督和责任机制</strong>。</LessonTakeaway>
+          <Bridge from="通用企业智能体" problem={<>进入审计后，还要把目标改写为<strong className="key-term">审计工作产品</strong>，并将<strong className="key-term">职业判断、复核与签发责任</strong>明确留给审计人员。</>} to="智能体在审计中的应用" />
           <TeacherNote time="5分钟" question="任务更快但越权和错误写入增加，能否算成功？" misconception="智能体价值不是取消人工；全量初筛也不等于自动定性。" mustSay="用工作方式变化讲价值，用错误放大效应讲边界。" />
         </section>
 
@@ -3140,82 +3168,82 @@ export default function Home() {
 
         <section id="audit" className="lesson course-slide" hidden={activeCoursePage.id !== "audit"}>
           <SectionTitle no="14" time="第三部分 · 约6分钟" title="从审计工作链理解三个智能体" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>14.1 · 真实任务</span><h3>数百份异构资料的集成、平台数据智能取数和分析以及审计报告的智能撰写，不能一次交给模型解决</h3><p>文件格式、证据定位、业务口径、数据权限、报告类型与人工责任界定等都需要专门系统处理。</p></div><AuditChainChallenge /></section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>14.2 · 三个智能体案例</span><h3>资料进入、可信分析和成果形成组成完整审计工作链</h3><p>三个智能体可以单独工作，也通过统一证据、权限、任务状态和人工审批串联。</p></div>
-            <div className="audit-three-chain"><div><span>资料</span><strong>异构审计资料解析</strong><p>识别格式、调用解析工具、恢复结构、定位来源并形成证据。</p></div><div><span>数据</span><strong>智能问数与分析</strong><p>理解业务问题、匹配指标口径、强制权限、安全查询并分析。</p></div><div><span>成果</span><strong>智能生成审计报告</strong><p>依据已确认发现、证据、制度和模板形成可审核草稿。</p></div></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>14.1 · 真实任务</span><h3>数百份异构资料的集成、平台数据智能取数和分析以及审计报告的智能撰写，不能一次交给模型解决</h3><p>文件格式、<strong className="key-term">证据定位</strong>、业务口径、<strong className="key-term">数据权限</strong>、报告类型与<strong className="key-term">人工责任界定</strong>等都需要专门系统处理。</p></div><AuditChainChallenge /></section>
+          <section className="chapter-step"><div className="chapter-step-head"><span>14.2 · 三个智能体案例</span><h3>资料进入、可信分析和成果形成组成完整审计工作链</h3><p>三个智能体可以单独工作，也通过<strong className="key-term">统一证据、权限、任务状态和人工审批</strong>串联。</p></div>
+            <div className="audit-three-chain"><div><span>资料</span><strong>异构审计资料解析</strong><p>识别格式、调用解析工具、恢复结构、<strong className="key-term">定位来源并形成证据</strong>。</p></div><div><span>数据</span><strong>智能问数与分析</strong><p>理解业务问题、匹配指标口径、<strong className="key-term">强制权限、安全查询</strong>并分析。</p></div><div><span>成果</span><strong>智能生成审计报告</strong><p>依据<strong className="key-term">已确认发现、证据、制度和模板</strong>形成可审核草稿。</p></div></div>
           </section>
           <section className="chapter-step"><div className="chapter-step-head"><span>14.3 · 统一设计问题</span><h3>先问目标、输入、知识、工具、权限和验证，再考虑模型</h3></div><AuditDesignWorkbench /></section>
-          <LessonTakeaway>三个智能体分别解决资料、数据和成果环节；它们共享证据与权限体系，但任何正式结论都要由审计人员确认。</LessonTakeaway>
+          <LessonTakeaway>三个智能体分别解决资料、数据和成果环节；它们共享<strong className="key-term">证据与权限体系</strong>，但任何<strong className="key-term">正式结论</strong>都要由审计人员确认。</LessonTakeaway>
           <TeacherNote time="6分钟" question="把全部文件、平台数据和历史报告一次交给模型，最先失去的是格式、权限还是证据定位？" misconception="一个模型调用不能同时替代文件解析、数据库权限和报告审批。" mustSay="先让学员选择，再揭示三类系统；六个设计问题贯穿第三部分。" />
         </section>
 
         <section id="audit-documents" className="lesson course-slide" hidden={activeCoursePage.id !== "audit-documents"}>
           <SectionTitle no="15" time="第三部分 · 约12分钟" title="案例一：怎样让智能体读懂各种审计资料" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>15.1 · 文件路由</span><h3>先识别文件类型、可读性和安全状态，再选择专门工具</h3><p>便携式文档、图片和自由文本通常是非结构化或半结构化资料；电子表格通常是结构化或半结构化数据；文字处理文档本身具有标题、表格和批注等结构。</p></div><DocumentParsingLab /></section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>15.2 · 从解析结果到证据</span><h3>识别出文字只是开始，还要恢复结构、校验质量并保留原始位置</h3><p>智能体选择工具和组织分析；页面拆分、文字识别、表格读取与文档结构恢复由专门程序或模型完成。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>15.1 · 文件路由</span><h3>先识别文件类型、可读性和安全状态，再选择专门工具</h3><p>便携式文档、图片和自由文本通常是<strong className="key-term">非结构化或半结构化资料</strong>；电子表格通常是<strong className="key-term">结构化或半结构化数据</strong>；文字处理文档本身具有标题、表格和批注等结构。</p></div><DocumentParsingLab /></section>
+          <section className="chapter-step"><div className="chapter-step-head"><span>15.2 · 从解析结果到证据</span><h3>识别出文字只是开始，还要恢复结构、校验质量并保留原始位置</h3><p>智能体选择工具和组织分析；页面拆分、文字识别、表格读取与文档结构恢复由<strong className="key-term">专门程序或模型</strong>完成。</p></div>
             <div className="document-evidence-flow">{["安全与权限检查", "文件类型识别", "解析工具路由", "统一文档模型", "字段与实体提取", "跨文档关联", "冲突与异常检测", "证据索引", "人工复核"].map((item, index) => <div key={item}><b>{String(index + 1).padStart(2, "0")}</b><strong>{item}</strong>{index < 8 && <i>→</i>}</div>)}</div>
             <EvidenceConflictBoard />
           </section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>15.3 · 跨文档关联</span><h3>语义相似帮助发现关系，确定性字段优先完成校验</h3><p>合同编号、主体代码、金额和日期采用规则精确匹配；项目名称和工作范围可用语义相似发现候选关系。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>15.3 · 跨文档关联</span><h3>语义相似帮助发现关系，确定性字段优先完成校验</h3><p>合同编号、主体代码、金额和日期采用<strong className="key-term">规则精确匹配</strong>；项目名称和工作范围可用<strong className="key-term">语义相似</strong>发现候选关系。</p></div>
             <div className="document-link-map"><div><span>合同扫描件</span><strong>合同编号甲-2025-0312</strong><small>金额860万元 · 供应商某技术服务公司</small></div><div><span>付款台账</span><strong>相同合同编号</strong><small>累计830万元 · 汇总表!D8</small></div><div><span>会议纪要</span><strong>相同项目与供应商</strong><small>启动日期早于合同签订日</small></div><div><span>现场照片</span><strong>相同项目名称</strong><small>印章主体低置信度</small></div><section><span>证据关系图</span><b>合同编号精确关联</b><b>供应商代码精确关联</b><b>项目名称语义候选</b><b>日期和金额规则校验</b></section></div>
           </section>
           <section className="chapter-step"><div className="chapter-step-head"><span>15.4 · 结果与评价</span><h3>目标不是把文件变成一大段文字，而是形成可追溯、可关联、可验证的证据</h3><p>所有数量均为教学模拟。</p></div>
-            <div className="document-output-card"><div><span>解析概况</span><strong>7份文件 · 42页 · 3个工作表 · 2张图片</strong><p>提取合同金额860万元、签订日期2025年3月12日、供应商和工作范围。</p></div><div><span>发现异常</span><ol><li>付款台账与合同金额相差30万元。</li><li>会议纪要中的启动日期早于合同签订日期。</li><li>一份附件签章页识别置信度较低。</li></ol></div><div><span>评估指标</span><p>解析成功率 · 文字准确率 · 表格结构还原 · 字段提取 · 来源定位覆盖 · 冲突召回 · 人工修正率 · 平均处理时间</p></div></div>
+            <div className="document-output-card"><div><span>解析概况</span><strong>7份文件 · 42页 · 3个工作表 · 2张图片</strong><p>提取合同金额860万元、签订日期2025年3月12日、供应商和<strong className="key-term">工作范围</strong>。</p></div><div><span>发现异常</span><ol><li>付款台账与合同金额<strong className="key-term">相差30万元</strong>。</li><li>会议纪要中的启动日期<strong className="key-term">早于合同签订日期</strong>。</li><li>一份附件签章页识别置信度较低。</li></ol></div><div><span>评估指标</span><p>解析成功率 · 文字准确率 · 表格结构还原 · 字段提取 · <strong className="key-term">来源定位覆盖</strong> · 冲突召回 · 人工修正率 · 平均处理时间</p></div></div>
           </section>
-          <LessonTakeaway>异构资料解析智能体把不同格式转换为统一证据对象；低置信度、结构异常和跨文件冲突必须保留来源并转人工核实。</LessonTakeaway>
+          <LessonTakeaway>异构资料解析智能体把不同格式转换为<strong className="key-term">统一证据对象</strong>；低置信度、结构异常和跨文件冲突必须<strong className="key-term">保留来源并转人工核实</strong>。</LessonTakeaway>
           <TeacherNote time="12分钟" question="扫描金额识别成“捌佰陆拾万无整”，能否直接用于报告？电子表格汇总和明细不同又该相信谁？" misconception="模型不天然精确解析所有文件；电子表格也不是普通长文本。" mustSay="专门工具、置信度、页码/单元格、冲突保留和人工复核。" canSkip="文件路由可只切换扫描件与电子表格，但必须展示文字处理文档结构边界。" />
         </section>
 
         <section id="audit-data" className="lesson course-slide" hidden={activeCoursePage.id !== "audit-data"}>
           <SectionTitle no="16" time="第三部分 · 约12分钟" title="案例二：怎样用自然语言安全查询审计数据" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>16.1 · 业务问题</span><h3>模型不能根据常识猜审计数字，必须通过受控工具查询真实数据</h3><p>同一个问题在总部、分公司和项目组身份下应得到不同授权范围的结果。</p></div><SecureQueryLab /></section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>16.2 · 权限与语义</span><h3>数据库字段说明数据在哪里，语义层说明业务指标是什么意思</h3><p>权限由身份认证、权限服务、查询网关和数据策略强制执行，不能只提醒模型“不要越权”。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>16.1 · 业务问题</span><h3>模型不能根据常识猜审计数字，必须通过受控工具查询真实数据</h3><p>同一个问题在总部、分公司和项目组身份下应得到<strong className="key-term">不同授权范围</strong>的结果。</p></div><SecureQueryLab /></section>
+          <section className="chapter-step"><div className="chapter-step-head"><span>16.2 · 权限与语义</span><h3>数据库字段说明数据在哪里，语义层说明业务指标是什么意思</h3><p>权限由身份认证、权限服务、查询网关和数据策略<strong className="key-term">强制执行</strong>，不能只提醒模型“<strong className="key-term">不要越权</strong>”。</p></div>
             <div className="query-control-architecture"><div><span>用户身份</span><strong>角色、组织、项目</strong><p>认证谁在提问。</p></div><i>↓</i><div><span>业务语义层</span><strong>指标、口径、关系、同义词</strong><p>把“单一来源采购金额”定义为相应合同金额合计。</p></div><i>↓</i><div><span>权限服务</span><strong>表、字段、行、项目和时间范围</strong><p>生成模型不可修改的数据范围。</p></div><i>↓</i><div><span>安全查询服务</span><strong>只读、白名单、超时、脱敏、日志</strong><p>前端不直接连接数据库。</p></div><i>↓</i><div><span>结果分析</span><strong>复算、同比、排名、趋势和贡献因素</strong><p>模型只分析已经过滤和校验的结果。</p></div></div>
           </section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>16.3 · 异常处理</span><h3>空结果、语句失败和敏感问题都有明确处理分支</h3><p>不能把“无权限”“数据未更新”或“查询失败”改写成“没有数据”。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>16.3 · 异常处理</span><h3>空结果、语句失败和敏感问题都有明确处理分支</h3><p>不能把“<strong className="key-term">无权限</strong>”“<strong className="key-term">数据未更新</strong>”或“<strong className="key-term">查询失败</strong>”改写成“没有数据”。</p></div>
             <div className="query-exception-grid">{[["口径不明确", "确认合同金额还是付款金额、时间范围、税口径和采购类型。"], ["结果为空", "检查权限、时间、指标、数据更新时间和字段映射。"], ["语句失败", "读取错误、修正后重新校验；限制最大重试，仍失败转技术人员。"], ["敏感信息", "拒绝、聚合、脱敏或要求额外审批。"], ["数据异常", "保留原始结果，执行复算、勾稽和数量级检查。"], ["资源风险", "先检查执行计划，限制扫描范围、返回行数和超时。"]].map(([title, detail]) => <div key={title}><strong>{title}</strong><p>{detail}</p></div>)}</div>
           </section>
-          <LessonTakeaway>智能问数不是单纯把自然语言转换为查询语句，而是语义、身份权限、安全执行、结果校验、统计分析和可追溯记录的组合系统。</LessonTakeaway>
+          <LessonTakeaway>智能问数不是单纯把自然语言转换为查询语句，而是<strong className="key-term">语义、身份权限、安全执行</strong>、结果校验、统计分析和<strong className="key-term">可追溯记录</strong>的组合系统。</LessonTakeaway>
           <TeacherNote time="12分钟" question="只读查询是否一定安全？同一问题为什么三个角色看到的单位数量不同？" misconception="模型不能决定用户权限；前端不得连接生产数据库；数据库返回也不等于数字已校验。" mustSay="语义层、权限注入、安全校验、只读环境、分析和追溯必须完整。" canSkip="查询步骤可点击到权限注入与执行，至少切换总部和分公司两个身份。" />
         </section>
 
         <section id="audit-report" className="lesson course-slide" hidden={activeCoursePage.id !== "audit-report"}>
           <SectionTitle no="17" time="第三部分 · 约15分钟" title="案例三：怎样生成真正可用的审计报告" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>17.1 · 先看失败方式</span><h3>“写得像报告”不等于结构正确、事实准确、证据充分</h3><p>简单要求模型根据现有资料写报告，会混淆类型、范围、金额和证据状态，也可能引用不存在或失效的制度。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>17.1 · 先看失败方式</span><h3>“写得像报告”不等于结构正确、事实准确、证据充分</h3><p>简单要求模型根据现有资料写报告，会混淆<strong className="key-term">类型、范围、金额和证据状态</strong>，也可能引用<strong className="key-term">不存在或失效的制度</strong>。</p></div>
             <div className="report-failure-board"><div><span>简单指令</span><strong>“根据现有资料帮我写一份审计报告。”</strong></div><i>→</i><div><span>表面结果</span><strong>文字正式、结构似乎完整</strong></div><i>→</i><div><span>真实风险</span>{["不知道报告类型与读者", "未确认事实被写成结论", "合同金额和付款金额混淆", "制度引用可能不存在", "句子无法回到证据", "不符合审批与模板"].map(item => <b key={item}>{item}</b>)}</div></div>
           </section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>17.2 · 三层架构与技术路线</span><h3>先事实证据，再审计分析，最后报告表达</h3><p>历史报告需要分类、版本、批准状态和保密等级；个人风格转成可查看、可编辑、可确认的规则。</p></div><ReportArchitectureBoard /></section>
+          <section className="chapter-step"><div className="chapter-step-head"><span>17.2 · 三层架构与技术路线</span><h3>先事实证据，再审计分析，最后报告表达</h3><p>历史报告需要<strong className="key-term">分类、版本、批准状态和保密等级</strong>；个人风格转成可查看、可编辑、可确认的规则。</p></div><ReportArchitectureBoard /></section>
           <section className="chapter-step"><div className="chapter-step-head"><span>17.3 · 生成与审核工作台</span><h3>选择类型与范围 → 导入发现 → 检查证据 → 确认提纲 → 分段生成 → 人工审核</h3><p>尝试切换报告类型、风格，调整提纲顺序，并接受或退回当前段落。</p></div><ReportGenerationStudio /></section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>17.4 · 质量门与版本记录</span><h3>事实、数字、制度、证据、模板和风格逐项检查</h3><p>表达层不能修改事实；证据不足时保留不确定性并阻断确定性结论。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>17.4 · 质量门与版本记录</span><h3>事实、数字、制度、证据、模板和风格逐项检查</h3><p>表达层<strong className="key-term">不能修改事实</strong>；证据不足时<strong className="key-term">保留不确定性</strong>并阻断确定性结论。</p></div>
             <div className="report-quality-gates">{[["数字一致", "金额、合计、百分比、时间范围和单位统一"], ["事实一致", "主体、项目、日期、合同编号和结论状态"], ["证据覆盖", "关键事实、数字和制度引用均可回查"], ["不确定性", "已确认、高概率、待核实和建议检查严格区分"], ["模板合规", "必填章节、标题层级、附件、审批和保密标识"], ["风格一致", "句式、术语、语气、篇幅、建议与禁止词"]].map(([title, detail]) => <div key={title}><strong>{title}</strong><p>{detail}</p></div>)}</div>
             <div className="report-version-log"><span>每次人工修改保留</span><b>修改人员</b><b>修改时间</b><b>修改前内容</b><b>修改后内容</b><b>修改原因</b><b>证据版本</b><b>审批状态</b></div>
           </section>
-          <LessonTakeaway>报告生成必须从证据向报告生成，而不是从语言向事实倒推；先确认提纲、再分段生成、逐句复核，正式报告责任仍由审计人员承担。</LessonTakeaway>
+          <LessonTakeaway>报告生成必须<strong className="key-term">从证据向报告生成</strong>，而不是从语言向事实倒推；先确认提纲、再分段生成、<strong className="key-term">逐句复核</strong>，正式报告责任仍由审计人员承担。</LessonTakeaway>
           <TeacherNote time="15分钟" question="历史报告越多，直接混进同一知识库是否越好？为什么先提纲后正文比一次生成全文可靠？" misconception="检索增强生成不是全部方案；微调不能替代证据检索、事实校验、权限和人工复核。" mustSay="历史报告分类质量筛选、六层知识、结构化发现、三层架构、提纲确认、质量门和人工审核。" canSkip="风格可只切换两项，但不能跳过提纲编辑和接受/退回动作。" />
         </section>
 
         <section id="audit-collaboration" className="lesson course-slide" hidden={activeCoursePage.id !== "audit-collaboration"}>
           <SectionTitle no="18" time="第三部分 · 约7分钟" title="构想：智能体协作完成审计任务" />
-          <section className="chapter-step"><div className="chapter-step-head"><span>18.1 · 完整演示任务</span><h3>审计任务：对项目甲做采购与合同初步分析</h3><p>项目组交来合同扫描件、付款台账、供应商材料，以及平台采购宽表。需要核对合同金额与台账是否一致，查清近三年供应商趋势和单一来源是否异常，并形成供项目组讨论的报告草稿；正式定性仍由审计人员复核。</p></div><AuditCollaborationLab /></section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>18.2 · 统一底座</span><h3>三个智能体不能各建一套数据、权限和日志</h3><p>统一证据对象、查询结果对象、审计发现对象和报告对象，让每条报告句子可以回到数据或文件。</p></div>
-            <div className="audit-shared-stack"><div><strong>审计人员与审批</strong><p>确认事实、判断风险、审核报告并承担责任。</p></div><div><strong>三个智能体与任务状态</strong><p>资料解析、智能问数、报告生成共享项目目标。</p></div><div><strong>证据、查询、发现和报告对象</strong><p>统一编号、版本、权限范围、状态和责任人。</p></div><div><strong>工具、知识与权限服务</strong><p>文件解析、只读查询、制度检索、质量校验和人工关口。</p></div><div><strong>文件、审计宽表与制度来源</strong><p>只访问项目与组织已授权的数据和资料。</p></div></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>18.1 · 完整演示任务</span><h3>审计任务：对项目甲做采购与合同初步分析</h3><p>项目组交来合同扫描件、付款台账、供应商材料，以及平台采购宽表。需要核对合同金额与台账是否一致，查清近三年供应商趋势和单一来源是否异常，并形成供项目组讨论的报告草稿；<strong className="key-term">正式定性仍由审计人员复核</strong>。</p></div><AuditCollaborationLab /></section>
+          <section className="chapter-step"><div className="chapter-step-head"><span>18.2 · 统一底座</span><h3>三个智能体不能各建一套数据、权限和日志</h3><p>统一<strong className="key-term">证据对象、查询结果对象、审计发现对象和报告对象</strong>，让每条报告句子可以<strong className="key-term">回到数据或文件</strong>。</p></div>
+            <div className="audit-shared-stack"><div><strong>审计人员与审批</strong><p>确认事实、判断风险、审核报告并<strong className="key-term">承担责任</strong>。</p></div><div><strong>三个智能体与任务状态</strong><p>资料解析、智能问数、报告生成共享项目目标。</p></div><div><strong>证据、查询、发现和报告对象</strong><p>统一编号、版本、<strong className="key-term">权限范围、状态和责任人</strong>。</p></div><div><strong>工具、知识与权限服务</strong><p>文件解析、只读查询、制度检索、质量校验和<strong className="key-term">人工关口</strong>。</p></div><div><strong>文件、审计宽表与制度来源</strong><p>只访问项目与组织<strong className="key-term">已授权</strong>的数据和资料。</p></div></div>
           </section>
-          <LessonTakeaway>三个智能体通过统一身份、权限、证据编号、任务状态和审核记录串成系统；报告中的事实可以逐级回到发现、查询结果和原始资料。</LessonTakeaway>
+          <LessonTakeaway>三个智能体通过统一<strong className="key-term">身份、权限、证据编号、任务状态和审核记录</strong>串成系统；报告中的事实可以逐级<strong className="key-term">回到发现、查询结果和原始资料</strong>。</LessonTakeaway>
           <TeacherNote time="7分钟" question="如果资料解析、智能问数和报告生成分别使用不同证据编号，最后会发生什么？" misconception="共享同一个模型不等于共享证据和权限底座。" mustSay="沿十二步演示完整任务；四类对象接口与统一底座是串联关键。" />
         </section>
 
         <section id="audit-governance" className="lesson course-slide" hidden={activeCoursePage.id !== "audit-governance"}>
           <SectionTitle no="19" time="第三部分 · 约8分钟" title="审计智能体的效果、评估和治理边界" />
           <section className="chapter-step"><div className="chapter-step-head"><span>19.1 · 效果与指标</span><h3>不只说提质增效，要说明工作方式怎样变化、结果怎样评价</h3><p>切换具体效果、评估指标和治理边界，观察三个案例分别需要什么证据。</p></div><AuditGovernanceDashboard /></section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>19.2 · 事实与责任分层</span><h3>智能体建议不能自动成为正式审计结论</h3><p>从原始资料到正式成果，每一层都有来源、状态和责任人。</p></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>19.2 · 事实与责任分层</span><h3>智能体建议不能自动成为正式审计结论</h3><p>从原始资料到正式成果，每一层都有<strong className="key-term">来源、状态和责任人</strong>。</p></div>
             <div className="audit-responsibility-chain">{["原始证据", "工具提取事实", "系统分析结果", "智能体建议", "审计人员确认", "正式审计结论"].map((item, index) => <div key={item}><b>{String(index + 1).padStart(2, "0")}</b><strong>{item}</strong>{index < 5 && <i>→</i>}</div>)}</div>
             <div className="audit-security-matrix">{[["数据安全", "不越权、脱敏、加密、批准的模型服务、最小日志"], ["权限安全", "身份、组织、项目、行、字段、工具、审批、导出权限"], ["查询安全", "只读、白名单、权限注入、扫描限制、脱敏、超时和日志"], ["报告安全", "不虚构事实制度、不隐去不确定性、人工审核、版本追踪"], ["操作安全", "高风险动作暂停、人工确认、异常中止和可回退"], ["责任安全", "模型输出有内部记录，审计人员负责证据评价、定性和签发"]].map(([title, detail]) => <div key={title}><strong>{title}</strong><p>{detail}</p></div>)}</div>
           </section>
-          <section className="chapter-step"><div className="chapter-step-head"><span>19.3 · 全课收束</span><h3>让机器承担解析、查询、比对、整理和草拟，让人负责证据、判断与责任</h3><p>规则、模型、工具、工作流和智能体各自承担合适的任务，不把确定性程序包装成模型能力。</p></div>
-            <div className="closing"><p>审计智能体的价值，不是替代审计人员作出职业判断。</p><h3>资料可解析，数字可复算，证据可回查，过程可审核；<br />正式结论由审计人员确认并承担责任。</h3><div><span>身份明确</span><span>权限可控</span><span>数据可信</span><span>证据可查</span><span>版本可追</span><span>人工复核</span></div></div>
+          <section className="chapter-step"><div className="chapter-step-head"><span>19.3 · 全课收束</span><h3>让机器承担解析、查询、比对、整理和草拟，让人负责证据、判断与责任</h3><p>规则、模型、工具、工作流和智能体<strong className="key-term">各自承担合适的任务</strong>，不把<strong className="key-term">确定性程序包装成模型能力</strong>。</p></div>
+            <div className="closing"><p>审计智能体的价值，不是替代审计人员作出<strong className="key-term">职业判断</strong>。</p><h3>资料可解析，数字可复算，证据可回查，过程可审核；<br />正式结论由审计人员确认并承担责任。</h3><div><span>身份明确</span><span>权限可控</span><span>数据可信</span><span>证据可查</span><span>版本可追</span><span>人工复核</span></div></div>
             <Quiz />
           </section>
-          <LessonTakeaway>审计智能体必须同时证明结果可靠、权限没有被绕过、过程可以复盘、责任边界清晰；效率提升只是评价的一部分。</LessonTakeaway>
+          <LessonTakeaway>审计智能体必须同时证明<strong className="key-term">结果可靠、权限没有被绕过</strong>、过程可以复盘、<strong className="key-term">责任边界清晰</strong>；效率提升只是评价的一部分。</LessonTakeaway>
           <TeacherNote time="8分钟" question="系统解析正确、查询快速、报告流畅，但证据无法回查，能否进入正式流程？" misconception="自动化覆盖越高不等于风险越低；智能体输出不等于审计证据或结论。" mustSay="具体效果、分功能指标、数据/权限/事实/查询/报告安全和正式责任。" />
         </section>
 

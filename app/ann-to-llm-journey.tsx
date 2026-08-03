@@ -134,7 +134,7 @@ function LanguageEncodingLab() {
       <div className="encoding-stage" aria-live="polite">
         {stage === 0 && <div className="raw-language"><span>人读到的文字</span><p>“审计人员发现这份合同存在异常，因此决定进一步核查。”</p><small>整句话不能原样放进神经元做加权计算。</small></div>}
         {stage === 1 && <div className="token-sequence"><span>模型处理的基本单位</span><div>{exampleTokens.map((token, index) => <b key={`${token}-${index}`}>{token}</b>)}</div><small>Token 可以是字、词或子词；此处只展示概念，不展开分词算法。</small></div>}
-        {stage === 2 && <div className="embedding-stage"><div className="embedding-list">{Object.entries(vectors).map(([token, vector]) => <div key={token}><b>{token}</b><code>{vector}</code></div>)}</div><aside><span>不是普通编号</span><strong>向量携带可学习的语义关系</strong><p>训练后，“合同”通常更靠近“协议”，“核查”更靠近“检查”，而不是只得到 17、42 这样的流水号。</p></aside></div>}
+        {stage === 2 && <div className="embedding-stage"><div className="embedding-list">{Object.entries(vectors).map(([token, vector]) => <div key={token}><b>{token}</b><code>{vector}</code></div>)}</div><aside><span>不是普通编号</span><strong>向量携带可学习的语义关系</strong><p>训练后，“合同”通常更靠近“协议”，“核查”更靠近“检查”，而不是只得到 17、42 这样的<strong className="key-term">流水号</strong>。</p></aside></div>}
         {stage === 3 && (
           <div className="network-entry">
             <div>{exampleTokens.slice(0, 6).map((token, index) => <span key={token}><b>{token}</b><small>{index === 0 ? "[0.62, …]" : index === 3 ? "[0.71, …]" : "[…, …]"}</small></span>)}</div>
@@ -143,7 +143,7 @@ function LanguageEncodingLab() {
               <strong>Transformer 神经网络</strong>
               <small>点击查看论文架构图</small>
             </button>
-            <p>模型实际接收和计算的是向量序列，不是屏幕上的汉字。</p>
+            <p>模型实际接收和计算的是<strong className="key-term">向量序列</strong>，不是屏幕上的汉字。</p>
           </div>
         )}
       </div>
@@ -200,11 +200,11 @@ function AgentTransitionBoard() {
     <div className="agent-transition-board">
       <div className="agent-transition-question"><span>留给下一章的问题</span><h4>如果任务不是回答一句话，而是让模型自己判断下一步做什么，会发生什么？</h4></div>
       <div className="call-vs-agent-loop">
-        <article><span>普通模型调用</span><code>输入 → 大语言模型 → 输出</code><p>生成一次回答，流程到此结束。</p></article>
+        <article><span>普通模型调用</span><code>输入 → 大语言模型 → 输出</code><p>生成<strong className="key-term">一次回答</strong>，流程到此结束。</p></article>
         <i>→ 关键变化 →</i>
-        <article><span>智能体运行机制</span><code>目标 → 大语言模型判断 → 工具执行 → 观察结果 ↺</code><p>根据结果继续决策、调用工具，直到完成或受控停止。</p></article>
+        <article><span>智能体运行机制</span><code>目标 → 大语言模型判断 → 工具执行 → 观察结果 ↺</code><p>根据结果<strong className="key-term">继续决策、调用工具</strong>，直到完成或<strong className="key-term">受控停止</strong>。</p></article>
       </div>
-      <p>大语言模型是整个人工智能应用中的核心能力模块，更接近智能体的“大脑”。聊天产品用提示词、会话、知识、界面和安全机制让它变得可用；当系统进一步加入受控工具、记忆和持续执行循环时，它才开始成为能够围绕目标采取行动的智能体核心。</p>
+      <p>大语言模型是整个人工智能应用中的<strong className="key-term">核心能力模块</strong>，更接近智能体的“大脑”。聊天产品用提示词、会话、知识、界面和安全机制让它变得可用；当系统进一步加入<strong className="key-term">受控工具、记忆和持续执行循环</strong>时，它才开始成为能够围绕目标采取行动的智能体核心。</p>
     </div>
   );
 }

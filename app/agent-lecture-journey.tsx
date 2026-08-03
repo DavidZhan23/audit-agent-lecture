@@ -251,7 +251,7 @@ export function AgentLoopSimulator() {
     <div className="loop-live" aria-live="polite">
       <section><span>当前目标 · 与 06 相同</span><strong>检查主合同甲是否存在转分包风险，并形成可复核的初步分析报告。</strong><div className="loop-status"><small>当前步骤</small><b>{active + 1} / {loopSteps.length}</b><small>当前状态</small><b>{item.status}</b></div></section>
       <section><span>选择的工具</span><strong>{item.tool}</strong><small>工具输入</small><p>{item.input}</p><small>工具输出</small><p>{item.output}</p></section>
-      <section className="loop-decision"><span>智能体下一步判断</span><strong>{item.decision}</strong><div><b>应用程序执行</b><p>参数、身份、权限和风险级别由运行层校验。</p></div></section>
+      <section className="loop-decision"><span>智能体下一步判断</span><strong>{item.decision}</strong><div><b>应用程序执行</b><p><strong className="key-term">参数、身份、权限和风险级别</strong>由运行层校验。</p></div></section>
     </div>
   </div>;
 }
@@ -262,7 +262,7 @@ export function AgentTypeSwitcher({ initial = "knowledge" }: { initial?: AgentTy
   return <div className="agent-type-switcher">
     <div className="agent-type-tabs" role="tablist" aria-label="三类智能体切换">{(Object.keys(agentTypes) as AgentTypeKey[]).map(key => <button type="button" role="tab" aria-selected={active === key} key={key} className={active === key ? "active" : ""} onClick={() => setActive(key)}><strong>{agentTypes[key].label}</strong><span>{agentTypes[key].question}</span></button>)}</div>
     <div className="agent-type-flow" aria-label={`${item.label}结构图`}>{item.structure.map((node, index) => <div key={node}><span>{String(index + 1).padStart(2, "0")}</span><strong>{node}</strong>{index < item.structure.length - 1 && <i>→</i>}</div>)}</div>
-    <div className="agent-type-detail" aria-live="polite"><section><span>典型输入</span><strong>{item.input}</strong><span>执行步骤</span><ol>{item.steps.map(step => <li key={step}>{step}</li>)}</ol></section><section><span>典型输出</span><strong>{item.output}</strong><span>适用场景</span><p>{item.scenes}</p><span>自主程度</span><p>{item.autonomy}</p></section><section><span>人工介入方式</span><strong>{item.human}</strong><blockquote>海能智能体平台当前采用的业务分类；三类并非互斥，也不是唯一行业标准。</blockquote></section></div>
+    <div className="agent-type-detail" aria-live="polite"><section><span>典型输入</span><strong>{item.input}</strong><span>执行步骤</span><ol>{item.steps.map(step => <li key={step}>{step}</li>)}</ol></section><section><span>典型输出</span><strong>{item.output}</strong><span>适用场景</span><p>{item.scenes}</p><span>自主程度</span><p>{item.autonomy}</p></section><section><span>人工介入方式</span><strong>{item.human}</strong><blockquote>海能智能体平台当前采用的业务分类；三类<strong className="key-term">并非互斥</strong>，也<strong className="key-term">不是唯一行业标准</strong>。</blockquote></section></div>
   </div>;
 }
 
@@ -272,7 +272,7 @@ export function PlanningAdjustmentLab() {
   return <div className="planning-adjustment-lab">
     <header className="planning-case-head">
       <div>
-        <p>运维中心发起排查：在近一年核心业务系统故障工单中，找出可能同根因、同影响面的相关故障（例如标题不同，但现象、错误语义或调用链节点高度重合），并整理成可供人工复核的分析材料。</p>
+        <p>运维中心发起排查：在近一年核心业务系统故障工单中，找出可能<strong className="key-term">同根因、同影响面</strong>的相关故障（例如标题不同，但现象、错误语义或调用链节点高度重合），并整理成<strong className="key-term">可供人工复核</strong>的分析材料。</p>
         <dl className="planning-case-brief">
           <div><dt>要做什么</dt><dd>全量初筛 → 锁定高潜故障簇 → 比对时间线与调用链 → 按证据强度分级</dd></div>
           <div><dt>交付什么</dt><dd>相关故障簇、典型工单、缺材料清单与处置建议；不作正式根因定性</dd></div>
@@ -282,7 +282,7 @@ export function PlanningAdjustmentLab() {
       <aside>
         <span>课堂看点</span>
         <strong>重点看第 03—04 步</strong>
-        <p>标题匹配为何漏召；缺日志如何触发补充子任务。权限与停条件仍由应用控制，不随计划扩大。</p>
+        <p>标题匹配为何漏召；缺日志如何触发补充子任务。<strong className="key-term">权限与停条件</strong>仍由应用控制，<strong className="key-term">不随计划扩大</strong>。</p>
       </aside>
     </header>
     <div className="planning-adjustment-body">
@@ -298,7 +298,7 @@ export function PlanningAdjustmentLab() {
         <p>{item.detail}</p>
         <div><small>本阶段结果</small><strong>{item.result}</strong></div>
         <p className="planning-phase-focus"><b>看点</b>{item.focus}</p>
-        {"highlight" in item && item.highlight && <blockquote><b>计划发生变化：</b>不再只看工单标题；新增故障现象与错误语义匹配，并把缺少日志或监控截图的工单加入材料补充清单。</blockquote>}
+        {"highlight" in item && item.highlight && <blockquote><b>计划发生变化：</b>不再只看工单标题；新增<strong className="key-term">故障现象与错误语义匹配</strong>，并把缺少日志或监控截图的工单加入<strong className="key-term">材料补充清单</strong>。</blockquote>}
         <button type="button" onClick={() => setActive((active + 1) % planPhases.length)}>{active === planPhases.length - 1 ? "重新查看" : "执行下一阶段 →"}</button>
       </section>
     </div>
@@ -309,14 +309,14 @@ export function CombinedContractCaseLab() {
   const [active, setActive] = useState(0);
   const item = combinedTimeline[active];
   return <div className="combined-contract-case">
-    <div className="combined-case-summary"><div><span>主合同</span><strong>生产数据治理及质量提升项目</strong><p>历史数据清洗、标准化、质量检查和数据入湖；金额八百六十万元。</p></div><i>⇄</i><div><span>高潜候选</span><strong>历史数据标准化及入湖技术服务</strong><p>清洗、映射、标准化及入湖；金额二百一十万元；主合同签订后三个月。</p></div></div>
+    <div className="combined-case-summary"><div><span>主合同</span><strong>生产数据治理及质量提升项目</strong><p>历史数据清洗、标准化、质量检查和数据入湖；金额八百六十万元。</p></div><i>⇄</i><div><span>高潜候选</span><strong>历史数据标准化及入湖技术服务</strong><p>清洗、映射、标准化及入湖；金额二百一十万元；<strong className="key-term">主合同签订后三个月</strong>。</p></div></div>
     <div className="combined-timeline" aria-label="组合案例时间线">{combinedTimeline.map((step, index) => (
       <Fragment key={step.title}>
         <button type="button" className={active === index ? "active" : index < active ? "done" : ""} onClick={() => setActive(index)}><b>{String(index + 1).padStart(2, "0")}</b><span>{step.title}</span><small>{step.kind}</small></button>
         {index < combinedTimeline.length - 1 && <i aria-hidden="true">→</i>}
       </Fragment>
     ))}</div>
-    <section aria-live="polite"><div><span>{item.kind}能力</span><h3>{item.title}</h3><p>{item.detail}</p><strong>{item.state}</strong></div><div className="combined-proof"><span>最终判断卡片</span><strong>关联程度：高</strong><ol><li>工作内容与主合同核心范围高度重合。</li><li>候选合同签订时间晚于主合同。</li><li>交付成果均涉及标准化数据与入湖成果。</li><li>候选合同可能承接主合同中的部分工作。</li></ol><p><b>不确定项：</b>尚未取得项目任务分工说明。</p><p><b>建议：</b>核实实际执行主体与内部审批材料。</p></div></section>
+    <section aria-live="polite"><div><span>{item.kind}能力</span><h3>{item.title}</h3><p>{item.detail}</p><strong>{item.state}</strong></div><div className="combined-proof"><span>最终判断卡片</span><strong>关联程度：高</strong><ol><li>工作内容与主合同<strong className="key-term">核心范围高度重合</strong>。</li><li>候选合同签订时间<strong className="key-term">晚于主合同</strong>。</li><li>交付成果均涉及标准化数据与入湖成果。</li><li>候选合同<strong className="key-term">可能承接</strong>主合同中的部分工作。</li></ol><p><b>不确定项：</b>尚未取得<strong className="key-term">项目任务分工说明</strong>。</p><p><b>建议：</b>核实<strong className="key-term">实际执行主体与内部审批材料</strong>。</p></div></section>
     <div className="human-gates"><span>必须暂停并请人确认</span>{["正文无法获取", "证据互相冲突", "访问高敏感系统", "形成正式审计结论", "向业务系统写入", "对外发送报告"].map(gate => <b key={gate}>{gate}</b>)}</div>
   </div>;
 }

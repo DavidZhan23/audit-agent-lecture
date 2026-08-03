@@ -27,7 +27,7 @@ export function LLMArchitectureOverview() {
   return (
     <section className="llm-architecture-overview" aria-labelledby="llm-architecture-title">
       <header className="generation-module-head">
-        <div><span>5.5 内部补充 · 整体结构</span><h4 id="llm-architecture-title">一个使用 Transformer 的对话式大语言模型，整体是什么样子？</h4><p>从用户输入到下一 Token 概率，需要经过一条完整的数据处理链路。</p></div>
+        <div><span>5.5 内部补充 · 整体结构</span><h4 id="llm-architecture-title">一个使用 Transformer 的对话式大语言模型，整体是什么样子？</h4><p>从用户输入到<strong className="key-term">下一 Token 概率</strong>，需要经过一条完整的数据处理链路。</p></div>
         <strong>当前步骤：{String(currentStep).padStart(2, "0")} / 08</strong>
       </header>
 
@@ -105,12 +105,12 @@ function ConversationInputPipeline() {
         <article><span>用户在网页中输入</span><p>“{userPrompt}”</p></article><i>≠</i>
         <article><span>模型实际可能收到</span><ul><li><b>system</b>角色和回答规则</li><li><b>user</b>当前问题</li><li><b>assistant</b>此前回答</li><li>角色分隔标记与特殊 Token</li><li>应用提供的材料或检索结果</li></ul></article>
       </div>
-      <p className="generation-key-line">模型收到的通常不只是用户输入的一句话，而是经过后端和对话模板组织后的完整上下文。</p>
+      <p className="generation-key-line">模型收到的通常不只是用户输入的一句话，而是经过后端和<strong className="key-term">对话模板</strong>组织后的<strong className="key-term">完整上下文</strong>。</p>
 
       <div className="prefill-panel">
-        <div className="generation-subhead"><span>Prefill · 上下文处理</span><h5>第一步：模型先读取已有上下文</h5><p>模型先处理当前对话中已经存在的 Token，并通过 Transformer 计算它们之间的上下文关系。</p></div>
+        <div className="generation-subhead"><span>Prefill · 上下文处理</span><h5>第一步：模型先读取已有上下文</h5><p>模型先处理当前对话中已经存在的 Token，并通过 Transformer 计算它们之间的<strong className="key-term">上下文关系</strong>。</p></div>
         <div className="prefill-flow">{["system 内容 + user 内容 + assistant 开始标记", "Chat Template", "Tokenizer", "已有 Token 序列", "Transformer 上下文计算"].map((item, index) => <div key={item}><b>{String(index + 1).padStart(2, "0")}</b><span>{item}</span>{index < 4 && <i>→</i>}</div>)}</div>
-        <div className="kv-cache-note"><b>KV Cache · 推理优化</b><p>推理服务通常会缓存已经计算过的上下文信息，避免每生成一个新 Token 都从头计算全部历史内容。</p><strong>KV Cache 是一次生成过程中的计算缓存，不等于模型的长期记忆，也不等于聊天应用保存的会话记录。</strong></div>
+        <div className="kv-cache-note"><b>KV Cache · 推理优化</b><p>推理服务通常会缓存已经计算过的上下文信息，避免每生成一个新 Token 都从头计算全部历史内容。</p><strong>KV Cache 是一次生成过程中的<strong className="key-term">计算缓存</strong>，<strong className="key-term">不等于长期记忆</strong>，也不等于聊天应用保存的会话记录。</strong></div>
       </div>
     </section>
   );
@@ -148,14 +148,14 @@ function GenerationPseudoCode() {
     <section className="generation-pseudocode">
       <div className="generation-subhead"><span>通用教学伪代码</span><h5>推理程序如何把一次次前向计算组成回答</h5></div>
       <div className="generation-code-layout"><pre><code>{generationPseudoCode}</code></pre><div>{pseudoCodeNotes.map(([code, note]) => <article key={code}><code>{code}</code><p>{note}</p></article>)}</div></div>
-      <p className="sequence-caveat">实际推理框架通常会通过 KV Cache 等方式优化计算，因此不会在每一轮完整重复计算所有历史 Token。但在教学上，仍可理解为：模型每次根据当前全部上下文继续预测下一 Token。</p>
+      <p className="sequence-caveat">实际推理框架通常会通过 KV Cache 等方式优化计算，因此不会在每一轮完整重复计算所有历史 Token。但在教学上，仍可理解为：模型每次根据<strong className="key-term">当前全部上下文</strong>继续预测下一 Token。</p>
     </section>
   );
 }
 
 function SamplingMethods() {
   return (
-    <section className="sampling-methods"><div className="generation-subhead"><span>小概念卡</span><h5>概率最高的 Token 一定会被选择吗？</h5><p>不一定。推理程序可以每次都选择概率最高的 Token，也可以按照概率进行采样。</p></div><div className="sampling-card-grid"><article><strong>Greedy · 贪心选择</strong><p>每次直接选择概率最高的 Token。输出通常更稳定，但可能比较单一。</p></article><article><strong>Temperature</strong><p>调整概率分布的平滑程度。较低时更稳定，较高时更多样。</p></article><article><strong>Top-p</strong><p>只在累计概率达到一定范围的候选 Token 中进行选择。</p></article></div><p className="generation-key-line">无论使用哪种选择方式，模型本身首先输出的仍然是下一 Token 的概率分布。</p></section>
+    <section className="sampling-methods"><div className="generation-subhead"><span>小概念卡</span><h5>概率最高的 Token 一定会被选择吗？</h5><p><strong className="key-term">不一定</strong>。推理程序可以每次都选择概率最高的 Token，也可以按照概率进行采样。</p></div><div className="sampling-card-grid"><article><strong>Greedy · 贪心选择</strong><p>每次直接选择概率最高的 Token。输出通常更稳定，但可能比较单一。</p></article><article><strong>Temperature</strong><p>调整概率分布的平滑程度。较低时更稳定，较高时更多样。</p></article><article><strong>Top-p</strong><p>只在累计概率达到一定范围的候选 Token 中进行选择。</p></article></div><p className="generation-key-line">无论使用哪种选择方式，模型本身首先输出的仍然是<strong className="key-term">下一 Token 的概率分布</strong>。</p></section>
   );
 }
 
@@ -180,10 +180,10 @@ export function AutoregressiveGenerationDemo() {
 
   return (
     <section className="autoregressive-generation" aria-labelledby="generation-demo-title">
-      <header className="generation-module-head"><div><span>5.5 内部补充 · Prefill + Decode</span><h4 id="generation-demo-title">模型不是一次写出完整句子，而是一个 Token 一个 Token 地生成</h4><p>每生成一个新 Token，它都会成为下一次预测的上下文。</p></div><strong>生成轮次：{String(Math.min(currentTokenIndex + 1, generationSteps.length)).padStart(2, "0")} / {generationSteps.length}</strong></header>
+      <header className="generation-module-head"><div><span>5.5 内部补充 · Prefill + Decode</span><h4 id="generation-demo-title">模型不是一次写出完整句子，而是一个 Token 一个 Token 地生成</h4><p>每生成一个新 Token，它都会成为<strong className="key-term">下一次预测的上下文</strong>。</p></div><strong>生成轮次：{String(Math.min(currentTokenIndex + 1, generationSteps.length)).padStart(2, "0")} / {generationSteps.length}</strong></header>
       <ConversationInputPipeline />
 
-      <div className="generation-subhead decode-head"><span>Decode · 逐 Token 生成</span><h5>第二步：每次预测并生成一个新 Token</h5><p>为了便于教学，界面按汉字或词块展示生成过程；真实 Tokenizer 产生的 Token 不一定等于一个完整汉字或完整词，也可能是词的一部分、标点或特殊标记。</p></div>
+      <div className="generation-subhead decode-head"><span>Decode · 逐 Token 生成</span><h5>第二步：每次预测并生成一个新 Token</h5><p>为了便于教学，界面按汉字或词块展示生成过程；真实 Tokenizer 产生的 Token <strong className="key-term">不一定等于完整汉字或完整词</strong>，也可能是词的一部分、标点或特殊标记。</p></div>
       <div className="decode-workbench">
         <div className="decode-context"><span>当前已有上下文</span><p><b>system</b>{systemPrompt}</p><p><b>user</b>{userPrompt}</p><p><b>assistant</b>{generatedTokens.length ? generatedTokens.join("") : "等待模型继续生成……"}{isFinished && <em>&lt;结束回答&gt;</em>}</p><small>新 Token 追加后，会参与下一轮 Transformer 计算。</small></div>
         <div className="decode-transformer"><span>本轮前向计算</span><strong>Transformer × N</strong><i>上下文 → 下一 Token 概率</i><small>这是一次前向计算，不是在 Transformer 内部无限循环。</small></div>

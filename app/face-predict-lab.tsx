@@ -220,8 +220,8 @@ export function FacePredictLab() {
         <div className="xiaoyu-premise">
           <span>案例支线 · 5—7分钟 · 课堂虚构故事</span>
           <h3 id="xiaoyu-story-title">两个室友，<br /><em>想给自家门禁装上“眼睛”。</em></h3>
-          <p>笑雨和骐源是合住一套公寓的室友。两人想自己做一个简易的人脸识别门禁：门口摄像头拍到人脸后，模型只判断<strong>“笑雨”“骐源”或“其他”</strong>。如果模型有把握认出笑雨或骐源，门禁程序就执行开门；如果识别为“其他”，或者置信度没有达到阈值，门就保持关闭。两人先在彼此同意的前提下，收集不同角度、表情和光线下的照片并贴好标签，再补充其他人物照片，让模型不只会认出室友，也会拒绝陌生人。</p>
-          <blockquote>“模型负责认人，门禁规则负责决定开不开门。”</blockquote>
+          <p>笑雨和骐源是合住一套公寓的室友。两人想自己做一个简易的人脸识别门禁：门口摄像头拍到人脸后，模型只判断<strong className="key-term">“笑雨”“骐源”或“其他”</strong>。如果模型有把握认出笑雨或骐源，门禁程序就执行开门；如果识别为“其他”，或者<strong className="key-term">置信度没有达到阈值</strong>，门就保持关闭。两人先在<strong className="key-term">彼此同意</strong>的前提下，收集不同角度、表情和光线下的照片并贴好标签，再补充其他人物照片，让模型不只会认出室友，也会<strong className="key-term">拒绝陌生人</strong>。</p>
+          <blockquote>“<strong className="key-term">模型负责认人</strong>，<strong className="key-term">门禁规则负责决定开不开门</strong>。”</blockquote>
           <div className="xiaoyu-binary"><span>门口摄像头拍到人脸</span><i>→</i><strong>笑雨：开门</strong><b>或</b><strong>骐源：开门</strong><b>或</b><strong>其他：不开门</strong></div>
         </div>
       </section>

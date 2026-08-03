@@ -88,7 +88,7 @@ export function ContinuityLadderDiagram() {
         ))}
       </div>
       <p className="llm-diagram-note">
-        真正变的是：输入从「一张固定大小的表/图」变成「可长可短的语言序列」；目标从「分到少数类别」变成「在巨大词表上预测下一个 Token」。
+        真正变的是：输入从「一张固定大小的表/图」变成「<strong className="key-term">可长可短的语言序列</strong>」；目标从「分到少数类别」变成「在巨大词表上<strong className="key-term">预测下一个 Token</strong>」。
       </p>
     </div>
   );
@@ -129,11 +129,11 @@ export function TokenizeDiagram() {
         <div className="tokenize-vec">
           <span>Embedding</span>
           <strong>每个 Token → 一串数字</strong>
-          <p>相近语义的向量在空间中更靠近；位置编码再告诉模型「谁先谁后」。</p>
+          <p><strong className="key-term">相近语义的向量</strong>在空间中更靠近；<strong className="key-term">位置编码</strong>再告诉模型「谁先谁后」。</p>
         </div>
       </div>
       <p className="llm-diagram-note">
-        词表往往有数万到十余万项。英文常按子词切（例如字节对编码）；中文也可能是字、词或子词混合。课堂只需记住：<b>离散符号 → 连续向量</b>，后面全是神经网络运算。
+        词表往往有数万到十余万项。英文常按子词切（例如字节对编码）；中文也可能是字、词或子词混合。课堂只需记住：<strong className="key-term">离散符号 → 连续向量</strong>，后面全是神经网络运算。
       </p>
     </div>
   );
@@ -166,7 +166,7 @@ export function GenerationLoopDiagram() {
         ))}
       </div>
       <p className="llm-diagram-note">
-        每一步在整个词表上做 Softmax。温度、Top-p 等采样策略只是「怎么从概率里挑」，不改变「预测下一个」这一核心任务。
+        每一步在整个词表上做 Softmax。温度、Top-p 等<strong className="key-term">采样策略</strong>只是「怎么从概率里挑」，不改变「<strong className="key-term">预测下一个</strong>」这一核心任务。
       </p>
     </div>
   );
@@ -237,8 +237,8 @@ export function AttentionHeatmapDiagram() {
         </div>
       </div>
       <p className="llm-diagram-note">
-        教学版说法：每个位置生成 <b>Query</b>，上下文位置提供 <b>Key / Value</b>；相似度高的位置权重大，信息被多「抄」一点过来。
-        真实模型有多头、多层；课堂只抓「不是平均读，而是有重点地读」。
+        教学版说法：每个位置生成 <strong className="key-term">Query</strong>，上下文位置提供 <strong className="key-term">Key / Value</strong>；相似度高的位置权重大，信息被多「抄」一点过来。
+        真实模型有多头、多层；课堂只抓「<strong className="key-term">不是平均读，而是有重点地读</strong>」。
       </p>
     </div>
   );
@@ -296,7 +296,7 @@ export function TransformerStackDiagram() {
         <text x="778" y="230" fill={muted} fontSize="11">的概率分布</text>
       </svg>
       <p className="llm-diagram-note">
-        「大」主要来自：层数 N、隐藏维度、词表、训练数据与算力。架构家族仍是这张图的反复堆叠（及若干工程变体）。
+        「大」主要来自：<strong className="key-term">层数 N、隐藏维度、词表、训练数据与算力</strong>。架构家族仍是这张图的反复堆叠（及若干工程变体）。
       </p>
     </div>
   );
@@ -369,7 +369,7 @@ export function ContextWindowDiagram() {
       </div>
       <p className="llm-diagram-note">
         窗口有长度上限。长对话可能需要摘要、分段或重新提供关键背景。
-        <b>没写进窗口的原始材料，模型不会「偷偷连库」看到。</b>
+        <strong className="key-term">没写进窗口的原始材料，模型不会「偷偷连库」看到。</strong>
       </p>
     </div>
   );
@@ -387,18 +387,18 @@ export function CapabilityBoundaryStrip() {
         <div>
           <span>擅长</span>
           <ul>
-            <li>归纳问题的目标、约束与取舍</li>
+            <li>归纳问题的<strong className="key-term">目标、约束与取舍</strong></li>
             <li>比较方案并解释权衡逻辑</li>
             <li>结合对话历史回应新的追问</li>
-            <li>指出还需要补充的信息</li>
+            <li>指出<strong className="key-term">还需要补充的信息</strong></li>
           </ul>
         </div>
         <div>
           <span>不擅长 / 不能替代</span>
           <ul>
-            <li>保证它对问题的理解一定正确</li>
+            <li>保证它对问题的理解<strong className="key-term">一定正确</strong></li>
             <li>自动读取对话中未提供的最新事实</li>
-            <li>替代用户承担决策与结果责任</li>
+            <li>替代用户承担<strong className="key-term">决策与结果责任</strong></li>
             <li>在信息不足时必然停止——它仍可能写得流畅</li>
           </ul>
         </div>
@@ -419,12 +419,12 @@ export function AnnLlmSideBySide() {
         <article>
           <span>神经网络数字识别</span>
           <code>256 → 隐藏层×L → Softmax(10)</code>
-          <p>10 个类别：数字 0—9。一张图一个答案。</p>
+          <p><strong className="key-term">10 个预设类别</strong>：数字 0—9。一张图一个答案。</p>
         </article>
         <article>
           <span>大语言模型语言建模</span>
           <code>Token 序列 → Transformer×N → Softmax(|V|)</code>
-          <p>|V| 可达数万级。每一步在整个词表上选一个，再进入下一步。</p>
+          <p>|V| 可达数万级。每一步在<strong className="key-term">整个词表</strong>上选一个，再进入下一步。</p>
         </article>
       </div>
     </div>

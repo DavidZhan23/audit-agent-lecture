@@ -25,6 +25,10 @@
   --surface-shadow: 0 20px 50px rgba(20, 43, 35, .1), 0 2px 8px rgba(20, 43, 35, .05);
 }
 
+.key-term {
+  font-weight: 780;
+}
+
 html {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

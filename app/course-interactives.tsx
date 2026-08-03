@@ -19,7 +19,7 @@ export function KnownUnknownBridge() {
     ["判断已经知道", "规则", "金额 > 标准且无审批", "把明确条件交给程序。"],
     ["关系无法完整写出", "学习", "哪些组合更像历史真实疑点？", "给出案例，让模型寻找近似关系。"],
   ];
-  return <div className="known-unknown"><div className="concept-question"><span>先不要急着说“人工智能”</span><h3>计算机面对的三类问题，有什么不同？</h3></div><div>{items.map((item, index) => <section key={item[1]}><b>0{index + 1}</b><small>{item[0]}</small><strong>{item[1]}</strong><code>{item[2]}</code><p>{item[3]}</p></section>)}</div><blockquote><b>严谨提醒：</b>机器学习不等于“没有解析解”。真正的分界是：判断关系能否被人完整写出，还是需要从历史案例中估计。</blockquote></div>;
+  return <div className="known-unknown"><div className="concept-question"><span>先不要急着说“人工智能”</span><h3>计算机面对的三类问题，有什么不同？</h3></div><div>{items.map((item, index) => <section key={item[1]}><b>0{index + 1}</b><small>{item[0]}</small><strong>{item[1]}</strong><code>{item[2]}</code><p>{item[3]}</p></section>)}</div><blockquote><b>严谨提醒：</b>机器学习不等于“没有解析解”。真正的分界是：<strong className="key-term">判断关系能否被人完整写出</strong>，还是需要<strong className="key-term">从历史案例中估计</strong>。</blockquote></div>;
 }
 
 const fitStates = [
@@ -61,7 +61,7 @@ export function FunctionFittingLab() {
       <circle className="loss-point" cx={lossX} cy={lossY} r="7"/><text className="loss-label" x={Math.min(660, lossX + 10)} y={Math.max(55, lossY - 10)}>Loss {model.loss.toFixed(3)}</text>
     </svg>
     <div className="fit-formula"><span>输入 X</span><i>→</i><span>带参数的函数 fθ</span><i>→</i><span>预测 ŷ</span><i>与答案 y 比较</i><strong>→ 调整参数，让总体误差更小</strong></div>
-    <p className="lab-disclaimer">图中7条代表样本、学习率和第0/10/60步参数与下方Python代码的“一维拟合演示”完全一致。Loss下降只说明更贴合训练案例，不自动证明模型在新数据上可靠。</p>
+    <p className="lab-disclaimer">图中7条代表样本、学习率和第0/10/60步参数与下方Python代码的“一维拟合演示”完全一致。<strong className="key-term">Loss下降</strong>只说明更贴合训练案例，<strong className="key-term">不自动证明</strong>模型在新数据上可靠。</p>
   </div>;
 }
 
@@ -86,7 +86,7 @@ export function ConfusionMatrixLab() {
     <div className="interactive-head"><div><span>核心互动 · 模型评价</span><h3>报警阈值改变时，误报和遗漏怎样交换？</h3></div><button onClick={() => setThreshold(50)}>重置</button></div>
     <label className="threshold-control"><span>重点核查阈值</span><strong>{threshold}%</strong><input aria-label="重点核查阈值" type="range" min="20" max="80" step="5" value={threshold} onChange={(event) => setThreshold(Number(event.target.value))}/></label>
     <div className="evaluation-grid"><div className="record-grid" aria-label="20笔验证记录">{evaluationRecords.map(([score, actual], index) => { const predicted = score >= threshold; const status = predicted ? actual ? "tp" : "fp" : actual ? "fn" : "tn"; return <div key={index} className={status} aria-label={`记录${index + 1}，风险分${score}，${status}`}><strong>{score}</strong><small>{status.toUpperCase()}</small></div>; })}</div><div className="matrix-summary"><div><span>真阳性 TP</span><strong>{result.tp}</strong><p>真实疑点且报出</p></div><div><span>假阳性 FP</span><strong>{result.fp}</strong><p>合理事项被误报</p></div><div><span>假阴性 FN</span><strong>{result.fn}</strong><p>真实疑点被遗漏</p></div><div><span>真阴性 TN</span><strong>{result.tn}</strong><p>正常事项正确通过</p></div></div></div>
-    <div className="metric-explain"><div><span>查准率</span><strong>{(precision * 100).toFixed(0)}%</strong><p>报出的事项中，有多少确实值得查。</p></div><div><span>召回率</span><strong>{(recall * 100).toFixed(0)}%</strong><p>全部真实疑点中，系统找到了多少。</p></div><p>{threshold < 45 ? "阈值较低：更少遗漏，但审计人员要处理更多误报。" : threshold > 60 ? "阈值较高：清单更短，但更容易漏掉真实疑点。" : "当前阈值在工作量与遗漏风险之间折中；它仍需结合审计目标决定。"}</p></div>
+    <div className="metric-explain"><div><span>查准率</span><strong>{(precision * 100).toFixed(0)}%</strong><p>报出的事项中，有多少<strong className="key-term">确实值得查</strong>。</p></div><div><span>召回率</span><strong>{(recall * 100).toFixed(0)}%</strong><p>全部真实疑点中，系统<strong className="key-term">找到了多少</strong>。</p></div><p>{threshold < 45 ? "阈值较低：更少遗漏，但审计人员要处理更多误报。" : threshold > 60 ? "阈值较高：清单更短，但更容易漏掉真实疑点。" : "当前阈值在工作量与遗漏风险之间折中；它仍需结合审计目标决定。"}</p></div>
   </div>;
 }
 
@@ -119,7 +119,7 @@ export function NeuronContinuityLab() {
     <div className="phase-tabs">{phases.map((item, index) => <button key={item.name} className={phase === index ? "active" : ""} onClick={() => setPhase(index)}><strong>{item.name}</strong><small>Loss {item.loss}</small></button>)}</div>
     <div className="neuron-layout"><div className="neuron-inputs"><label><span>金额矛盾程度 x₁</span><strong>{mismatch.toFixed(2)}</strong><input aria-label="金额矛盾程度" type="range" min="0" max="1" step="0.01" value={mismatch} onChange={(e) => setMismatch(Number(e.target.value))}/></label><label><span>字体异常程度 x₂</span><strong>{fontAnomaly.toFixed(2)}</strong><input aria-label="字体异常程度" type="range" min="0" max="1" step="0.01" value={fontAnomaly} onChange={(e) => setFontAnomaly(Number(e.target.value))}/></label></div><div className="neuron-calc"><div><span>x₁ × w₁</span><strong>{mismatch.toFixed(2)} × {state.w1.toFixed(2)}</strong></div><i>+</i><div><span>x₂ × w₂</span><strong>{fontAnomaly.toFixed(2)} × {state.w2.toFixed(2)}</strong></div><i>+</i><div><span>偏置 b</span><strong>{state.bias.toFixed(2)}</strong></div><i>→</i><div className="neuron-output"><span>修改概率</span><strong>{(output * 100).toFixed(1)}%</strong></div></div></div>
     <div className="representation-ladder">{["票据像素", "边缘与笔画", "数字区域", "打印金额", "二维码金额", "修改概率"].map((item, index) => <div key={item}><b>{String(index + 1).padStart(2,"0")}</b><span>{item}</span>{index < 5 && <i>→</i>}</div>)}</div>
-    <p className="lab-disclaimer">这里把多层网络压缩成一个神经元观察加权计算；下方检查点和Python代码再展示同一事项的2→2→1网络。真实票据模型需要大量标注图片、数据增强和独立测试。</p>
+    <p className="lab-disclaimer">这里把多层网络压缩成一个神经元观察<strong className="key-term">加权计算</strong>；下方检查点和Python代码再展示同一事项的2→2→1网络。真实票据模型需要<strong className="key-term">大量标注图片、数据增强和独立测试</strong>。</p>
   </div>;
 }
 
@@ -296,7 +296,7 @@ export function DigitsImageLab() {
 export function LanguageTrainingShift() {
   const tokens = ["报告", "草稿", "还", "缺", "两处", "证据", "。", "待补充"];
   const [target, setTarget] = useState(5);
-  return <div className="shift-lab interactive"><div className="interactive-head"><div><span>核心互动 · 训练答案从哪里来</span><h3>把同一句话错开一位，就得到下一个Token训练样本</h3></div><button onClick={() => setTarget(5)}>重置</button></div><div className="shift-row"><span>输入上下文</span><div>{tokens.map((token, index) => <button key={index} className={index < target ? "context" : "future"} disabled={index > 6} onClick={() => index >= 1 && index <= 6 && setTarget(index)}>{index < target ? token : "·"}</button>)}</div></div><div className="shift-row target"><span>正确答案</span><div>{tokens.map((token, index) => <b key={index} className={index === target ? "active" : ""}>{index === target ? token : "·"}</b>)}</div></div><div className="shift-result"><span>模型当前任务</span><strong>看到“{tokens.slice(0, target).join("")}”，预测下一个Token是“{tokens[target]}”</strong><p>真实文本自动提供答案；预测错误产生Loss，反向传播继续调整神经网络权重。</p></div></div>;
+  return <div className="shift-lab interactive"><div className="interactive-head"><div><span>核心互动 · 训练答案从哪里来</span><h3>把同一句话错开一位，就得到下一个Token训练样本</h3></div><button onClick={() => setTarget(5)}>重置</button></div><div className="shift-row"><span>输入上下文</span><div>{tokens.map((token, index) => <button key={index} className={index < target ? "context" : "future"} disabled={index > 6} onClick={() => index >= 1 && index <= 6 && setTarget(index)}>{index < target ? token : "·"}</button>)}</div></div><div className="shift-row target"><span>正确答案</span><div>{tokens.map((token, index) => <b key={index} className={index === target ? "active" : ""}>{index === target ? token : "·"}</b>)}</div></div><div className="shift-result"><span>模型当前任务</span><strong>看到“{tokens.slice(0, target).join("")}”，预测下一个Token是“{tokens[target]}”</strong><p><strong className="key-term">真实文本自动提供答案</strong>；预测错误产生Loss，反向传播继续<strong className="key-term">调整神经网络权重</strong>。</p></div></div>;
 }
 
 const attentionSets = {
@@ -346,7 +346,7 @@ export function AgentBranchLab() {
   const [visible, setVisible] = useState(1);
   const current = agentScenarios[scenario];
   const select = (next: AgentScenario) => { setScenario(next); setVisible(1); };
-  return <div className="agent-branch interactive"><div className="interactive-head"><div><span>核心互动 · 反馈分支</span><h3>下一步不是固定列表，而是由上一步结果决定</h3></div><button onClick={() => setVisible(1)}>重置</button></div><div className="scenario-tabs">{(Object.keys(agentScenarios) as AgentScenario[]).map((key) => <button key={key} className={scenario === key ? "active" : ""} onClick={() => select(key)}>{agentScenarios[key].label}</button>)}</div><div className="agent-state"><span>目标</span><strong>核验BX-42017声称的苏州客户行程</strong><p>工具预算：最多5次；默认只读；禁止自动定性；结论必须由人复核。</p></div><ol className="branch-trace">{current.steps.slice(0, visible).map((step, index) => <li key={`${scenario}-${index}`}><b>{String(index + 1).padStart(2,"0")}</b><div><span>行动：{step[0]}</span><strong>{step[1]}</strong><p>决策理由：{step[2]}</p></div></li>)}</ol><div className="branch-actions"><button disabled={visible >= current.steps.length} onClick={() => setVisible(Math.min(current.steps.length, visible + 1))}>执行下一步</button><button className="primary" onClick={() => setVisible(current.steps.length)}>运行到停止</button><p>{visible >= current.steps.length ? "当前状态：已按停止条件结束。" : `当前状态：已完成 ${visible}/${current.steps.length} 步，等待选择下一行动。`}</p></div></div>;
+  return <div className="agent-branch interactive"><div className="interactive-head"><div><span>核心互动 · 反馈分支</span><h3>下一步不是固定列表，而是由上一步结果决定</h3></div><button onClick={() => setVisible(1)}>重置</button></div><div className="scenario-tabs">{(Object.keys(agentScenarios) as AgentScenario[]).map((key) => <button key={key} className={scenario === key ? "active" : ""} onClick={() => select(key)}>{agentScenarios[key].label}</button>)}</div><div className="agent-state"><span>目标</span><strong>核验BX-42017声称的苏州客户行程</strong><p>工具预算：最多5次；<strong className="key-term">默认只读</strong>；<strong className="key-term">禁止自动定性</strong>；结论必须由人复核。</p></div><ol className="branch-trace">{current.steps.slice(0, visible).map((step, index) => <li key={`${scenario}-${index}`}><b>{String(index + 1).padStart(2,"0")}</b><div><span>行动：{step[0]}</span><strong>{step[1]}</strong><p>决策理由：{step[2]}</p></div></li>)}</ol><div className="branch-actions"><button disabled={visible >= current.steps.length} onClick={() => setVisible(Math.min(current.steps.length, visible + 1))}>执行下一步</button><button className="primary" onClick={() => setVisible(current.steps.length)}>运行到停止</button><p>{visible >= current.steps.length ? "当前状态：已按停止条件结束。" : `当前状态：已完成 ${visible}/${current.steps.length} 步，等待选择下一行动。`}</p></div></div>;
 }
 
 export function AuditAgentCanvas() {
